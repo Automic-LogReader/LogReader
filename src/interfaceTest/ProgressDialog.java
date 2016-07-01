@@ -98,9 +98,10 @@ public class ProgressDialog extends JDialog {
 			};
 			chooser.setDialogTitle("Export To");
 			String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
-			chooser.setSelectedFile(new File("Error_Log_" + timeStamp + ".txt"));
+			chooser.setSelectedFile(new File("Error_Log_" + timeStamp + ".csv"));
+		   // FileNameExtensionFilter filter = new FileNameExtensionFilter("csv");
 		    FileNameExtensionFilter filter = new FileNameExtensionFilter(
-		        "Text Files", "txt", "text");
+                    "CSV files (*csv)", "csv");
 		    chooser.setFileFilter(filter);
 		    chooser.setAcceptAllFileFilterUsed(false);
 		    int returnVal = chooser.showSaveDialog(getParent());
@@ -110,7 +111,7 @@ public class ProgressDialog extends JDialog {
 		    		if (file.exists()){
 		    			//JOptionPane confirm = new JOptionPane()
 		    		}
-					generateTextFile(chooser.getSelectedFile().getName(), view);
+					generateCSVFile(chooser.getSelectedFile().getName(), view);
 				} catch (Exception e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
@@ -145,18 +146,22 @@ public class ProgressDialog extends JDialog {
 	}
 	
 	//Generates formatted text file 
-	private static void generateTextFile(String fileName, UserView view) throws IOException{
+	private static void generateCSVFile(String fileName, UserView view) throws IOException{
 		FileWriter writer = new FileWriter(fileName);
 		for (int i = 0; i < view.errorData.size(); i++){
-			String errorMessage = "";
+			//String errorMessage = "";
 			//writer.append(String.valueOf(view.errorData.get(i)[0]));
 			//writer.append(c)
 			
-			for (int j = 1; j < 5; j++){
-				errorMessage += view.errorData.get(i)[j] + " ";
+			for (int j = 1; j < 4; j++){
+				writer.append((CharSequence) view.errorData.get(i)[j]);
+				writer.append(',');
+				//errorMessage += view.errorData.get(i)[j] + " ";
 			}
-			errorMessage += '\n';
-			writer.append(errorMessage);
+			writer.append((CharSequence) view.errorData.get(i)[4]);
+			//errorMessage += '\n';
+			//writer.append(errorMessage);
+			writer.append('\n');
 		}
 		writer.flush();
 		writer.close();
