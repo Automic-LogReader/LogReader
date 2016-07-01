@@ -1,0 +1,4 @@
+1 20160518/210649.318 U2001000 Job '&lt;JOB NAME>' could not be started. Error code '1314 (= required privilege is not held by the client.)'.  Check to see if UAC (User Account Control) is on 
+2 20160519/225357.577 U0034036 There is no valid license for Agent 'WEB.SERVICE' (license class '1', license category 'Test System', platform 'EX.RA').  Please verify your license class 
+3 20160520/163022.474 U02000042 Connection aborted. Error code '10053', error description: 'An established connection was aborted by the software in your host machine.'.  TBD 
+4 20160521/192123.645 U02001040 Error in function 'Connect', error code '10022', error description: 'An invalid argument was supplied.'.  TBD 
