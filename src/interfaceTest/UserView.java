@@ -48,7 +48,7 @@ import javax.swing.JTable;
 
 public class UserView extends JFrame{
 
-	private String [] headers = {"Error #", "Timestamp",
+	protected String [] headers = {"Error #", "Timestamp",
 								"U Code", "Error Message", "Suggested Solution"};
 	protected List<Object[]> errorData = new ArrayList<Object[]>();
 	private Object [][] data;

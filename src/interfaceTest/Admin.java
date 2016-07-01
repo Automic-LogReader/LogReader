@@ -42,7 +42,7 @@ public class Admin extends User {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {				
-					myView = new AdminView(myData);
+					myView = new AdminView();
 					myView.setVisible(true);
 					
 				} catch (Exception e) {

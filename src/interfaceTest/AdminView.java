@@ -1,4 +1,5 @@
-/**
+
+ /**
  * file: AdminView.java
  * This class shows the frame for the AdminView. It consists of a JTable that displays
  * the information in LogErrors_Suggestions.csv, and users can delete, add, or modify
@@ -12,6 +13,7 @@ package interfaceTest;
 import java.awt.Component;
 
 import javax.swing.JFrame;
+import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -24,6 +26,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import javax.swing.JScrollPane;
 import java.awt.GridBagConstraints;
@@ -47,6 +52,19 @@ import javax.swing.JScrollBar;
 @SuppressWarnings({ "serial", "unused" })
 public class AdminView extends JFrame {
 	
+	
+	//Holds a line from the csv file
+	protected String errorLine;
+	//Holds the line from the csv file (each part of the array is a cell from csv)
+	protected String [] errorWords;
+	//ArrayList that holds all the UCodes from the csv file
+	protected List<String> uCodes = new ArrayList<String>();
+	//Brings up the frame for an admin user
+	private AdminView myView;
+	//Number of rows in LogErrorSuggestions.csv
+	private int dataLength;
+	//Used as a current index marker for the function createDataTable
+	private int dataIndex;
 	//Headers for the JTable
 	private String[] columnHeaders = {"U Code", "Log Error Description", "Suggested Solution"};
 	//Solution field when the user wants to add an entry
@@ -60,14 +78,20 @@ public class AdminView extends JFrame {
 	//Field for when the user wants to modify an entry
 	private JTextField modifyText;
 	Object[] options = {"Yes", "Cancel"};
-	
+	private List <String> list = new ArrayList<String>();
+	Object [][] data;
+	JScrollPane scrollPane;
+	DefaultTableModel tableModel;
 	
 	/**
 	 * @param data - An array of object arrays that contains data from the error csv file. 
 	 * 				 The data in here is filled into the JTable.
+	 * @throws IOException 
 	 */
-	public AdminView(Object[][] data) {
+	public AdminView() throws IOException {
 		
+		setDataLength();
+		data = createDataTable();
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(200, 200, 1000, 300);
 		setLocationRelativeTo(null);
@@ -82,7 +106,7 @@ public class AdminView extends JFrame {
 		gbl_contentPane.rowWeights = new double[]{1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		contentPane.setLayout(gbl_contentPane);
 		
-		JScrollPane scrollPane = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		scrollPane = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		GridBagConstraints gbc_scrollPane = new GridBagConstraints();
 		gbc_scrollPane.gridheight = 4;
 		gbc_scrollPane.gridwidth = 28;
@@ -92,7 +116,7 @@ public class AdminView extends JFrame {
 		gbc_scrollPane.gridy = 0;
 		contentPane.add(scrollPane, gbc_scrollPane);
 		
-		DefaultTableModel tableModel = new DefaultTableModel(data, columnHeaders) {
+		tableModel = new DefaultTableModel(data, columnHeaders) {
 
 		    @Override
 		    public boolean isCellEditable(int row, int column) {
@@ -102,32 +126,7 @@ public class AdminView extends JFrame {
 		    
 		    
 		};
-		
-		table = new JTable(tableModel){
-			//Renders each columnn to fit the data
-			public Component prepareRenderer(TableCellRenderer renderer, int row, int column) 
-			{
-				Component component = super.prepareRenderer(renderer, row, column);
-				int rendererWidth = component.getPreferredSize().width;
-	           TableColumn tableColumn = getColumnModel().getColumn(column);
-	           tableColumn.setPreferredWidth(Math.max(rendererWidth + getIntercellSpacing().width, tableColumn.getPreferredWidth()));
-	           return component;
-			}
-
-		};
-		
-		//Whenever user clicks on a cell, the cell's contents appear in modify textbox
-		table.addMouseListener(new MouseAdapter(){
-			@Override
-		    public void mouseClicked(MouseEvent evnt) {
-		        if (evnt.getClickCount() == 1) 
-		            modifyText.setText((String)table.getValueAt(table.getSelectedRow(), table.getSelectedColumn()));
-		    }
-		});
-		
-		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-		scrollPane.setViewportView(table);
-		
+		makeTable();
 		
 		JButton deleteButton = new JButton("Delete Entry");
 		GridBagConstraints gbc_deleteButton = new GridBagConstraints();
@@ -153,6 +152,9 @@ public class AdminView extends JFrame {
 					model.removeRow(modelIndex);
 					try {
 						deleteData(viewIndex);
+						setDataLength();
+						data = createDataTable();
+						makeTable();
 					} catch (Exception e1) {
 					e1.printStackTrace();
 					}
@@ -247,6 +249,9 @@ public class AdminView extends JFrame {
 				
 				try {
 					modifyData(modifyText.getText(), table.getSelectedRow(), table.getSelectedColumn());
+					setDataLength();
+					data = createDataTable();
+					makeTable();
 				} catch (Exception e1) {
 					
 					e1.printStackTrace();
@@ -269,6 +274,9 @@ public class AdminView extends JFrame {
 				model.addRow(new Object[] {uText.getText(), errorText.getText(), solutionText.getText()});
 				try {
 					addData(uText.getText(), errorText.getText(), solutionText.getText());
+					setDataLength();
+					data = createDataTable();
+					makeTable();
 				} catch (Exception e1) {
 					
 					e1.printStackTrace();
@@ -295,6 +303,7 @@ public class AdminView extends JFrame {
 		File oldFile = new File ("src/interfaceTest/resources/LogErrors_Suggestions.csv");
 		File temp = new File("src/interfaceTest/resources/temp.csv");
 		int i = 0;
+		list.clear();
 		//InputStream errorInput = getClass().getResourceAsStream(MainController.errorFile);
 		//BufferedReader errorbr = new BufferedReader(new InputStreamReader(errorInput));
 		
@@ -311,6 +320,7 @@ public class AdminView extends JFrame {
 		
 		while (errorLine != null)
 		{
+
 			//We've hit the row that we want to modify
 			if(i == row)
 			{	
@@ -322,17 +332,24 @@ public class AdminView extends JFrame {
 				String[] theLine = errorLine.split(",(?=([^\"]|\"[^\"]*\")*$)");
 				//Replace corresponding index depending on column we want to modify
 				theLine[col] = newEntry;
-				
+					
 				//Add commas so each entry goes in its individual cell
 				for(int j = 0; j < theLine.length; j++)
 					newLine = newLine + theLine[j] + ",";
-				fw.write(newLine + "\r\n");
+				list.add(newLine + "\r\n");
 			}
 			else
-				fw.write(errorLine + "\r\n");
+				list.add(errorLine + "\r\n");
 			errorLine = errorbr.readLine();
 			i++;
+			
 		}
+		Collections.sort(list);
+		for(int j = 0; j < list.size(); j++)
+		{
+			fw.write(list.get(j));
+		}
+		
 		errorInput.close();
 		errorbr.close();
 		fw.close();
@@ -404,21 +421,138 @@ public class AdminView extends JFrame {
 	 */
 	void addData(String ucode, String message, String solution) throws IOException
 	{
-		FileWriter fw = new FileWriter ("src/interfaceTest/resources/LogErrors_Suggestions.csv", true);
+		
+		list.clear();
+		String newLine = "";
+		File oldFile = new File ("src/interfaceTest/resources/LogErrors_Suggestions.csv");
+		File temp = new File("src/interfaceTest/resources/temp.csv");
+		FileReader errorInput = new FileReader(oldFile);
+		BufferedReader errorbr = new BufferedReader(errorInput);
+		FileWriter fw = new FileWriter (temp, true);
+		
+		String errorLine = errorbr.readLine();
+		fw.write(errorLine + "\r\n");
+		errorLine = errorbr.readLine();
+		
 		//Commas are added between each entry so they are put in individual cells in the csv
-		fw.append(ucode + ",");
+		if(ucode.contains(","))
+			ucode = "\"" + ucode + "\"";
+		newLine += (ucode + ",");
 		// \" is added so that if the message contains a comma, it isn't broken up into separate cells
 		if(message.contains(","))
 			message = "\"" + message + "\"";
-		fw.append(message + ",");
+		newLine += (message + ",");
 		if(solution.contains(","))
 			solution = "\"" + solution + "\"";
-		fw.append(solution + "\r\n");
+		newLine += (solution + "\r\n");
+		list.add(newLine);
+		while(errorLine != null)
+		{
+			list.add(errorLine + "\r\n");
+			errorLine = errorbr.readLine();
+		}
+		Collections.sort(list);
+		for(int i = 0; i < list.size(); i++)
+		{
+			fw.write(list.get(i));
+		}
 		fw.close();
+		errorbr.close();
+		errorInput.close();
+		if(oldFile.delete())
+		{
+			temp.renameTo(oldFile);
+			System.out.println("add success");
+		}
+		else
+			System.out.println("add failed");
+
 	}
 
+	/**
+	 * This function fills myData with arrays. Each array represents a line from
+	 * LogErrors_Suggestions.csv, the array itself being the return value
+	 * from calling split function on the line.
+	 * @throws IOException
+	 */
+	Object[][] createDataTable() throws IOException
+	{
+		//InputStream errorInput = getClass().getResourceAsStream(MainController.errorFile);
+		//BufferedReader errorbr = new BufferedReader(new InputStreamReader(errorInput));
+		
+		Object[][] myData = new Object[dataLength][];
+		FileReader errorInput = new FileReader("src/interfaceTest/resources/LogErrors_Suggestions.csv");
+		BufferedReader errorbr = new BufferedReader(errorInput);
+		
+		errorLine = errorbr.readLine();
+		errorLine = errorbr.readLine();
+		
+		
+		while(errorLine != null)
+		{
+			errorWords = errorLine.split(",(?=([^\"]|\"[^\"]*\")*$)");
+			myData[dataIndex] = errorWords; 
+			errorLine = errorbr.readLine();
+			dataIndex++;
+		}
+		errorbr.close();
+		return myData;
+	}
+	
+	/**
+	 * This function reads lines in the LogError_Suggestions.csv file until 
+	 * hitting a line that is null, incrementing dataLength as it goes. At 
+	 * the end, the value of dataLength will be the number of lines in the
+	 * file (excluding the header line). 
+	 * @throws IOException
+	 */
+	public void setDataLength() throws IOException
+	{
+		//InputStream errorInput = getClass().getResourceAsStream(MainController.errorFile);
+		//BufferedReader errorbr = new BufferedReader(new InputStreamReader(errorInput));
+		
+		FileReader errorInput = new FileReader("src/interfaceTest/resources/LogErrors_Suggestions.csv");
+		BufferedReader errorbr = new BufferedReader(errorInput);
+		
+		errorLine = errorbr.readLine();
+		errorLine = errorbr.readLine();
+		
+		while(errorLine != null)
+		{
+			dataLength++;
+			errorLine = errorbr.readLine();
+		}
+		errorbr.close();
+	}
 
+	void makeTable()
+	{
+		
+		table = new JTable(tableModel){
+			//Renders each columnn to fit the data
+			public Component prepareRenderer(TableCellRenderer renderer, int row, int column) 
+			{
+				Component component = super.prepareRenderer(renderer, row, column);
+				int rendererWidth = component.getPreferredSize().width;
+	           TableColumn tableColumn = getColumnModel().getColumn(column);
+	           tableColumn.setPreferredWidth(Math.max(rendererWidth + getIntercellSpacing().width, tableColumn.getPreferredWidth()));
+	           return component;
+			}
 
-
+		};
+		
+		//Whenever user clicks on a cell, the cell's contents appear in modify textbox
+		table.addMouseListener(new MouseAdapter(){
+			@Override
+		    public void mouseClicked(MouseEvent evnt) {
+		        if (evnt.getClickCount() == 1) 
+		            modifyText.setText((String)table.getValueAt(table.getSelectedRow(), table.getSelectedColumn()));
+		    }
+		});
+		
+		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		scrollPane.setViewportView(table);
+		
+	}
 	
 }

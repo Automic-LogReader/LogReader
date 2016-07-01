@@ -148,16 +148,27 @@ public class ProgressDialog extends JDialog {
 	//Generates formatted text file 
 	private static void generateCSVFile(String fileName, UserView view) throws IOException{
 		FileWriter writer = new FileWriter(fileName);
+		for (int i = 0; i< view.headers.length; i++){
+			writer.append(view.headers[i]);
+			writer.append(',');
+		}
+		writer.append('\n');
 		for (int i = 0; i < view.errorData.size(); i++){
 			//String errorMessage = "";
 			//writer.append(String.valueOf(view.errorData.get(i)[0]));
 			//writer.append(c)
+			writer.append(String.valueOf(view.errorData.get(i)[0]));
+			writer.append(',');
+			writer.append((CharSequence) view.errorData.get(i)[1]);
+			writer.append(',');
+			writer.append((CharSequence) view.errorData.get(i)[2]);
+			writer.append(',');
 			
-			for (int j = 1; j < 4; j++){
-				writer.append((CharSequence) view.errorData.get(i)[j]);
-				writer.append(',');
+				writer.append((CharSequence) view.errorData.get(i)[3]);
+				//writer.append(',');
 				//errorMessage += view.errorData.get(i)[j] + " ";
-			}
+			
+			writer.append(',');
 			writer.append((CharSequence) view.errorData.get(i)[4]);
 			//errorMessage += '\n';
 			//writer.append(errorMessage);

@@ -1,5 +1,6 @@
 U Code,Log Error Description,Suggested Solution
-U2001000,Job '&lt;JOB NAME>' could not be started. Error code '1314 (= A required privilege is not held by the client.)'.,Check to see if UAC (User Account Control) is on
+0,sdf,sdf
 U0034036,"There is no valid license for Agent 'WEB.SERVICE' (license class '1', license category 'Test System', platform 'EX.RA').",Please verify your license class
-U02000042,"Connection aborted. Error code '10053', error description: 'An established connection was aborted by the software in your host machine.'.",TBD
+U02000042,""Connection aborted. Error code '10053', error description: 'An established connection was aborted by the software in your host machine.'."",TBD,
 U02001040,"Error in function 'Connect', error code '10022', error description: 'An invalid argument was supplied.'.",TBD
+U2001000,Job '&lt;JOB NAME>' could not be started. Error code '1314 (= A required privilege is not held by the client.)'.,Check to see if UAC (User Account Control) is on
