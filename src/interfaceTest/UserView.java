@@ -1,6 +1,5 @@
 /**
  * file: UserView.java
- * 
  */
 
 package interfaceTest;
@@ -13,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import javax.swing.JFrame;
@@ -65,7 +65,8 @@ public class UserView extends JFrame{
 	//Holds the individual cell entries from errorLine
 	protected String [] errorWords;
 	//ArrayList to hold all the UCodes from the csv file
-	protected List<String> uCodes = new ArrayList<String>();
+	private Object[] entry;
+	private HashSet<String> uCodes = new HashSet<String>();
 	
 	//Holds the size of the file in bytes
 	private long fileSize;
@@ -319,62 +320,60 @@ public class UserView extends JFrame{
 			String uCode = null;
 			String timeStamp = null;
 			String errorMessage = "";
+			entry = null;
 			
 			boolean uCodeFound = false;
 			boolean timeStampFound = false;
 			
 			for (String s : logWords){
-				if (s.length() > 1){
-					if (uCodeFound){
-						errorMessage += (s + " ");
-					}
-					if (s.charAt(0) == 'U' && !uCodeFound){
-						
-						if (Character.isDigit(s.charAt(1))){
-							uCode = s;
-							uCodeFound = true;
-						}
-					}
-				}
+				//Timestamp will always come first
+				//Is this a reliable way to find timestamp?
+				//Maybe change to regex
 				if (s.length() == 19 && !timeStampFound){
 					timeStamp = s;
 					timeStampFound = true;
 				}
-			}
-			
-			//Testing the UCode from the file against the error UCodes
-			for(int i = 0; i < uCodes.size(); i++)
-			{
-				if (uCode == null) 
-					break;
-
-				else if (uCode.equals(uCodes.get(i)))
+				if(timeStampFound && !uCodeFound)
 				{
-					errorCount++;
-					Object[] entry = new Object[5];
-					entry[0] = errorCount;
-					entry[1] = timeStamp;
-					entry[2] = uCode;
-				
-					//Making new readers to go back to top of file
-					InputStream errorInput = getClass().getResourceAsStream(MainController.errorFile);
-					BufferedReader newbr = new BufferedReader(new InputStreamReader(errorInput));
-					newbr.readLine();
-				
-					//We read a new line until we get to the corresponding line
-					for(int j = -1; j < i; j++)
+					//Testing the UCode from the file against the error UCodes
+					for(int i = 0; i < uCodes.size(); i++)
 					{
-						errorLine = newbr.readLine();
+						if (uCodes.contains(s))
+						{
+							uCodeFound = true;
+							errorCount++;
+							entry = new Object[5];
+							entry[0] = errorCount;
+							entry[1] = timeStamp;
+							entry[2] = s;
+						
+							//Making new readers to go back to top of file
+							InputStream errorInput = getClass().getResourceAsStream(MainController.errorFile);
+							BufferedReader newbr = new BufferedReader(new InputStreamReader(errorInput));
+							newbr.readLine();
+						
+							//We read a new line until we get to the corresponding line
+							for(int j = -1; j < i; j++)
+							{
+								errorLine = newbr.readLine();
+							}
+						
+							errorWords = errorLine.split(",(?=([^\"]|\"[^\"]*\")*$)");
+							entry[4] = errorWords[2];
+							newbr.close();
+							break;
+						}
 					}
-				
-					errorWords = errorLine.split(",(?=([^\"]|\"[^\"]*\")*$)");
-				
-					entry[3] = errorMessage;
-					entry[4] = errorWords[2];
-					errorData.add(entry);
-					newbr.close();
 				}
-
+				else if(timeStampFound && uCodeFound)
+				{
+					errorMessage += (s + " ");
+					entry[3] = errorMessage;
+				}
+			}
+			if(entry != null)
+			{
+				errorData.add(entry);
 			}
 			logLine = logbr.readLine();
 		}
@@ -426,3 +425,4 @@ public class UserView extends JFrame{
 	}
 }
 	
+
