@@ -2,7 +2,6 @@ package interfaceTest;
 
 import java.awt.BorderLayout;
 import java.awt.Insets;
-import java.awt.List;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -107,10 +106,6 @@ public class ProgressDialog extends JDialog {
 		    int returnVal = chooser.showSaveDialog(getParent());
 		    if(returnVal == JFileChooser.APPROVE_OPTION) {
 		    	try {
-		    		File temp = new File(chooser.getSelectedFile().getName());
-		    		if (file.exists()){
-		    			//JOptionPane confirm = new JOptionPane()
-		    		}
 					generateCSVFile(chooser.getSelectedFile().getName(), view);
 				} catch (Exception e1) {
 					// TODO Auto-generated catch block
