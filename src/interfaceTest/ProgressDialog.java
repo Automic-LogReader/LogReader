@@ -60,6 +60,7 @@ public class ProgressDialog extends JDialog {
 		lblNewLabel_2.setAlignmentX(Component.CENTER_ALIGNMENT);
 		contentPanel.add(lblNewLabel_2); 
 		
+		
 		exitButton = new JButton("Close");
 		exitButton.setVisible(false);
 		exitButton.addActionListener(e -> {
@@ -149,17 +150,24 @@ public class ProgressDialog extends JDialog {
 		}
 		writer.append('\n');
 		for (int i = 0; i < view.errorData.size(); i++){
-			writer.append(String.valueOf(view.errorData.get(i)[0]));
-			writer.append(',');
-			writer.append((CharSequence) view.errorData.get(i)[1]);
-			writer.append(',');
-			writer.append((CharSequence) view.errorData.get(i)[2]);
-			writer.append(',');
-			String errorMsg = ((String) view.errorData.get(i)[3]).replace(',', ' ');
-			writer.append(errorMsg);
-			writer.append(',');
-			writer.append((CharSequence) view.errorData.get(i)[4]);
-			writer.append('\n');
+			String myLine = "";
+			int errorCount = (int)view.errorData.get(i)[0];
+			myLine += errorCount + ",";
+			String timeStamp = (String)view.errorData.get(i)[1] + ",";
+			myLine += timeStamp;
+			String keyWord = (String) view.errorData.get(i)[2];
+			if(keyWord.contains(","))
+				keyWord = "\"" + keyWord + "\"";
+			myLine += (keyWord + ",");
+			String errorMsg = (String) view.errorData.get(i)[3];
+			if(errorMsg.contains(","))
+				errorMsg = "\"" + errorMsg + "\"";
+			myLine += (errorMsg + ",");
+			String solutionMsg = (String) view.errorData.get(i)[4];
+			if(solutionMsg.contains(","))
+				solutionMsg = "\"" + solutionMsg + "\"";
+			myLine += solutionMsg + "\r\n";
+			writer.write(myLine);
 		}
 		
 		writer.flush();

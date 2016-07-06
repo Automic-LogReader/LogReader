@@ -9,8 +9,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -47,7 +45,7 @@ import javax.swing.JTable;
 public class UserView extends JFrame{
 
 	protected String [] headers = {"Error #", "Timestamp",
-								"U Code", "Error Message", "Suggested Solution"};
+								"Keywords", "Error Message", "Suggested Solution"};
 	protected List<Object[]> errorData = new ArrayList<Object[]>();
 	private Object [][] data;
 	private int errorCount;
@@ -66,7 +64,7 @@ public class UserView extends JFrame{
 	protected String [] errorWords;
 	//ArrayList to hold all the UCodes from the csv file
 	private Object[] entry;
-	private HashSet<String> uCodes = new HashSet<String>();
+	private HashSet<String> keyWords = new HashSet<String>();
 	
 	//Holds the size of the file in bytes
 	private long fileSize;
@@ -80,12 +78,10 @@ public class UserView extends JFrame{
 	protected JButton submitButton;
 	//Returns the User back to the Main Menu
 	protected JButton backButton;
-	//Visible if in Admin mode
-	protected JButton editButton;
-	
 	private JButton chooseFile;
 	private JScrollPane scrollPane;
 	private JTextArea textArea;
+	private AdminView admin;
 
 	/**
 	 * Create the frame.
@@ -101,14 +97,7 @@ public class UserView extends JFrame{
 			data[i] = temp;
 		}
 		errorCount = 0;
-		fillUCodes();
-		
-		
-		if (isAdmin){
-			this.setTitle("Administrator View");
-		} else {
-			this.setTitle("User View");
-		}
+		fillKeywords();
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 1000, 300);
@@ -195,21 +184,26 @@ public class UserView extends JFrame{
 		});
 		panel_1.add(backButton);
 		
-		panel_1.add(Box.createRigidArea(new Dimension(10,0)));
-		editButton = new JButton("Edit Entries");
-		editButton.setPreferredSize(new Dimension(135, 30));
-		editButton.addActionListener(e ->{
+		JButton editButton = new JButton("Edit Entries");
+		editButton.setPreferredSize(new Dimension(130, 30));
+		editButton.addActionListener(e -> {
 			try {
-				AdminView admin = new AdminView();
+				admin = new AdminView();
 				admin.setVisible(true);
 			} catch (Exception e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
+			
 		});
 		panel_1.add(editButton);
-		if (!isAdmin){
+		
+		if(isAdmin){
+			editButton.setVisible(true);
+			setTitle("Administrator View");
+		} else {
 			editButton.setVisible(false);
+			setTitle("User View");
 		}
 		
 		
@@ -241,7 +235,7 @@ public class UserView extends JFrame{
 	 * findLogErrors function. 
 	 * @throws IOException
 	 */
-	void fillUCodes() throws IOException
+	void fillKeywords() throws IOException
 	{
 		
 		//InputStream errorInput = getClass().getResourceAsStream(MainController.errorFile);
@@ -260,7 +254,7 @@ public class UserView extends JFrame{
 			errorWords = errorLine.split(",(?=([^\"]|\"[^\"]*\")*$)");
 			if(errorWords.length > 2)
 			{
-				uCodes.add(errorWords[0]);
+				keyWords.add(errorWords[0]);
 				errorLine = errorbr.readLine();
 			}
 			else
@@ -349,52 +343,54 @@ public class UserView extends JFrame{
 			String errorMessage = "";
 			entry = null;
 			
-			boolean uCodeFound = false;
+			boolean keywordFound = false;
 			boolean timeStampFound = false;
 			
-			for (String s : logWords){
+			for (String testWord : logWords){
 				//Timestamp will always come first
 				//Is this a reliable way to find timestamp?
 				//Maybe change to regex
-				if (s.length() == 19 && !timeStampFound){
-					timeStamp = s;
+				if (testWord.length() == 19 && !timeStampFound){
+					timeStamp = testWord;
 					timeStampFound = true;
 				}
-				if(timeStampFound && !uCodeFound)
+				if(timeStampFound && !keywordFound)
 				{
 					//Testing the UCode from the file against the error UCodes
-					for(int i = 0; i < uCodes.size(); i++)
+					if (keyWords.contains(testWord))
 					{
-						if (uCodes.contains(s))
+						keywordFound = true;
+						errorCount++;
+						entry = new Object[5];
+						entry[0] = errorCount;
+						entry[1] = timeStamp;
+						entry[2] = testWord;
+						
+						//Making new readers to go back to top of file
+						FileReader errorInput = new FileReader("src/interfaceTest/resources/LogErrors_Suggestions.csv");
+						BufferedReader newbr = new BufferedReader(errorInput);
+						newbr.readLine();
+						errorLine = newbr.readLine();
+						
+						//We read a new line until we get to the corresponding line
+						while(errorLine != null)
 						{
-							uCodeFound = true;
-							errorCount++;
-							entry = new Object[5];
-							entry[0] = errorCount;
-							entry[1] = timeStamp;
-							entry[2] = s;
-						
-							//Making new readers to go back to top of file
-							InputStream errorInput = getClass().getResourceAsStream(MainController.errorFile);
-							BufferedReader newbr = new BufferedReader(new InputStreamReader(errorInput));
-							newbr.readLine();
-						
-							//We read a new line until we get to the corresponding line
-							for(int j = -1; j < i; j++)
-							{
-								errorLine = newbr.readLine();
-							}
-						
+					
 							errorWords = errorLine.split(",(?=([^\"]|\"[^\"]*\")*$)");
-							entry[4] = errorWords[2];
-							newbr.close();
-							break;
+							if(testWord.equals(errorWords[0]))
+							{
+								entry[4] = errorWords[2];
+								break;
+							}
+							errorLine = newbr.readLine();
 						}
+						newbr.close();
 					}
 				}
-				else if(timeStampFound && uCodeFound)
+				
+				else if(timeStampFound && keywordFound)
 				{
-					errorMessage += (s + " ");
+					errorMessage += (testWord + " ");
 					entry[3] = errorMessage;
 				}
 			}

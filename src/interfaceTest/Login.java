@@ -136,10 +136,10 @@ public class Login extends JFrame {
 		contentPane.add(panel_2, BorderLayout.WEST);
 		panel_2.setLayout(new BorderLayout(0, 0));
 		
-		JLabel lblNewLabel_2 = new JLabel("Password:");
+		JLabel lblNewLabel_2 = new JLabel("Password:  ");
 		panel_2.add(lblNewLabel_2, BorderLayout.SOUTH);
 		
-		JLabel lblNewLabel_3 = new JLabel("Username:");
+		JLabel lblNewLabel_3 = new JLabel("Username:  ");
 		panel_2.add(lblNewLabel_3, BorderLayout.NORTH);
 		
 		JPanel panel_3 = new JPanel();
