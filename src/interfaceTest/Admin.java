@@ -34,12 +34,12 @@ public class Admin extends User {
 	
 	public Admin(MainMenu menu) throws IOException
 	{
-		super(menu);
+		super(menu, true);
 		dataIndex = 0;
 		setDataLength();
 		myData = new Object[dataLength][];
 		createDataTable();
-		EventQueue.invokeLater(new Runnable() {
+		/*EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {				
 					myView = new AdminView();
@@ -49,7 +49,7 @@ public class Admin extends User {
 					e.printStackTrace();
 				}
 			}
-		});
+		});*/
 	}
 	
 

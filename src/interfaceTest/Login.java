@@ -65,6 +65,8 @@ public class Login extends JFrame {
 		setBounds(200, 200, 450, 150);
 		setLocationRelativeTo(null);
 		
+		setTitle("Login");
+		
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);

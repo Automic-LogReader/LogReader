@@ -92,7 +92,7 @@ public class AdminView extends JFrame {
 		
 		setDataLength();
 		data = createDataTable();
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		//setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(200, 200, 1000, 300);
 		setLocationRelativeTo(null);
 		

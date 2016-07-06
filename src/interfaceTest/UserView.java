@@ -80,6 +80,9 @@ public class UserView extends JFrame{
 	protected JButton submitButton;
 	//Returns the User back to the Main Menu
 	protected JButton backButton;
+	//Visible if in Admin mode
+	protected JButton editButton;
+	
 	private JButton chooseFile;
 	private JScrollPane scrollPane;
 	private JTextArea textArea;
@@ -88,7 +91,7 @@ public class UserView extends JFrame{
 	 * Create the frame.
 	 * @throws IOException 
 	 */
-	public UserView(MainMenu menu) throws IOException {
+	public UserView(MainMenu menu, boolean isAdmin) throws IOException {
 		data = new Object[11][];
 		for(int i = 0; i < 11; i ++){
 			Object[] temp = new Object[5];
@@ -99,6 +102,13 @@ public class UserView extends JFrame{
 		}
 		errorCount = 0;
 		fillUCodes();
+		
+		
+		if (isAdmin){
+			this.setTitle("Administrator View");
+		} else {
+			this.setTitle("User View");
+		}
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 1000, 300);
@@ -184,6 +194,23 @@ public class UserView extends JFrame{
 			this.setVisible(false);
 		});
 		panel_1.add(backButton);
+		
+		panel_1.add(Box.createRigidArea(new Dimension(10,0)));
+		editButton = new JButton("Edit Entries");
+		editButton.setPreferredSize(new Dimension(135, 30));
+		editButton.addActionListener(e ->{
+			try {
+				AdminView admin = new AdminView();
+				admin.setVisible(true);
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		});
+		panel_1.add(editButton);
+		if (!isAdmin){
+			editButton.setVisible(false);
+		}
 		
 		
 		Component horizontalStrut_5 = Box.createHorizontalStrut(20);

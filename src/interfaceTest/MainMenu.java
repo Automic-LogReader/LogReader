@@ -9,6 +9,8 @@ package interfaceTest;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import java.awt.BorderLayout;
+import java.awt.GridLayout;
+
 import javax.swing.border.EmptyBorder;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -24,7 +26,11 @@ public class MainMenu extends JFrame {
 	protected JButton userButton;
 	protected JButton adminButton;
 	
+	private JButton exitButton;
+	
 	public MainMenu() {
+		prepareGUI();
+		/*
 		setTitle("Log Reader");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(400, 200, 300, 200);
@@ -48,7 +54,7 @@ public class MainMenu extends JFrame {
 		userButton = new JButton("User");
 
 		userButton.addActionListener(e -> {
-			user = new User(this);
+			user = new User(this, false);
 			this.setVisible(false);
 			
 		});
@@ -63,9 +69,60 @@ public class MainMenu extends JFrame {
 		});
 		panel_1.add(adminButton);
 				
-
+		exitButton = new JButton("Exit");*/
+		
 	}
 	
+	
+	private void prepareGUI(){
+		this.setTitle("Log Reader");
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setBounds(400, 200, 300, 200);
+		setLocationRelativeTo(null);
+		
+		contentPane = new JPanel();
+		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		
+		setContentPane(contentPane);
+		contentPane.setLayout(new BorderLayout(0, 0));
+			
+		JPanel panel = new JPanel();
+		contentPane.add(panel, BorderLayout.NORTH);
+			
+		JLabel lblNewLabel = new JLabel("Please select an option:");
+		panel.add(lblNewLabel);
+			
+		JPanel panel_1 = new JPanel();
+		contentPane.add(panel_1, BorderLayout.CENTER);
+			
+		userButton = new JButton("User");
+
+		userButton.addActionListener(e -> {
+			user = new User(this, false);
+			this.setVisible(false);
+			
+		});
+		panel_1.add(userButton);
+			
+		
+		adminButton = new JButton("Admin");
+		adminButton.addActionListener(e -> {
+			loginFrame = new Login(this);
+			loginFrame.setVisible(true);
+			this.setVisible(false);
+		});
+		panel_1.add(adminButton);
+				
+		JPanel panel_2 = new JPanel();
+		contentPane.add(panel_2, BorderLayout.SOUTH);
+		
+		exitButton = new JButton("Exit");
+		exitButton.addActionListener(e ->{
+			setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+			System.exit(0);
+		});
+		panel_2.add(exitButton);
+	}
 	
 	
 }
