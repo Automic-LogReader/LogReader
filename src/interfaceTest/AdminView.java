@@ -58,7 +58,7 @@ public class AdminView extends JFrame {
 	//Holds the line from the csv file (each part of the array is a cell from csv)
 	protected String [] errorWords;
 	//ArrayList that holds all the UCodes from the csv file
-	protected List<String> uCodes = new ArrayList<String>();
+	protected List<String> keyWords = new ArrayList<String>();
 	//Brings up the frame for an admin user
 	private AdminView myView;
 	//Number of rows in LogErrorSuggestions.csv
