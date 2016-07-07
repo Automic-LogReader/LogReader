@@ -21,6 +21,9 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
+import interfaceTest.CheckBoxList.CheckBoxListItem;
+import interfaceTest.CheckBoxList.CheckBoxListRenderer;
+
 import javax.swing.JOptionPane;
 
 import java.awt.BorderLayout;
@@ -34,11 +37,18 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.JTextArea;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JCheckBox;
+import javax.swing.SwingConstants;
 
 @SuppressWarnings("serial")
 
@@ -71,7 +81,7 @@ public class UserView extends JFrame{
 	//Divided by 100 to update the progress bar efficiently
 	private long fileSizeDivHundred;
 	
-	private JTable table;
+	private JTable errorTable;
 	private JPanel contentPane;
 	private JTextField filePath;
 	//User clicks after selecting directory for log file
@@ -79,10 +89,12 @@ public class UserView extends JFrame{
 	//Returns the User back to the Main Menu
 	protected JButton backButton;
 	private JButton chooseFile;
-	private JScrollPane scrollPane;
+	private JScrollPane errorScrollPane;
 	private JTextArea textArea;
 	private AdminView admin;
 
+	private CheckBoxListItem[] listOfKeyWords;
+	private int numKeyWords;
 	/**
 	 * Create the frame.
 	 * @throws IOException 
@@ -100,22 +112,22 @@ public class UserView extends JFrame{
 		fillKeywords();
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 1000, 300);
+		setBounds(100, 100, 1200, 280);
 		setLocationRelativeTo(null);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(new BorderLayout(0, 0));
 		
-		JPanel panel_1 = new JPanel();
-		contentPane.add(panel_1, BorderLayout.SOUTH);
-		panel_1.setLayout(new BoxLayout(panel_1, BoxLayout.X_AXIS));
+		JPanel rightMainPanel = new JPanel();
+		contentPane.add(rightMainPanel, BorderLayout.SOUTH);
+		rightMainPanel.setLayout(new BoxLayout(rightMainPanel, BoxLayout.X_AXIS));
 		
 		Component horizontalStrut_2 = Box.createHorizontalStrut(20);
-		panel_1.add(horizontalStrut_2);
+		rightMainPanel.add(horizontalStrut_2);
 		
 		Component horizontalStrut_4 = Box.createHorizontalStrut(20);
-		panel_1.add(horizontalStrut_4);
+		rightMainPanel.add(horizontalStrut_4);
 		
 		chooseFile = new JButton("Choose File");
 		chooseFile.addActionListener(e -> {
@@ -129,17 +141,17 @@ public class UserView extends JFrame{
 		    	 filePath.setText(chooser.getSelectedFile().getAbsolutePath());
 		    }
 		});
-		panel_1.add(chooseFile);
+		rightMainPanel.add(chooseFile);
 		
 		Component horizontalStrut = Box.createHorizontalStrut(20);
-		panel_1.add(horizontalStrut);
+		rightMainPanel.add(horizontalStrut);
 		
 		filePath = new JTextField();
-		panel_1.add(filePath);
+		rightMainPanel.add(filePath);
 		filePath.setColumns(10);
 		
 		Component horizontalStrut_1 = Box.createHorizontalStrut(20);
-		panel_1.add(horizontalStrut_1);
+		rightMainPanel.add(horizontalStrut_1);
 		
 		submitButton = new JButton("Submit");
 		submitButton.setPreferredSize(new Dimension(80, 30));
@@ -172,9 +184,9 @@ public class UserView extends JFrame{
 							}
 					}
 				});
-		panel_1.add(submitButton);
+		rightMainPanel.add(submitButton);
 		
-		panel_1.add(Box.createRigidArea(new Dimension(10,0)));
+		rightMainPanel.add(Box.createRigidArea(new Dimension(10,0)));
 		
 		backButton = new JButton("Back");
 		backButton.setPreferredSize(new Dimension(80, 30));
@@ -182,9 +194,9 @@ public class UserView extends JFrame{
 			menu.setVisible(true);
 			this.setVisible(false);
 		});
-		panel_1.add(backButton);
+		rightMainPanel.add(backButton);
 		
-		panel_1.add(Box.createRigidArea(new Dimension(10,0)));
+		rightMainPanel.add(Box.createRigidArea(new Dimension(10,0)));
 		
 		
 		JButton editButton = new JButton("Edit Entries");
@@ -199,7 +211,7 @@ public class UserView extends JFrame{
 			}
 			
 		});
-		panel_1.add(editButton);
+		rightMainPanel.add(editButton);
 		
 		if(isAdmin){
 			editButton.setVisible(true);
@@ -211,23 +223,43 @@ public class UserView extends JFrame{
 		
 		
 		Component horizontalStrut_5 = Box.createHorizontalStrut(20);
-		panel_1.add(horizontalStrut_5);
+		rightMainPanel.add(horizontalStrut_5);
 		
 		Component horizontalStrut_3 = Box.createHorizontalStrut(20);
-		panel_1.add(horizontalStrut_3);
+		rightMainPanel.add(horizontalStrut_3);
 		
-		JPanel panel = new JPanel();
-		contentPane.add(panel, BorderLayout.CENTER);
-		panel.setLayout(new BorderLayout(0, 0));
-		
-		Component verticalStrut = Box.createVerticalStrut(20);
-		panel.add(verticalStrut, BorderLayout.SOUTH);
+		JPanel mainPanel = new JPanel();
+		contentPane.add(mainPanel, BorderLayout.CENTER);
+		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.X_AXIS));
 	
 		DefaultTableModel tableModel = new DefaultTableModel(data, headers);
 		
-		table = new JTable(data, headers);
-		scrollPane = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		panel.add(scrollPane, BorderLayout.CENTER);
+		JList<CheckBoxListItem> list = new JList<CheckBoxListItem>(listOfKeyWords);
+		list.setCellRenderer(new CheckBoxListRenderer());
+		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		list.addMouseListener(new MouseAdapter(){
+			 public void mouseClicked(MouseEvent event) {
+		            @SuppressWarnings("unchecked")
+					JList<CheckBoxListItem> list =
+		               (JList<CheckBoxListItem>) event.getSource();
+		            // Get index of item clicked
+		            int index = list.locationToIndex(event.getPoint());
+		            CheckBoxListItem item = (CheckBoxListItem) list.getModel()
+		                  .getElementAt(index);
+		            // Toggle selected state
+		            item.setSelected(!item.isSelected());
+		            // Repaint cell
+		            list.repaint(list.getCellBounds(index, index));
+		         }
+		});
+		JScrollPane keyWordScrollPane = new JScrollPane(list);
+		mainPanel.add(keyWordScrollPane);
+		
+		errorTable = new JTable(data, headers);
+		errorScrollPane = new JScrollPane(errorTable, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		mainPanel.add(errorScrollPane);
+		
+		setVisible(true);
 	}
 	
 	
@@ -240,9 +272,6 @@ public class UserView extends JFrame{
 	 */
 	void fillKeywords() throws IOException
 	{
-		
-		//InputStream errorInput = getClass().getResourceAsStream(MainController.errorFile);
-		//BufferedReader errorbr = new BufferedReader(new InputStreamReader(errorInput));
 		
 		FileReader errorInput = new FileReader("src/interfaceTest/resources/LogErrors_Suggestions.csv");
 		BufferedReader errorbr = new BufferedReader(errorInput);
@@ -264,6 +293,16 @@ public class UserView extends JFrame{
 				break;
 		}
 		errorbr.close();
+		
+		numKeyWords = keyWords.size();
+		listOfKeyWords = new CheckBoxListItem[numKeyWords + 1];
+		listOfKeyWords[0] = new CheckBoxListItem("All KeyWords");
+		int index = 1;
+		for (String s : keyWords){
+			System.out.println(s);
+			listOfKeyWords[index] = new CheckBoxListItem(s);
+			index++;
+		}
 	}
 	
 	/**
@@ -399,6 +438,9 @@ public class UserView extends JFrame{
 			}
 			if(entry != null)
 			{
+				if (entry[3] == null){
+					entry[3] = " ";
+				}
 				errorData.add(entry);
 			}
 			logLine = logbr.readLine();
@@ -423,17 +465,14 @@ public class UserView extends JFrame{
 	void makeTable()
 	{
 		DefaultTableModel tableModel = new DefaultTableModel(data, headers) {
-
 		    @Override
 		    public boolean isCellEditable(int row, int column) {
 		       //all cells false
 		       return false;
 		    }
-		    
-		    
 		};
 		
-		table = new JTable(tableModel){
+		errorTable = new JTable(tableModel){
 			//Renders each columnn to fit the data
 			public Component prepareRenderer(TableCellRenderer renderer, int row, int column) 
 			{
@@ -443,11 +482,10 @@ public class UserView extends JFrame{
 	           tableColumn.setPreferredWidth(Math.max(rendererWidth + getIntercellSpacing().width, tableColumn.getPreferredWidth()));
 	           return component;
 			}
-
 		};
 		
-		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-		scrollPane.setViewportView(table);
+		errorTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		errorScrollPane.setViewportView(errorTable);
 	}
 }
 	
