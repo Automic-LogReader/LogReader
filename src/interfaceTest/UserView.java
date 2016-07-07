@@ -37,6 +37,8 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -75,7 +77,8 @@ public class UserView extends JFrame{
 	//ArrayList to hold all the UCodes from the csv file
 	private Object[] entry;
 	private HashSet<String> keyWords = new HashSet<String>();
-	
+	private HashSet<String> originalKeyWords;
+	private boolean hasCopiedOriginalKeyWords;
 	//Holds the size of the file in bytes
 	private long fileSize;
 	//Divided by 100 to update the progress bar efficiently
@@ -100,6 +103,7 @@ public class UserView extends JFrame{
 	 * @throws IOException 
 	 */
 	public UserView(MainMenu menu, boolean isAdmin) throws IOException {
+		hasCopiedOriginalKeyWords = false;
 		data = new Object[11][];
 		for(int i = 0; i < 11; i ++){
 			Object[] temp = new Object[5];
@@ -297,11 +301,19 @@ public class UserView extends JFrame{
 		numKeyWords = keyWords.size();
 		listOfKeyWords = new CheckBoxListItem[numKeyWords + 1];
 		listOfKeyWords[0] = new CheckBoxListItem("All KeyWords");
+		//All Keywords selected by default
+		listOfKeyWords[0].setSelected(true);
+		
+		
 		int index = 1;
 		for (String s : keyWords){
-			System.out.println(s);
 			listOfKeyWords[index] = new CheckBoxListItem(s);
 			index++;
+		}
+		
+		if (!hasCopiedOriginalKeyWords){
+			originalKeyWords = new HashSet<String>(keyWords);
+			hasCopiedOriginalKeyWords = true;
 		}
 	}
 	
@@ -322,6 +334,7 @@ public class UserView extends JFrame{
 			return;
 		}
 		try {
+			if (noCheckBoxSelected()) return;
 			dialog = new ProgressDialog(file, this);
 			dialog.setVisible(true);
 			} catch (Exception e) {
@@ -354,6 +367,8 @@ public class UserView extends JFrame{
 	
 	void parseErrors(File file, ProgressDialog pd) throws IOException
 	{
+		updateKeyWords();
+		
 		int percent = 0;
 		int oldPercent = 0;
 		
@@ -486,6 +501,33 @@ public class UserView extends JFrame{
 		
 		errorTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		errorScrollPane.setViewportView(errorTable);
+	}
+	
+	void updateKeyWords(){
+		if (listOfKeyWords[0].isSelected()){
+			System.out.println("default selection");
+			keyWords.addAll(originalKeyWords);
+			return;
+		}
+		else {
+			keyWords.clear();
+			for (int i = 1; i <= numKeyWords; i++){
+				if (listOfKeyWords[i].isSelected()){
+					System.out.println("Added:" + listOfKeyWords[i].toString());
+					keyWords.add(listOfKeyWords[i].toString());
+				}
+			}
+		}
+	}
+	
+	boolean noCheckBoxSelected(){
+		for (int i = 0; i <= numKeyWords; i++){
+			if (listOfKeyWords[i].isSelected()){
+				return false;
+			}
+		}
+		JOptionPane.showMessageDialog(null, "Please select a checkbox");
+		return true;
 	}
 }
 	
