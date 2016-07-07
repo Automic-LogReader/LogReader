@@ -184,6 +184,9 @@ public class UserView extends JFrame{
 		});
 		panel_1.add(backButton);
 		
+		panel_1.add(Box.createRigidArea(new Dimension(10,0)));
+		
+		
 		JButton editButton = new JButton("Edit Entries");
 		editButton.setPreferredSize(new Dimension(130, 30));
 		editButton.addActionListener(e -> {

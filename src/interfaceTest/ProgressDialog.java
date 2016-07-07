@@ -107,7 +107,10 @@ public class ProgressDialog extends JDialog {
 		    int returnVal = chooser.showSaveDialog(getParent());
 		    if(returnVal == JFileChooser.APPROVE_OPTION) {
 		    	try {
-					generateCSVFile(chooser.getSelectedFile().getName(), view);
+					//generateCSVFile(chooser.getSelectedFile().getName(), view);
+		    		CSVFileWriter CSVWriter = new CSVFileWriter(view);
+		    		CSVWriter.writeTo(chooser.getSelectedFile().getName());
+		    		
 				} catch (Exception e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
@@ -142,6 +145,7 @@ public class ProgressDialog extends JDialog {
 	}
 	
 	//Generates formatted CSV file 
+	
 	private static void generateCSVFile(String fileName, UserView view) throws IOException{
 		FileWriter writer = new FileWriter(fileName);
 		for (int i = 0; i< view.headers.length; i++){
