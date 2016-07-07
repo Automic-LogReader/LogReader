@@ -99,7 +99,7 @@ public class AdminView extends JFrame {
 		setContentPane(contentPane);
 		setDataLength();
 		data = createDataTable();
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(200, 200, 1000, 300);
 		getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
 		
