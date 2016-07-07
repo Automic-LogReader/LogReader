@@ -11,6 +11,7 @@
 package interfaceTest;
 
 import java.awt.Component;
+import java.awt.Dimension;
 
 import javax.swing.JFrame;
 import javax.swing.table.AbstractTableModel;
@@ -33,6 +34,8 @@ import java.util.List;
 import javax.swing.JScrollPane;
 import java.awt.GridBagConstraints;
 import javax.swing.JTable;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 
@@ -80,7 +83,6 @@ public class AdminView extends JFrame {
 	Object[] options = {"Yes", "Cancel"};
 	private List <String> list = new ArrayList<String>();
 	Object [][] data;
-	JScrollPane scrollPane;
 	DefaultTableModel tableModel;
 	
 	/**
@@ -90,31 +92,19 @@ public class AdminView extends JFrame {
 	 */
 	public AdminView() throws IOException {
 		
-		setDataLength();
-		data = createDataTable();
-		//setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(200, 200, 1000, 300);
 		setLocationRelativeTo(null);
 		
 		JComponent contentPane = new JPanel();
-		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
-		GridBagLayout gbl_contentPane = new GridBagLayout();
-		gbl_contentPane.columnWidths = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-		gbl_contentPane.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0};
-		gbl_contentPane.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
-		gbl_contentPane.rowWeights = new double[]{1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
-		contentPane.setLayout(gbl_contentPane);
+		setDataLength();
+		data = createDataTable();
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setBounds(200, 200, 1000, 300);
+		getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
 		
-		scrollPane = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		GridBagConstraints gbc_scrollPane = new GridBagConstraints();
-		gbc_scrollPane.gridheight = 4;
-		gbc_scrollPane.gridwidth = 28;
-		gbc_scrollPane.insets = new Insets(0, 0, 5, 0);
-		gbc_scrollPane.fill = GridBagConstraints.BOTH;
-		gbc_scrollPane.gridx = 0;
-		gbc_scrollPane.gridy = 0;
-		contentPane.add(scrollPane, gbc_scrollPane);
+		JScrollPane scrollPane = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		getContentPane().add(scrollPane);
 		
 		tableModel = new DefaultTableModel(data, columnHeaders) {
 
@@ -126,13 +116,73 @@ public class AdminView extends JFrame {
 		    
 		    
 		};
-		makeTable();
+		table = new JTable(tableModel){
+			//Renders each columnn to fit the data
+			public Component prepareRenderer(TableCellRenderer renderer, int row, int column) 
+			{
+				Component component = super.prepareRenderer(renderer, row, column);
+				int rendererWidth = component.getPreferredSize().width;
+	           TableColumn tableColumn = getColumnModel().getColumn(column);
+	           tableColumn.setPreferredWidth(Math.max(rendererWidth + getIntercellSpacing().width, tableColumn.getPreferredWidth()));
+	           return component;
+			}
+
+		};
+		
+		//Whenever user clicks on a cell, the cell's contents appear in modify textbox
+		/*
+		table.addMouseListener(new MouseAdapter(){
+			@Override
+		    public void mouseClicked(MouseEvent evnt) {
+		        if (evnt.getClickCount() == 1) 
+		            modifyText.setText((String)table.getValueAt(table.getSelectedRow(), table.getSelectedColumn()));
+		    }
+		});
+		*/
+		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		scrollPane.setViewportView(table);
+		
+		Component rigidArea_3 = Box.createRigidArea(new Dimension(20, 20));
+		getContentPane().add(rigidArea_3);
+		
+		JPanel panel = new JPanel();
+		getContentPane().add(panel);
+		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+		
+		JPanel panel_1 = new JPanel();
+		panel.add(panel_1);
+		panel_1.setLayout(new BoxLayout(panel_1, BoxLayout.X_AXIS));
+		
+		JButton addButton = new JButton("Add Entry");
+		addButton.addActionListener(e -> {
+			AddDialog add = new AddDialog(this);
+			add.setVisible(true);
+		});
+		panel_1.add(addButton);
+		
+		Component rigidArea = Box.createRigidArea(new Dimension(20, 20));
+		panel_1.add(rigidArea);
+		
+		JButton modifyButton = new JButton("Modify Entry");
+		modifyButton.setHorizontalAlignment(SwingConstants.RIGHT);
+		modifyButton.addActionListener(e -> {
+			if(table.getSelectedRow() != -1)
+			{
+				int rowSelect = table.getSelectedRow();
+				ModifyDialog modify = new ModifyDialog((String)table.getValueAt(rowSelect, 0),
+													 (String)table.getValueAt(rowSelect, 1),
+													 (String)table.getValueAt(rowSelect, 2), 
+													 this, rowSelect);
+				modify.setVisible(true);
+			}
+			else JOptionPane.showMessageDialog(null, "Please select an entry");	
+		});
+		panel_1.add(modifyButton);
+		
+		Component rigidArea_1 = Box.createRigidArea(new Dimension(20, 20));
+		panel_1.add(rigidArea_1);
 		
 		JButton deleteButton = new JButton("Delete Entry");
-		GridBagConstraints gbc_deleteButton = new GridBagConstraints();
-		gbc_deleteButton.insets = new Insets(0, 0, 5, 5);
-		gbc_deleteButton.gridx = 1;
-		gbc_deleteButton.gridy = 4;
 		deleteButton.addActionListener(e -> {
 			
 			int viewIndex = table.getSelectedRow();
@@ -152,9 +202,7 @@ public class AdminView extends JFrame {
 					model.removeRow(modelIndex);
 					try {
 						deleteData(viewIndex);
-						setDataLength();
-						data = createDataTable();
-						makeTable();
+						//makeTable();
 					} catch (Exception e1) {
 					e1.printStackTrace();
 					}
@@ -162,130 +210,29 @@ public class AdminView extends JFrame {
 			}
 			    
 		});
-		contentPane.add(deleteButton, gbc_deleteButton);
+		panel_1.add(deleteButton);
+		
+		Component rigidArea_4 = Box.createRigidArea(new Dimension(20, 20));
+		panel.add(rigidArea_4);
+		
+		JPanel panel_2 = new JPanel();
+		panel.add(panel_2);
+		panel_2.setLayout(new BoxLayout(panel_2, BoxLayout.X_AXIS));
+		
+		JButton saveButton = new JButton("Save to Default");
+		//This will save the data as is and go back to that
+		panel_2.add(saveButton);
 		
 		
-		JLabel lblNewLabel_1 = new JLabel("UCode:", SwingConstants.RIGHT);
-		GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
-		gbc_lblNewLabel_1.insets = new Insets(0, 0, 5, 5);
-		gbc_lblNewLabel_1.gridx = 16;
-		gbc_lblNewLabel_1.gridy = 4;
-		contentPane.add(lblNewLabel_1, gbc_lblNewLabel_1);
+		Component rigidArea_2 = Box.createRigidArea(new Dimension(20, 20));
+		panel_2.add(rigidArea_2);
 		
-		uText = new JTextField();
-		GridBagConstraints gbc_uText = new GridBagConstraints();
-		gbc_uText.gridwidth = 11;
-		gbc_uText.insets = new Insets(0, 0, 5, 0);
-		gbc_uText.fill = GridBagConstraints.HORIZONTAL;
-		gbc_uText.gridx = 17;
-		gbc_uText.gridy = 4;
-		contentPane.add(uText, gbc_uText);
-		uText.setColumns(10);
+		JButton defaultButton = new JButton("Revert to Default");
+		panel_2.add(defaultButton);
 		
-		JLabel lblNewLabel_2 = new JLabel("Error Message:", SwingConstants.RIGHT);
-		GridBagConstraints gbc_lblNewLabel_2 = new GridBagConstraints();
-		gbc_lblNewLabel_2.insets = new Insets(0, 0, 5, 5);
-		gbc_lblNewLabel_2.gridx = 16;
-		gbc_lblNewLabel_2.gridy = 5;
-		contentPane.add(lblNewLabel_2, gbc_lblNewLabel_2);
-		
-		errorText = new JTextField();
-		GridBagConstraints gbc_errorText = new GridBagConstraints();
-		gbc_errorText.gridwidth = 11;
-		gbc_errorText.insets = new Insets(0, 0, 5, 0);
-		gbc_errorText.fill = GridBagConstraints.HORIZONTAL;
-		gbc_errorText.gridx = 17;
-		gbc_errorText.gridy = 5;
-		contentPane.add(errorText, gbc_errorText);
-		errorText.setColumns(10);
-		
-		JLabel lblNewLabel = new JLabel("Change to:", SwingConstants.RIGHT);
-		GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
-		gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
-		gbc_lblNewLabel.gridx = 1;
-		gbc_lblNewLabel.gridy = 6;
-		contentPane.add(lblNewLabel, gbc_lblNewLabel);
-		
-		modifyText = new JTextField();
-		GridBagConstraints gbc_modifyText = new GridBagConstraints();
-		gbc_modifyText.gridwidth = 11;
-		gbc_modifyText.insets = new Insets(0, 0, 5, 5);
-		gbc_modifyText.fill = GridBagConstraints.HORIZONTAL;
-		gbc_modifyText.gridx = 2;
-		gbc_modifyText.gridy = 6;
-		contentPane.add(modifyText, gbc_modifyText);
-		modifyText.setColumns(10);
-		
-		JLabel lblNewLabel_3 = new JLabel("Suggested Solution:");
-		GridBagConstraints gbc_lblNewLabel_3 = new GridBagConstraints();
-		gbc_lblNewLabel_3.insets = new Insets(0, 0, 5, 5);
-		gbc_lblNewLabel_3.gridx = 16;
-		gbc_lblNewLabel_3.gridy = 6;
-		contentPane.add(lblNewLabel_3, gbc_lblNewLabel_3);
-		
-		solutionText = new JTextField();
-		GridBagConstraints gbc_solutionText = new GridBagConstraints();
-		gbc_solutionText.gridwidth = 11;
-		gbc_solutionText.insets = new Insets(0, 0, 5, 0);
-		gbc_solutionText.fill = GridBagConstraints.HORIZONTAL;
-		gbc_solutionText.gridx = 17;
-		gbc_solutionText.gridy = 6;
-		contentPane.add(solutionText, gbc_solutionText);
-		solutionText.setColumns(10);
-		
-		JButton modifyButton = new JButton("Modify Entry");
-		GridBagConstraints gbc_modifyButton = new GridBagConstraints();
-		gbc_modifyButton.insets = new Insets(0, 0, 0, 5);
-		gbc_modifyButton.gridx = 1;
-		gbc_modifyButton.gridy = 7;
-		modifyButton.addActionListener(e -> {
-			if(table.getSelectedRow() != -1)
-			{
-				if (modifyText.getText().equals(""))
-					JOptionPane.showMessageDialog(null, "No entry given");
-				else
-					table.setValueAt(modifyText.getText(), table.getSelectedRow(), table.getSelectedColumn());
-			}
-				
-				try {
-					modifyData(modifyText.getText(), table.getSelectedRow(), table.getSelectedColumn());
-					setDataLength();
-					data = createDataTable();
-					makeTable();
-				} catch (Exception e1) {
-					
-					e1.printStackTrace();
-				}
-		});
-		contentPane.add(modifyButton, gbc_modifyButton);
-		
-		JButton addButton = new JButton("Add Entry");
-		GridBagConstraints gbc_addButton = new GridBagConstraints();
-		gbc_addButton.insets = new Insets(0, 0, 0, 5);
-		gbc_addButton.gridx = 16;
-		gbc_addButton.gridy = 7;
-		addButton.addActionListener(e -> {
-			if (uText.getText().equals("") || errorText.getText().equals("") || 
-					solutionText.getText().equals(""))
-				JOptionPane.showMessageDialog(null, "Please fill out all entries");
-			else
-			{
-				DefaultTableModel model = (DefaultTableModel)(table.getModel());
-				model.addRow(new Object[] {uText.getText(), errorText.getText(), solutionText.getText()});
-				try {
-					addData(uText.getText(), errorText.getText(), solutionText.getText());
-					setDataLength();
-					data = createDataTable();
-					makeTable();
-				} catch (Exception e1) {
-					
-					e1.printStackTrace();
-				}
-			}	
-		});
-		contentPane.add(addButton, gbc_addButton);
-		
-	
+		Component rigidArea_5 = Box.createRigidArea(new Dimension(20, 20));
+		panel.add(rigidArea_5);
+
 	}
 	
 	/**
@@ -297,8 +244,19 @@ public class AdminView extends JFrame {
 	 * @throws IOException 
 	 */
 	
-	void modifyData(String newEntry, int row, int col) throws IOException
+	
+	//NEED to have table reflect the changes after modifying and adding, otherwise things get wonky
+	void modifyData(String keyWord, String message, String solution, String choice, int row) throws IOException
 	{
+		DefaultTableModel model = (DefaultTableModel)(table.getModel());
+		if(choice.equals("MODIFY"))
+		{
+			table.setValueAt(keyWord, row, 0);
+			table.setValueAt(message, row, 1);
+			table.setValueAt(solution, row, 2);
+		}
+		else if(choice.equals("ADD"))
+			model.addRow(new Object[] {keyWord, message, solution});
 		
 		File oldFile = new File ("src/interfaceTest/resources/LogErrors_Suggestions.csv");
 		File temp = new File("src/interfaceTest/resources/temp.csv");
@@ -318,27 +276,33 @@ public class AdminView extends JFrame {
 		
 		errorLine = errorbr.readLine();
 		
+		String newLine = "";
+		//Commas are added between each entry so they are put in individual cells in the csv
+		if(keyWord.contains(","))
+			if(!keyWord.contains("\""))
+				keyWord = "\"" + keyWord + "\"";
+		newLine += (keyWord + ",");
+		// \" is added so that if the message contains a comma, it isn't broken up into separate cells
+		if(message.contains(","))
+			if(!message.contains("\""))
+				message = "\"" + message + "\"";
+		newLine += (message + ",");
+		if(solution.contains(","))
+			if(!solution.contains("\""))
+				solution = "\"" + solution + "\"";
+		newLine += (solution + "\r\n");
+		list.add(newLine);
+		
 		while (errorLine != null)
 		{
-
-			//We've hit the row that we want to modify
-			if(i == row)
-			{	
-				String newLine = "";
-				//If the user's entry includes a comma, make sure CSV
-				//file doesn't break it up by adding \"
-				if(newEntry.contains(","))
-					newEntry = "\"" + newEntry + "\"";
-				String[] theLine = errorLine.split(",(?=([^\"]|\"[^\"]*\")*$)");
-				//Replace corresponding index depending on column we want to modify
-				theLine[col] = newEntry;
-					
-				//Add commas so each entry goes in its individual cell
-				for(int j = 0; j < theLine.length; j++)
-					newLine = newLine + theLine[j] + ",";
-				list.add(newLine + "\r\n");
+			if(choice.equals("MODIFY"))
+			{
+				//If we're straight modifying rather than adding, 
+				//then we skip the row 
+				if(i != row)
+					list.add(errorLine + "\r\n");
 			}
-			else
+			else if(choice.equals("ADD"))
 				list.add(errorLine + "\r\n");
 			errorLine = errorbr.readLine();
 			i++;
@@ -356,10 +320,13 @@ public class AdminView extends JFrame {
 		if(oldFile.delete())
 		{
 			temp.renameTo(oldFile);
-			System.out.println("modify success");
+			System.out.println("modify/add success");
 		}
 		else
-			System.out.println("modify failed");
+		{	
+			temp.delete();
+			System.out.println("modify/add failed");
+		}
 
 	}
 	
@@ -406,68 +373,13 @@ public class AdminView extends JFrame {
 			System.out.println("delete success");
 		}
 		else
+		{	
+			temp.delete();
 			System.out.println("delete failed");
+		}
 
 	}
 
-	/**
-	 * When the user has filled out all the fields (ucode, message, and solution) and
-	 * clicks on the add entry function, this function writes a new entry into 
-	 * LogErrors_Suggestions.csv, with each field in its own cell. 
-	 * @param ucode - A code that represents the error 
-	 * @param message - The message that goes along with the error saying what went wrong
-	 * @param solution - A suggested solution on how to fix the above error
-	 * @throws IOException
-	 */
-	void addData(String ucode, String message, String solution) throws IOException
-	{
-		
-		list.clear();
-		String newLine = "";
-		File oldFile = new File ("src/interfaceTest/resources/LogErrors_Suggestions.csv");
-		File temp = new File("src/interfaceTest/resources/temp.csv");
-		FileReader errorInput = new FileReader(oldFile);
-		BufferedReader errorbr = new BufferedReader(errorInput);
-		FileWriter fw = new FileWriter (temp, true);
-		
-		String errorLine = errorbr.readLine();
-		fw.write(errorLine + "\r\n");
-		errorLine = errorbr.readLine();
-		
-		//Commas are added between each entry so they are put in individual cells in the csv
-		if(ucode.contains(","))
-			ucode = "\"" + ucode + "\"";
-		newLine += (ucode + ",");
-		// \" is added so that if the message contains a comma, it isn't broken up into separate cells
-		if(message.contains(","))
-			message = "\"" + message + "\"";
-		newLine += (message + ",");
-		if(solution.contains(","))
-			solution = "\"" + solution + "\"";
-		newLine += (solution + "\r\n");
-		list.add(newLine);
-		while(errorLine != null)
-		{
-			list.add(errorLine + "\r\n");
-			errorLine = errorbr.readLine();
-		}
-		Collections.sort(list);
-		for(int i = 0; i < list.size(); i++)
-		{
-			fw.write(list.get(i));
-		}
-		fw.close();
-		errorbr.close();
-		errorInput.close();
-		if(oldFile.delete())
-		{
-			temp.renameTo(oldFile);
-			System.out.println("add success");
-		}
-		else
-			System.out.println("add failed");
-
-	}
 
 	/**
 	 * This function fills myData with arrays. Each array represents a line from
@@ -525,34 +437,5 @@ public class AdminView extends JFrame {
 		errorbr.close();
 	}
 
-	void makeTable()
-	{
-		
-		table = new JTable(tableModel){
-			//Renders each columnn to fit the data
-			public Component prepareRenderer(TableCellRenderer renderer, int row, int column) 
-			{
-				Component component = super.prepareRenderer(renderer, row, column);
-				int rendererWidth = component.getPreferredSize().width;
-	           TableColumn tableColumn = getColumnModel().getColumn(column);
-	           tableColumn.setPreferredWidth(Math.max(rendererWidth + getIntercellSpacing().width, tableColumn.getPreferredWidth()));
-	           return component;
-			}
-
-		};
-		
-		//Whenever user clicks on a cell, the cell's contents appear in modify textbox
-		table.addMouseListener(new MouseAdapter(){
-			@Override
-		    public void mouseClicked(MouseEvent evnt) {
-		        if (evnt.getClickCount() == 1) 
-		            modifyText.setText((String)table.getValueAt(table.getSelectedRow(), table.getSelectedColumn()));
-		    }
-		});
-		
-		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-		scrollPane.setViewportView(table);
-		
-	}
 	
 }

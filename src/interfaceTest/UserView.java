@@ -37,8 +37,6 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -47,10 +45,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.JTextArea;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JCheckBox;
-import javax.swing.SwingConstants;
 
 @SuppressWarnings("serial")
 

@@ -113,7 +113,7 @@ public class Login extends JFrame {
 							if (checkAdmin(inputUsername, inputPassword))
 							{
 								admin = new Admin(menu);
-								confirmed = true;
+								makeInvis();
 							}
 							else
 								JOptionPane.showMessageDialog(null, "The username or password is incorrect");
@@ -122,6 +122,7 @@ public class Login extends JFrame {
 						}
 					}
 				});
+		
 		panel_1.add(submitButton);
 		
 		backButton = new JButton("Back");
@@ -155,8 +156,6 @@ public class Login extends JFrame {
 		panel_3.add(passwordText, BorderLayout.SOUTH);
 		passwordText.setColumns(10);
 		
-		if (confirmed)
-			this.setVisible(false);
 	}
 
 	
@@ -211,5 +210,10 @@ public class Login extends JFrame {
 				return false;
 		}
 		return true;
+	}
+	
+	void makeInvis()
+	{
+		this.setVisible(false);
 	}
 }
