@@ -9,9 +9,15 @@ package interfaceTest;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import java.awt.BorderLayout;
+import java.awt.Component;
+
 import javax.swing.border.EmptyBorder;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import net.miginfocom.swing.MigLayout;
+import javax.swing.BoxLayout;
+import java.awt.FlowLayout;
+import javax.swing.SwingConstants;
 
 @SuppressWarnings("serial")
 public class MainMenu extends JFrame {
@@ -42,16 +48,16 @@ public class MainMenu extends JFrame {
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		
 		setContentPane(contentPane);
-		contentPane.setLayout(new BorderLayout(0, 0));
+		contentPane.setLayout(new MigLayout("", "[260px]", "[]15[]"));
 			
-		JPanel panel = new JPanel();
-		contentPane.add(panel, BorderLayout.NORTH);
+		JPanel topPanel = new JPanel();
+		contentPane.add(topPanel, "cell 0 0,growx,aligny top");
 			
 		JLabel lblNewLabel = new JLabel("Please select an option:");
-		panel.add(lblNewLabel);
+		topPanel.add(lblNewLabel);
 			
-		JPanel panel_1 = new JPanel();
-		contentPane.add(panel_1, BorderLayout.CENTER);
+		JPanel middlePanel = new JPanel();
+		contentPane.add(middlePanel, "cell 0 1,grow");
 			
 		userButton = new JButton("User");
 
@@ -60,7 +66,9 @@ public class MainMenu extends JFrame {
 			this.setVisible(false);
 			
 		});
-		panel_1.add(userButton);
+		userButton.setAlignmentY(Component.CENTER_ALIGNMENT);
+		middlePanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		middlePanel.add(userButton);
 			
 		
 		adminButton = new JButton("Admin");
@@ -69,17 +77,18 @@ public class MainMenu extends JFrame {
 			loginFrame.setVisible(true);
 			this.setVisible(false);
 		});
-		panel_1.add(adminButton);
+		adminButton.setAlignmentY(Component.CENTER_ALIGNMENT);
+		middlePanel.add(adminButton);
 				
-		JPanel panel_2 = new JPanel();
-		contentPane.add(panel_2, BorderLayout.SOUTH);
+		JPanel bottomPanel = new JPanel();
+		contentPane.add(bottomPanel, "cell 0 2,growx,aligny top");
 		
 		exitButton = new JButton("Exit");
 		exitButton.addActionListener(e ->{
 			setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			System.exit(0);
 		});
-		panel_2.add(exitButton);
+		bottomPanel.add(exitButton);
 	}
 	
 	

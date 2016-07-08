@@ -45,7 +45,6 @@ public class Login extends JFrame {
 	
 	private Admin admin;
 
-	private boolean confirmed;
 	//Used as a holder for usernames from Usernames_Passwords.csv to 
 	//compare against the inputUsername
 	String userCheck;
@@ -58,8 +57,6 @@ public class Login extends JFrame {
 	 * Create the frame.
 	 */
 	public Login(MainMenu menu) {
-		
-		confirmed = false;
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(200, 200, 450, 150);

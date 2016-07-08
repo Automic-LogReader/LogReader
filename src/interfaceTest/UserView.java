@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -42,7 +43,6 @@ import java.awt.event.MouseEvent;
 
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
-import javax.swing.JTextArea;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JList;
@@ -65,15 +65,18 @@ public class UserView extends JFrame{
 	protected String logLine;
 	//Holds the individual entries from logLine, split by " "
 	protected String[] logWords;
-	//Holds a line from the csv file
+	//Holds a line from the error suggestions csv file
 	protected String errorLine;
 	//Holds the individual cell entries from errorLine
 	protected String [] errorWords;
 	//ArrayList to hold all the UCodes from the csv file
 	private Object[] entry;
+	
 	private HashSet<String> keyWords = new HashSet<String>();
 	private HashSet<String> originalKeyWords;
 	private boolean hasCopiedOriginalKeyWords;
+	
+	
 	//Holds the size of the file in bytes
 	private long fileSize;
 	//Divided by 100 to update the progress bar efficiently
@@ -88,7 +91,6 @@ public class UserView extends JFrame{
 	protected JButton backButton;
 	private JButton chooseFile;
 	private JScrollPane errorScrollPane;
-	private JTextArea textArea;
 	private AdminView admin;
 
 	private CheckBoxListItem[] listOfKeyWords;
@@ -118,15 +120,15 @@ public class UserView extends JFrame{
 		setContentPane(contentPane);
 		contentPane.setLayout(new BorderLayout(0, 0));
 		
-		JPanel rightMainPanel = new JPanel();
-		contentPane.add(rightMainPanel, BorderLayout.SOUTH);
-		rightMainPanel.setLayout(new BoxLayout(rightMainPanel, BoxLayout.X_AXIS));
+		JPanel bottomPanel = new JPanel();
+		contentPane.add(bottomPanel, BorderLayout.SOUTH);
+		bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.X_AXIS));
 		
 		Component horizontalStrut_2 = Box.createHorizontalStrut(20);
-		rightMainPanel.add(horizontalStrut_2);
+		bottomPanel.add(horizontalStrut_2);
 		
 		Component horizontalStrut_4 = Box.createHorizontalStrut(20);
-		rightMainPanel.add(horizontalStrut_4);
+		bottomPanel.add(horizontalStrut_4);
 		
 		chooseFile = new JButton("Choose File");
 		chooseFile.addActionListener(e -> {
@@ -140,17 +142,17 @@ public class UserView extends JFrame{
 		    	 filePath.setText(chooser.getSelectedFile().getAbsolutePath());
 		    }
 		});
-		rightMainPanel.add(chooseFile);
+		bottomPanel.add(chooseFile);
 		
 		Component horizontalStrut = Box.createHorizontalStrut(20);
-		rightMainPanel.add(horizontalStrut);
+		bottomPanel.add(horizontalStrut);
 		
 		filePath = new JTextField();
-		rightMainPanel.add(filePath);
+		bottomPanel.add(filePath);
 		filePath.setColumns(10);
 		
 		Component horizontalStrut_1 = Box.createHorizontalStrut(20);
-		rightMainPanel.add(horizontalStrut_1);
+		bottomPanel.add(horizontalStrut_1);
 		
 		submitButton = new JButton("Submit");
 		submitButton.setPreferredSize(new Dimension(80, 30));
@@ -183,9 +185,9 @@ public class UserView extends JFrame{
 							}
 					}
 				});
-		rightMainPanel.add(submitButton);
+		bottomPanel.add(submitButton);
 		
-		rightMainPanel.add(Box.createRigidArea(new Dimension(10,0)));
+		bottomPanel.add(Box.createRigidArea(new Dimension(10,0)));
 		
 		backButton = new JButton("Back");
 		backButton.setPreferredSize(new Dimension(80, 30));
@@ -193,9 +195,9 @@ public class UserView extends JFrame{
 			menu.setVisible(true);
 			this.setVisible(false);
 		});
-		rightMainPanel.add(backButton);
+		bottomPanel.add(backButton);
 		
-		rightMainPanel.add(Box.createRigidArea(new Dimension(10,0)));
+		bottomPanel.add(Box.createRigidArea(new Dimension(10,0)));
 		
 		
 		JButton editButton = new JButton("Edit Entries");
@@ -210,7 +212,7 @@ public class UserView extends JFrame{
 			}
 			
 		});
-		rightMainPanel.add(editButton);
+		bottomPanel.add(editButton);
 		
 		if(isAdmin){
 			editButton.setVisible(true);
@@ -222,16 +224,27 @@ public class UserView extends JFrame{
 		
 		
 		Component horizontalStrut_5 = Box.createHorizontalStrut(20);
-		rightMainPanel.add(horizontalStrut_5);
+		bottomPanel.add(horizontalStrut_5);
 		
 		Component horizontalStrut_3 = Box.createHorizontalStrut(20);
-		rightMainPanel.add(horizontalStrut_3);
+		bottomPanel.add(horizontalStrut_3);
 		
 		JPanel mainPanel = new JPanel();
 		contentPane.add(mainPanel, BorderLayout.CENTER);
 		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.X_AXIS));
 	
-		DefaultTableModel tableModel = new DefaultTableModel(data, headers);
+		//Panel holding the keyword selectors
+		JPanel leftPanel = new JPanel();
+		leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
+		
+		JLabel keyWordLabel = new JLabel("Key Words    ");
+		keyWordLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+		keyWordLabel.setBorder(new EmptyBorder(10, 0, 10, 0));
+		//keyWordLabel.setBackground(Color.green);
+		//keyWordLabel.setOpaque(true);
+		leftPanel.add(keyWordLabel);
+		
+		new DefaultTableModel(data, headers);
 		
 		JList<CheckBoxListItem> list = new JList<CheckBoxListItem>(listOfKeyWords);
 		list.setCellRenderer(new CheckBoxListRenderer());
@@ -252,10 +265,14 @@ public class UserView extends JFrame{
 		         }
 		});
 		JScrollPane keyWordScrollPane = new JScrollPane(list);
-		mainPanel.add(keyWordScrollPane);
+		keyWordScrollPane.setMinimumSize(new Dimension(50, 100));
+		//mainPanel.add(keyWordScrollPane);
+		leftPanel.add(keyWordScrollPane);
+		mainPanel.add(leftPanel);
 		
 		errorTable = new JTable(data, headers);
 		errorScrollPane = new JScrollPane(errorTable, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		//errorScrollPane.setMinimumSize(new Dimension(500, 280));
 		mainPanel.add(errorScrollPane);
 		
 		setVisible(true);
@@ -299,7 +316,6 @@ public class UserView extends JFrame{
 		//All Keywords selected by default
 		listOfKeyWords[0].setSelected(true);
 		
-		
 		int index = 1;
 		for (String s : keyWords){
 			listOfKeyWords[index] = new CheckBoxListItem(s);
@@ -330,6 +346,7 @@ public class UserView extends JFrame{
 		}
 		try {
 			if (noCheckBoxSelected()) return;
+			
 			dialog = new ProgressDialog(file, this);
 			dialog.setVisible(true);
 			} catch (Exception e) {
@@ -351,9 +368,7 @@ public class UserView extends JFrame{
 						// TODO Auto-generated catch block
 							e.printStackTrace();
 							}
-								
-						}
-						
+						}			
 					}
 				);
 				
@@ -390,7 +405,6 @@ public class UserView extends JFrame{
 
 			logWords = logLine.split(" ");
 			
-			String uCode = null;
 			String timeStamp = null;
 			String errorMessage = "";
 			entry = null;

@@ -38,17 +38,6 @@ public class Admin extends User {
 		setDataLength();
 		myData = new Object[dataLength][];
 		createDataTable();
-		/*EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {				
-					myView = new AdminView();
-					myView.setVisible(true);
-					
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});*/
 	}
 	
 
@@ -89,8 +78,6 @@ public class Admin extends User {
 	 */
 	public void setDataLength() throws IOException
 	{
-		//InputStream errorInput = getClass().getResourceAsStream(MainController.errorFile);
-		//BufferedReader errorbr = new BufferedReader(new InputStreamReader(errorInput));
 		
 		FileReader errorInput = new FileReader("src/interfaceTest/resources/LogErrors_Suggestions.csv");
 		BufferedReader errorbr = new BufferedReader(errorInput);
