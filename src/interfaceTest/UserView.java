@@ -396,7 +396,7 @@ public class UserView extends JFrame{
 		errorCount = 0;
 		progress = 0;
 		String timeStamp = null;
-		String errorMessage = "";
+		StringBuilder errorMessage = new StringBuilder();
 		boolean keywordFound = false;
 		boolean timeStampFound = false;
 		//boolean specialCase = false;
@@ -421,7 +421,8 @@ public class UserView extends JFrame{
 			logWords = logLine.split(" ");
 			
 			timeStamp = null;
-			errorMessage = "";
+			//errorMessage = "";
+			errorMessage.setLength(0);
 			entry = null;
 			
 			keywordFound = false;
@@ -460,15 +461,16 @@ public class UserView extends JFrame{
 				}
 				
 				else if(timeStampFound && keywordFound){
-					errorMessage += (testWord + " ");
-					if (entry != null){
+					errorMessage.append(testWord + " ");
+					/*if (entry != null){
 						entry[3] = errorMessage;
-					}
+					}*/
 				}
 
 			}
 			
 			if(entry != null){
+				entry[3] = errorMessage.toString();
 				if (entry[3] == null){
 					entry[3] = " ";
 				}
@@ -502,14 +504,14 @@ public class UserView extends JFrame{
 		tempEntry[0] = errorCount;
 		tempEntry[1] = timeStamp;
 		tempEntry[2] = "===>";
-		String errorMsg = "";
+		StringBuilder errorMsg = new StringBuilder();
 		int arrowIndex = 0;
 		boolean closingArrowTagFound = false;
 		for (int i=0; i<currArray.length; i++){
 			if (currArray[i].equals("===>")){
 				arrowIndex = i;
 				for (int j=(i+1); j<currArray.length; j++){
-					errorMsg += (currArray[j] + " ");
+					errorMsg.append(currArray[j] + " ");
 				}
 				break;
 			}
@@ -532,7 +534,7 @@ public class UserView extends JFrame{
 					errorMsg += (logWords[i] + " ");
 				}
 			}*/
-			errorMsg += logLine;
+			errorMsg.append(logLine + " ");
 			if (logLine.contains("===>")){
 				closingArrowTagFound = true;
 				break;
@@ -541,7 +543,7 @@ public class UserView extends JFrame{
 				logLine = logbr.readLine();
 			}
 		}
-		tempEntry[3] = errorMsg;
+		tempEntry[3] = errorMsg.toString();
 		//Solution
 		if (solutions.get(tempEntry[2]) != null){
 			tempEntry[4] = solutions.get(tempEntry[2]);
