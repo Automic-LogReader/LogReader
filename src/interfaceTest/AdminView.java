@@ -22,6 +22,7 @@ import javax.swing.table.TableColumn;
 import java.awt.GridBagLayout;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -64,8 +65,6 @@ public class AdminView extends JFrame {
 	protected List<String> keyWords = new ArrayList<String>();
 	//Brings up the frame for an admin user
 	private AdminView myView;
-	//Number of rows in LogErrorSuggestions.csv
-	private int dataLength;
 	//Used as a current index marker for the function createDataTable
 	private int dataIndex;
 	//Headers for the JTable
@@ -81,9 +80,12 @@ public class AdminView extends JFrame {
 	//Field for when the user wants to modify an entry
 	private JTextField modifyText;
 	Object[] options = {"Yes", "Cancel"};
+	private List <String> defaultList = new ArrayList<String>();
 	private List <String> list = new ArrayList<String>();
-	Object [][] data;
-	DefaultTableModel tableModel;
+	private List <String> tempList = new ArrayList<String>();
+	private Object [][] defaultData;
+	private Object [][] data;
+	private DefaultTableModel tableModel;
 	
 	/**
 	 * @param data - An array of object arrays that contains data from the error csv file. 
@@ -97,8 +99,8 @@ public class AdminView extends JFrame {
 		
 		JComponent contentPane = new JPanel();
 		setContentPane(contentPane);
-		setDataLength();
-		data = createDataTable();
+		createDataTable();
+		defaultData = data;
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(200, 200, 1000, 300);
 		getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
@@ -198,8 +200,8 @@ public class AdminView extends JFrame {
 				if (confirmation == JOptionPane.YES_OPTION)
 				{
 					int modelIndex = table.convertRowIndexToModel(viewIndex); 
-					DefaultTableModel model = (DefaultTableModel)(table.getModel());
-					model.removeRow(modelIndex);
+					//DefaultTableModel model = (DefaultTableModel)(table.getModel());
+					//model.removeRow(modelIndex);
 					try {
 						deleteData(viewIndex);
 						//makeTable();
@@ -219,16 +221,35 @@ public class AdminView extends JFrame {
 		panel.add(panel_2);
 		panel_2.setLayout(new BoxLayout(panel_2, BoxLayout.X_AXIS));
 		
+		/////////////////////////////////////////
 		JButton saveButton = new JButton("Save to Default");
-		//This will save the data as is and go back to that
+		saveButton.addActionListener(e -> {
+			try {
+				saveDefault();
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		});
+		
 		panel_2.add(saveButton);
 		
 		
 		Component rigidArea_2 = Box.createRigidArea(new Dimension(20, 20));
 		panel_2.add(rigidArea_2);
 		
+		/////////////////////////////////////////////////////////
 		JButton defaultButton = new JButton("Revert to Default");
 		panel_2.add(defaultButton);
+		defaultButton.addActionListener(e -> {
+			list.clear();
+			for(int i = 0; i < defaultList.size(); i++)
+			{
+				list.add(defaultList.get(i));
+			}
+			transferData("DEFAULT");
+			resetData();
+		});
 		
 		Component rigidArea_5 = Box.createRigidArea(new Dimension(20, 20));
 		panel.add(rigidArea_5);
@@ -245,37 +266,8 @@ public class AdminView extends JFrame {
 	 */
 	
 	
-	//NEED to have table reflect the changes after modifying and adding, otherwise things get wonky
 	void modifyData(String keyWord, String message, String solution, String choice, int row) throws IOException
 	{
-		DefaultTableModel model = (DefaultTableModel)(table.getModel());
-		if(choice.equals("MODIFY"))
-		{
-			table.setValueAt(keyWord, row, 0);
-			table.setValueAt(message, row, 1);
-			table.setValueAt(solution, row, 2);
-		}
-		else if(choice.equals("ADD"))
-			model.addRow(new Object[] {keyWord, message, solution});
-		
-		File oldFile = new File ("src/interfaceTest/resources/LogErrors_Suggestions.csv");
-		File temp = new File("src/interfaceTest/resources/temp.csv");
-		int i = 0;
-		list.clear();
-		//InputStream errorInput = getClass().getResourceAsStream(MainController.errorFile);
-		//BufferedReader errorbr = new BufferedReader(new InputStreamReader(errorInput));
-		
-		
-		FileReader errorInput = new FileReader(oldFile);
-		BufferedReader errorbr = new BufferedReader(errorInput);
-		FileWriter fw = new FileWriter (temp, true);
-		
-		//Include headings
-		String errorLine = errorbr.readLine();
-		fw.write(errorLine + "\r\n");
-		
-		errorLine = errorbr.readLine();
-		
 		String newLine = "";
 		//Commas are added between each entry so they are put in individual cells in the csv
 		if(keyWord.contains(","))
@@ -290,43 +282,14 @@ public class AdminView extends JFrame {
 		if(solution.contains(","))
 			if(!solution.contains("\""))
 				solution = "\"" + solution + "\"";
-		newLine += (solution + "\r\n");
-		list.add(newLine);
-		
-		while (errorLine != null)
-		{
-			if(choice.equals("MODIFY"))
-			{
-				//If we're straight modifying rather than adding, 
-				//then we skip the row 
-				if(i != row)
-					list.add(errorLine + "\r\n");
-			}
-			else if(choice.equals("ADD"))
-				list.add(errorLine + "\r\n");
-			errorLine = errorbr.readLine();
-			i++;
-			
-		}
-		Collections.sort(list);
-		for(int j = 0; j < list.size(); j++)
-		{
-			fw.write(list.get(j));
-		}
-		
-		errorInput.close();
-		errorbr.close();
-		fw.close();
-		if(oldFile.delete())
-		{
-			temp.renameTo(oldFile);
-			System.out.println("modify/add success");
-		}
+		newLine += solution;
+		if(choice.equals("MODIFY"))
+			list.set(row, newLine);
 		else
-		{	
-			temp.delete();
-			System.out.println("modify/add failed");
-		}
+			list.add(newLine);
+		Collections.sort(list);
+		transferData("CHANGE");
+		resetData();
 
 	}
 	
@@ -341,43 +304,9 @@ public class AdminView extends JFrame {
 	void deleteData(int row) throws IOException
 	{
 		int i = 0;
-		//InputStream errorInput = getClass().getResourceAsStream(MainController.errorFile);
-		//BufferedReader errorbr = new BufferedReader(new InputStreamReader(errorInput));
-		
-		File oldFile = new File ("src/interfaceTest/resources/LogErrors_Suggestions.csv");
-		File temp = new File("src/interfaceTest/resources/temp.csv");
-		FileReader errorInput = new FileReader(oldFile);
-		BufferedReader errorbr = new BufferedReader(errorInput);
-		FileWriter fw = new FileWriter (temp, true);
-		
-		String errorLine = errorbr.readLine();
-		fw.write(errorLine + "\r\n");
-		errorLine = errorbr.readLine();
-		
-		while(errorLine != null)
-		{
-			//Write to the new file as long as it isn't the row to be deleted
-			if (i != row)
-			{
-				fw.write(errorLine + "\r\n");
-			}
-			errorLine = errorbr.readLine();
-			i++;
-		}
-		fw.close();
-		errorbr.close();
-		errorInput.close();
-		if(oldFile.delete())
-		{
-			temp.renameTo(oldFile);
-			System.out.println("delete success");
-		}
-		else
-		{	
-			temp.delete();
-			System.out.println("delete failed");
-		}
-
+		list.remove(row);
+		transferData("CHANGE");
+		resetData();
 	}
 
 
@@ -387,55 +316,80 @@ public class AdminView extends JFrame {
 	 * from calling split function on the line.
 	 * @throws IOException
 	 */
-	Object[][] createDataTable() throws IOException
+	void createDataTable() throws IOException
 	{
+		dataIndex = 0;
 		//InputStream errorInput = getClass().getResourceAsStream(MainController.errorFile);
 		//BufferedReader errorbr = new BufferedReader(new InputStreamReader(errorInput));
 		
-		Object[][] myData = new Object[dataLength][];
 		FileReader errorInput = new FileReader("src/interfaceTest/resources/LogErrors_Suggestions.csv");
 		BufferedReader errorbr = new BufferedReader(errorInput);
 		
 		errorLine = errorbr.readLine();
 		errorLine = errorbr.readLine();
 		
-		
 		while(errorLine != null)
 		{
-			errorWords = errorLine.split(",(?=([^\"]|\"[^\"]*\")*$)");
-			myData[dataIndex] = errorWords; 
+			list.add(errorLine);
+			defaultList.add(errorLine);
 			errorLine = errorbr.readLine();
-			dataIndex++;
 		}
+		Collections.sort(list);
+		Collections.sort(defaultList);
 		errorbr.close();
-		return myData;
+		transferData("CHANGE");
 	}
 	
-	/**
-	 * This function reads lines in the LogError_Suggestions.csv file until 
-	 * hitting a line that is null, incrementing dataLength as it goes. At 
-	 * the end, the value of dataLength will be the number of lines in the
-	 * file (excluding the header line). 
-	 * @throws IOException
-	 */
-	public void setDataLength() throws IOException
+	void transferData(String choice)
 	{
-		//InputStream errorInput = getClass().getResourceAsStream(MainController.errorFile);
-		//BufferedReader errorbr = new BufferedReader(new InputStreamReader(errorInput));
-		
-		FileReader errorInput = new FileReader("src/interfaceTest/resources/LogErrors_Suggestions.csv");
-		BufferedReader errorbr = new BufferedReader(errorInput);
-		
-		errorLine = errorbr.readLine();
-		errorLine = errorbr.readLine();
-		
-		while(errorLine != null)
+		if(choice.equals("DEFAULT"))
+			tempList = defaultList;
+		else
+			tempList = list;
+		Object[][] myData = new Object[tempList.size()][];
+		for(int i = 0; i < tempList.size(); i++)
 		{
-			dataLength++;
-			errorLine = errorbr.readLine();
+			errorWords = tempList.get(i).split(",(?=([^\"]|\"[^\"]*\")*$)");
+			myData[i] = errorWords;
 		}
-		errorbr.close();
+		data = myData;
 	}
-
+	
+	
+	void resetData()
+	{
+		DefaultTableModel model = new DefaultTableModel(data, columnHeaders); // for example
+		table.setModel(model);
+		model.fireTableDataChanged();
+	}
+	
+	void saveDefault() throws IOException
+	{
+		defaultList.clear();
+		File oldFile = new File ("src/interfaceTest/resources/LogErrors_Suggestions.csv");
+		File temp = new File("src/interfaceTest/resources/temp.csv");
+		
+		FileWriter fw = new FileWriter (temp, true);
+		fw.write("Keywords,Log Error Description,Suggested Solution\r\n");
+		
+		String newLine = "";
+		for(int i = 0; i < list.size(); i++)
+		{
+			defaultList.add(list.get(i));
+			newLine = list.get(i) + "\r\n";
+			fw.write(newLine);
+		}
+		fw.close();
+		if(oldFile.delete())
+		{
+			temp.renameTo(oldFile);
+			System.out.println("success");
+		}
+		else
+		{	
+			temp.delete();
+			System.out.println("failed");
+		}
+	}
 	
 }

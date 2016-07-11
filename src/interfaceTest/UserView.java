@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
@@ -72,6 +73,7 @@ public class UserView extends JFrame{
 	//ArrayList to hold all the UCodes from the csv file
 	private Object[] entry;
 	
+	private HashMap<String, String> solutions = new HashMap<String, String>();
 	private HashSet<String> keyWords = new HashSet<String>();
 	private HashSet<String> originalKeyWords;
 	private boolean hasCopiedOriginalKeyWords;
@@ -95,6 +97,11 @@ public class UserView extends JFrame{
 
 	private CheckBoxListItem[] listOfKeyWords;
 	private int numKeyWords;
+	
+	private int percent;
+	private int oldPercent;
+	
+	
 	/**
 	 * Create the frame.
 	 * @throws IOException 
@@ -111,6 +118,7 @@ public class UserView extends JFrame{
 		}
 		errorCount = 0;
 		fillKeywords();
+		createErrorDictionary();
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 1200, 280);
@@ -288,7 +296,6 @@ public class UserView extends JFrame{
 	 */
 	void fillKeywords() throws IOException
 	{
-		
 		FileReader errorInput = new FileReader("src/interfaceTest/resources/LogErrors_Suggestions.csv");
 		BufferedReader errorbr = new BufferedReader(errorInput);
 		
@@ -302,7 +309,12 @@ public class UserView extends JFrame{
 			errorWords = errorLine.split(",(?=([^\"]|\"[^\"]*\")*$)");
 			if(errorWords.length > 2)
 			{
-				keyWords.add(errorWords[0]);
+				if (errorWords[0].equals("[===>]")){
+					keyWords.add("===>");
+				}
+				else {
+					keyWords.add(errorWords[0]);
+				}
 				errorLine = errorbr.readLine();
 			}
 			else
@@ -359,8 +371,6 @@ public class UserView extends JFrame{
 					try {
 						fileSize = file.length();
 						fileSizeDivHundred = fileSize/100;
-						System.out.println(fileSize);
-						System.out.println(fileSizeDivHundred);
 						
 						submitButton.setEnabled(false);
 						parseErrors(file, dialog);
@@ -379,12 +389,18 @@ public class UserView extends JFrame{
 	{
 		updateKeyWords();
 		
-		int percent = 0;
-		int oldPercent = 0;
+		percent = 0;
+		oldPercent = 0;
 		
 		errorData.clear();
 		errorCount = 0;
 		progress = 0;
+		String timeStamp = null;
+		String errorMessage = "";
+		boolean keywordFound = false;
+		boolean timeStampFound = false;
+		//boolean specialCase = false;
+		
 		FileReader logInput = new FileReader(logFile);
 		BufferedReader logbr = new BufferedReader(logInput);
 
@@ -392,7 +408,6 @@ public class UserView extends JFrame{
 		
 		//Timer for performance testing
 		long startTime = System.nanoTime();
-		
 		while(logLine != null)
 		{
 			progress += logLine.length();
@@ -405,12 +420,13 @@ public class UserView extends JFrame{
 
 			logWords = logLine.split(" ");
 			
-			String timeStamp = null;
-			String errorMessage = "";
+			timeStamp = null;
+			errorMessage = "";
 			entry = null;
 			
-			boolean keywordFound = false;
-			boolean timeStampFound = false;
+			keywordFound = false;
+			timeStampFound = false;
+			//specialCase = false;
 			
 			for (String testWord : logWords){
 				//Timestamp will always come first
@@ -420,54 +436,48 @@ public class UserView extends JFrame{
 					timeStamp = testWord;
 					timeStampFound = true;
 				}
-				if(timeStampFound && !keywordFound)
-				{
+				if(timeStampFound && !keywordFound){
 					//Testing the UCode from the file against the error UCodes
-					if (keyWords.contains(testWord))
-					{
+					if (keyWords.contains(testWord)){
 						keywordFound = true;
 						errorCount++;
-						entry = new Object[5];
-						entry[0] = errorCount;
-						entry[1] = timeStamp;
-						entry[2] = testWord;
-						
-						//Making new readers to go back to top of file
-						FileReader errorInput = new FileReader("src/interfaceTest/resources/LogErrors_Suggestions.csv");
-						BufferedReader newbr = new BufferedReader(errorInput);
-						newbr.readLine();
-						errorLine = newbr.readLine();
-						
-						//We read a new line until we get to the corresponding line
-						while(errorLine != null)
-						{
-					
-							errorWords = errorLine.split(",(?=([^\"]|\"[^\"]*\")*$)");
-							if(testWord.equals(errorWords[0]))
-							{
-								entry[4] = errorWords[2];
-								break;
+						/*if (testWord.equals("===>")) {
+							entry = parseArrowError(logbr, timeStamp, logWords);
+							specialCase = true;
+							break;
+						}*/
+					//	else {
+							entry = new Object[5];
+							entry[0] = errorCount;
+							entry[1] = timeStamp;
+							entry[2] = testWord;
+				
+							if (solutions.get(entry[2]) != null){
+								entry[4] = solutions.get(entry[2]);
 							}
-							errorLine = newbr.readLine();
-						}
-						newbr.close();
+						//}
 					}
 				}
 				
-				else if(timeStampFound && keywordFound)
-				{
+				else if(timeStampFound && keywordFound){
 					errorMessage += (testWord + " ");
-					entry[3] = errorMessage;
+					if (entry != null){
+						entry[3] = errorMessage;
+					}
 				}
+
 			}
-			if(entry != null)
-			{
+			
+			if(entry != null){
 				if (entry[3] == null){
 					entry[3] = " ";
 				}
 				errorData.add(entry);
 			}
-			logLine = logbr.readLine();
+			
+			//if (!specialCase){
+				logLine = logbr.readLine();
+			//}
 		}
 		
 		//Logs execution time to the console
@@ -486,6 +496,58 @@ public class UserView extends JFrame{
 		makeTable();
 	}
 
+	Object[] parseArrowError(BufferedReader logbr, String timeStamp, String[] currArray) throws IOException{
+		
+		Object[] tempEntry = new Object[5];
+		tempEntry[0] = errorCount;
+		tempEntry[1] = timeStamp;
+		tempEntry[2] = "===>";
+		String errorMsg = "";
+		int arrowIndex = 0;
+		boolean closingArrowTagFound = false;
+		for (int i=0; i<currArray.length; i++){
+			if (currArray[i].equals("===>")){
+				arrowIndex = i;
+				for (int j=(i+1); j<currArray.length; j++){
+					errorMsg += (currArray[j] + " ");
+				}
+				break;
+			}
+		}
+		logLine = logbr.readLine();
+		while (!closingArrowTagFound && logLine != null){
+			progress += logLine.length();
+			
+			percent = (int) (progress / fileSizeDivHundred);
+			if (percent > oldPercent){
+				dialog.updateProgress(percent);
+				oldPercent = percent;
+			}
+			/*logWords = logLine.split(" ");
+			for (int i = (0); i<logWords.length; i++){
+				if (logWords[i].equals("===>")){
+					closingArrowTagFound = true;
+				}
+				else {
+					errorMsg += (logWords[i] + " ");
+				}
+			}*/
+			errorMsg += logLine;
+			if (logLine.contains("===>")){
+				closingArrowTagFound = true;
+				break;
+			}
+			if (!closingArrowTagFound){
+				logLine = logbr.readLine();
+			}
+		}
+		tempEntry[3] = errorMsg;
+		//Solution
+		if (solutions.get(tempEntry[2]) != null){
+			tempEntry[4] = solutions.get(tempEntry[2]);
+		}
+		return tempEntry;
+	}
 	void makeTable()
 	{
 		DefaultTableModel tableModel = new DefaultTableModel(data, headers) {
@@ -538,6 +600,22 @@ public class UserView extends JFrame{
 		JOptionPane.showMessageDialog(null, "Please select a checkbox");
 		return true;
 	}
+	
+	//Maps the key words to solution messages
+	void createErrorDictionary() throws IOException{
+		FileReader errorInput = new FileReader("src/interfaceTest/resources/LogErrors_Suggestions.csv");
+		BufferedReader newbr = new BufferedReader(errorInput);
+		newbr.readLine();
+		errorLine = newbr.readLine();
+			
+			while(errorLine != null)
+			{
+				errorWords = errorLine.split(",(?=([^\"]|\"[^\"]*\")*$)");
+				solutions.put(errorWords[0], errorWords[2]);
+				errorLine = newbr.readLine();
+			}
+			newbr.close();
+		}
 }
 	
 
