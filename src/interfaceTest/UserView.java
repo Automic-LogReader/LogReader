@@ -101,6 +101,8 @@ public class UserView extends JFrame{
 	private int percent;
 	private int oldPercent;
 	
+	private int correct = 0;
+	private int incorrect = 0;
 	
 	/**
 	 * Create the frame.
@@ -399,7 +401,7 @@ public class UserView extends JFrame{
 		StringBuilder errorMessage = new StringBuilder();
 		boolean keywordFound = false;
 		boolean timeStampFound = false;
-		//boolean specialCase = false;
+		boolean specialCase = false;
 		
 		FileReader logInput = new FileReader(logFile);
 		BufferedReader logbr = new BufferedReader(logInput);
@@ -427,7 +429,7 @@ public class UserView extends JFrame{
 			
 			keywordFound = false;
 			timeStampFound = false;
-			//specialCase = false;
+			specialCase = false;
 			
 			for (String testWord : logWords){
 				//Timestamp will always come first
@@ -442,12 +444,12 @@ public class UserView extends JFrame{
 					if (keyWords.contains(testWord)){
 						keywordFound = true;
 						errorCount++;
-						/*if (testWord.equals("===>")) {
+						if (testWord.equals("===>") && logLine.contains("Time critical")) {
 							entry = parseArrowError(logbr, timeStamp, logWords);
 							specialCase = true;
 							break;
-						}*/
-					//	else {
+						}
+						else {
 							entry = new Object[5];
 							entry[0] = errorCount;
 							entry[1] = timeStamp;
@@ -456,7 +458,7 @@ public class UserView extends JFrame{
 							if (solutions.get(entry[2]) != null){
 								entry[4] = solutions.get(entry[2]);
 							}
-						//}
+						}
 					}
 				}
 				
@@ -466,20 +468,18 @@ public class UserView extends JFrame{
 						entry[3] = errorMessage;
 					}*/
 				}
-
 			}
 			
 			if(entry != null){
-				entry[3] = errorMessage.toString();
-				if (entry[3] == null){
-					entry[3] = " ";
+				if (!specialCase){
+					entry[3] = errorMessage.toString();
+					if (entry[3] == null){
+						entry[3] = " ";
+					}
 				}
 				errorData.add(entry);
 			}
-			
-			//if (!specialCase){
-				logLine = logbr.readLine();
-			//}
+			logLine = logbr.readLine();
 		}
 		
 		//Logs execution time to the console
@@ -491,11 +491,11 @@ public class UserView extends JFrame{
 		logbr.close();
 		data = new Object[errorData.size()][];
 		
-		for(int i = 0; i < errorData.size(); i++)
-		{
+		for(int i = 0; i < errorData.size(); i++){
 			data[i] = errorData.get(i);
 		}
 		makeTable();
+		System.out.println("Non-matching arrow errors: " + incorrect + " hidden errors: " + correct);
 	}
 
 	Object[] parseArrowError(BufferedReader logbr, String timeStamp, String[] currArray) throws IOException{
@@ -504,18 +504,23 @@ public class UserView extends JFrame{
 		tempEntry[0] = errorCount;
 		tempEntry[1] = timeStamp;
 		tempEntry[2] = "===>";
+		int arrowindex = 0;
+		if (solutions.get(tempEntry[2]) != null){
+			tempEntry[4] = solutions.get(tempEntry[2]);
+		}
 		StringBuilder errorMsg = new StringBuilder();
-		int arrowIndex = 0;
+
 		boolean closingArrowTagFound = false;
 		for (int i=0; i<currArray.length; i++){
 			if (currArray[i].equals("===>")){
-				arrowIndex = i;
 				for (int j=(i+1); j<currArray.length; j++){
 					errorMsg.append(currArray[j] + " ");
 				}
 				break;
 			}
 		}
+		String firstLineOfError = errorMsg.toString();
+		
 		logLine = logbr.readLine();
 		while (!closingArrowTagFound && logLine != null){
 			progress += logLine.length();
@@ -525,31 +530,42 @@ public class UserView extends JFrame{
 				dialog.updateProgress(percent);
 				oldPercent = percent;
 			}
-			/*logWords = logLine.split(" ");
-			for (int i = (0); i<logWords.length; i++){
-				if (logWords[i].equals("===>")){
-					closingArrowTagFound = true;
+			for (String s : keyWords){
+				if (logLine.contains(s) && !s.equals("===>")){
+					System.out.println(s);
+					correct++;
 				}
-				else {
-					errorMsg += (logWords[i] + " ");
-				}
-			}*/
-			errorMsg.append(logLine + " ");
+			}
 			if (logLine.contains("===>")){
+				if (logLine.contains("Time critical")){
+					System.out.println(logLine);
+					incorrect++;
+					errorCount++;
+					tempEntry[3] = firstLineOfError;
+					String[] tempArray = logLine.split(" ");
+					String tempTimeStamp = "";
+					for (String s : tempArray){
+						if (s.length() == 19){
+							tempTimeStamp = s;
+							break;
+						}
+					}
+					errorData.add(parseArrowError(logbr, tempTimeStamp, tempArray));
+					return tempEntry;
+				}
+				errorMsg.append(logLine + " ");
 				closingArrowTagFound = true;
 				break;
 			}
+			errorMsg.append(logLine + " ");
 			if (!closingArrowTagFound){
 				logLine = logbr.readLine();
 			}
 		}
 		tempEntry[3] = errorMsg.toString();
-		//Solution
-		if (solutions.get(tempEntry[2]) != null){
-			tempEntry[4] = solutions.get(tempEntry[2]);
-		}
 		return tempEntry;
 	}
+
 	void makeTable()
 	{
 		DefaultTableModel tableModel = new DefaultTableModel(data, headers) {
