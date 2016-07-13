@@ -56,7 +56,8 @@ import javax.swing.JScrollBar;
 @SuppressWarnings({ "serial", "unused" })
 public class AdminView extends JFrame {
 	
-	
+	List <String> defaultList = new ArrayList<String>();
+	List <String> list = new ArrayList<String>();
 	//Holds a line from the csv file
 	protected String errorLine;
 	//Holds the line from the csv file (each part of the array is a cell from csv)
@@ -80,12 +81,8 @@ public class AdminView extends JFrame {
 	//Field for when the user wants to modify an entry
 	private JTextField modifyText;
 	Object[] options = {"Yes", "Cancel"};
-	private List <String> defaultList = new ArrayList<String>();
-	private List <String> list = new ArrayList<String>();
-	private List <String> tempList = new ArrayList<String>();
-	private Object [][] defaultData;
-	private Object [][] data;
 	private DefaultTableModel tableModel;
+	DataController dc;
 	
 	/**
 	 * @param data - An array of object arrays that contains data from the error csv file. 
@@ -94,13 +91,21 @@ public class AdminView extends JFrame {
 	 */
 	public AdminView() throws IOException {
 		
+		
 		setBounds(200, 200, 1000, 300);
 		setLocationRelativeTo(null);
 		
 		JComponent contentPane = new JPanel();
 		setContentPane(contentPane);
+			
 		createDataTable();
-		defaultData = data;
+		dc = new DataController(this);
+		dc.setList(list);
+		dc.setDefaultList(defaultList);
+		dc.transferData("CHANGE");
+		
+		
+		
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(200, 200, 1000, 300);
 		getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
@@ -108,7 +113,7 @@ public class AdminView extends JFrame {
 		JScrollPane scrollPane = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		getContentPane().add(scrollPane);
 		
-		tableModel = new DefaultTableModel(data, columnHeaders) {
+		tableModel = new DefaultTableModel(dc.getData(), columnHeaders) {
 
 		    @Override
 		    public boolean isCellEditable(int row, int column) {
@@ -157,7 +162,7 @@ public class AdminView extends JFrame {
 		
 		JButton addButton = new JButton("Add Entry");
 		addButton.addActionListener(e -> {
-			AddDialog add = new AddDialog(this);
+			AddDialog add = new AddDialog(dc);
 			add.setVisible(true);
 		});
 		panel_1.add(addButton);
@@ -174,7 +179,7 @@ public class AdminView extends JFrame {
 				ModifyDialog modify = new ModifyDialog((String)table.getValueAt(rowSelect, 0),
 													 (String)table.getValueAt(rowSelect, 1),
 													 (String)table.getValueAt(rowSelect, 2), 
-													 this, rowSelect);
+													 dc, rowSelect);
 				modify.setVisible(true);
 			}
 			else JOptionPane.showMessageDialog(null, "Please select an entry");	
@@ -203,7 +208,7 @@ public class AdminView extends JFrame {
 					//DefaultTableModel model = (DefaultTableModel)(table.getModel());
 					//model.removeRow(modelIndex);
 					try {
-						deleteData(viewIndex);
+						dc.deleteData(viewIndex);
 						//makeTable();
 					} catch (Exception e1) {
 					e1.printStackTrace();
@@ -221,11 +226,10 @@ public class AdminView extends JFrame {
 		panel.add(panel_2);
 		panel_2.setLayout(new BoxLayout(panel_2, BoxLayout.X_AXIS));
 		
-		/////////////////////////////////////////
 		JButton saveButton = new JButton("Save to Default");
 		saveButton.addActionListener(e -> {
 			try {
-				saveDefault();
+				dc.saveDefault();
 			} catch (Exception e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -238,16 +242,15 @@ public class AdminView extends JFrame {
 		Component rigidArea_2 = Box.createRigidArea(new Dimension(20, 20));
 		panel_2.add(rigidArea_2);
 		
-		/////////////////////////////////////////////////////////
 		JButton defaultButton = new JButton("Revert to Default");
 		panel_2.add(defaultButton);
 		defaultButton.addActionListener(e -> {
-			list.clear();
-			for(int i = 0; i < defaultList.size(); i++)
+			dc.getList().clear();
+			for(int i = 0; i < dc.getDefaultList().size(); i++)
 			{
-				list.add(defaultList.get(i));
+				dc.getList().add(dc.getDefaultList().get(i));
 			}
-			transferData("DEFAULT");
+			dc.transferData("DEFAULT");
 			resetData();
 		});
 		
@@ -256,59 +259,6 @@ public class AdminView extends JFrame {
 
 	}
 	
-	/**
-	 * When the user chooses to modify the data, this function changes the output on the 
-	 * screen and within the LogError_Suggestions.csv file to the input given by the user. 
-	 * @param newMessage - the message input from the user
-	 * @param row - the row in which the data will be modified
-	 * @param col - the column in which the data will be modified
-	 * @throws IOException 
-	 */
-	
-	
-	void modifyData(String keyWord, String message, String solution, String choice, int row) throws IOException
-	{
-		String newLine = "";
-		//Commas are added between each entry so they are put in individual cells in the csv
-		if(keyWord.contains(","))
-			if(!keyWord.contains("\""))
-				keyWord = "\"" + keyWord + "\"";
-		newLine += (keyWord + ",");
-		// \" is added so that if the message contains a comma, it isn't broken up into separate cells
-		if(message.contains(","))
-			if(!message.contains("\""))
-				message = "\"" + message + "\"";
-		newLine += (message + ",");
-		if(solution.contains(","))
-			if(!solution.contains("\""))
-				solution = "\"" + solution + "\"";
-		newLine += solution;
-		if(choice.equals("MODIFY"))
-			list.set(row, newLine);
-		else
-			list.add(newLine);
-		Collections.sort(list);
-		transferData("CHANGE");
-		resetData();
-
-	}
-	
-	/**
-	 * When the user highlights a piece of data and then clicks the delete button, 
-	 * this function will change the data within LogError_Suggestions.csv file, 
-	 * reading all of the data into a new file, except the file line that
-	 * corresponds to the row index that the user chose. 
-	 * @param row - the row in which the data will be deleted
-	 * @throws IOException 
-	 */
-	void deleteData(int row) throws IOException
-	{
-		int i = 0;
-		list.remove(row);
-		transferData("CHANGE");
-		resetData();
-	}
-
 
 	/**
 	 * This function fills myData with arrays. Each array represents a line from
@@ -337,59 +287,16 @@ public class AdminView extends JFrame {
 		Collections.sort(list);
 		Collections.sort(defaultList);
 		errorbr.close();
-		transferData("CHANGE");
+		
 	}
-	
-	void transferData(String choice)
-	{
-		if(choice.equals("DEFAULT"))
-			tempList = defaultList;
-		else
-			tempList = list;
-		Object[][] myData = new Object[tempList.size()][];
-		for(int i = 0; i < tempList.size(); i++)
-		{
-			errorWords = tempList.get(i).split(",(?=([^\"]|\"[^\"]*\")*$)");
-			myData[i] = errorWords;
-		}
-		data = myData;
-	}
-	
 	
 	void resetData()
 	{
-		DefaultTableModel model = new DefaultTableModel(data, columnHeaders); // for example
+		DefaultTableModel model = new DefaultTableModel(dc.getData(), columnHeaders); 
 		table.setModel(model);
 		model.fireTableDataChanged();
 	}
 	
-	void saveDefault() throws IOException
-	{
-		defaultList.clear();
-		File oldFile = new File ("src/interfaceTest/resources/LogErrors_Suggestions.csv");
-		File temp = new File("src/interfaceTest/resources/temp.csv");
-		
-		FileWriter fw = new FileWriter (temp, true);
-		fw.write("Keywords,Log Error Description,Suggested Solution\r\n");
-		
-		String newLine = "";
-		for(int i = 0; i < list.size(); i++)
-		{
-			defaultList.add(list.get(i));
-			newLine = list.get(i) + "\r\n";
-			fw.write(newLine);
-		}
-		fw.close();
-		if(oldFile.delete())
-		{
-			temp.renameTo(oldFile);
-			System.out.println("success");
-		}
-		else
-		{	
-			temp.delete();
-			System.out.println("failed");
-		}
-	}
+
 	
 }

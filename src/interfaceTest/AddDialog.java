@@ -26,7 +26,7 @@ public class AddDialog extends JDialog {
 	/**
 	 * Create the dialog.
 	 */
-	public AddDialog(AdminView admin) {
+	public AddDialog(DataController dc) {
 		setBounds(200, 200, 450, 200);
 		getContentPane().setLayout(new BorderLayout());
 		{
@@ -126,7 +126,7 @@ public class AddDialog extends JDialog {
 				else
 				{
 					try {
-						admin.modifyData(keywordText.getText(), errorText.getText(), solutionText.getText(), "ADD", 0);
+						dc.modifyData(keywordText.getText(), errorText.getText(), solutionText.getText(), "ADD", 0);
 					} catch (Exception e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();

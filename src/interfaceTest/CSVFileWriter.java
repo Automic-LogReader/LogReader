@@ -4,10 +4,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 public class CSVFileWriter {
-	private UserView view;
+	private static UserView view;
 	
 	public CSVFileWriter(UserView view){
-		this.view = view;
+		CSVFileWriter.view = view;
 	}
 	
 	public void writeTo(String fileName) throws IOException{
@@ -17,21 +17,21 @@ public class CSVFileWriter {
 			writer.append(',');
 		}
 		writer.append('\n');
-		for (int i = 0; i < view.errorData.size(); i++){
+		for (int i = 0; i < view.logParser.errorData.size(); i++){
 			String myLine = "";
-			int errorCount = (int)view.errorData.get(i)[0];
+			int errorCount = (int)view.logParser.errorData.get(i)[0];
 			myLine += errorCount + ",";
-			String timeStamp = (String)view.errorData.get(i)[1] + ",";
+			String timeStamp = (String)view.logParser.errorData.get(i)[1] + ",";
 			myLine += timeStamp;
-			String keyWord = (String) view.errorData.get(i)[2];
+			String keyWord = (String) view.logParser.errorData.get(i)[2];
 			if(keyWord.contains(","))
 				keyWord = "\"" + keyWord + "\"";
 			myLine += (keyWord + ",");
-			String errorMsg = (String) view.errorData.get(i)[3];
+			String errorMsg = (String) view.logParser.errorData.get(i)[3];
 			if(errorMsg.contains(","))
 				errorMsg = "\"" + errorMsg + "\"";
 			myLine += (errorMsg + ",");
-			String solutionMsg = (String) view.errorData.get(i)[4];
+			String solutionMsg = (String) view.logParser.errorData.get(i)[4];
 			if(solutionMsg.contains(","))
 				solutionMsg = "\"" + solutionMsg + "\"";
 			myLine += solutionMsg + "\r\n";

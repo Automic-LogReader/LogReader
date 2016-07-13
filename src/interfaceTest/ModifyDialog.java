@@ -25,7 +25,7 @@ public class ModifyDialog extends JDialog {
 	/**
 	 * Create the dialog.
 	 */
-	public ModifyDialog(String keyWord, String errorMessage, String solutionMessage, AdminView admin, int row) {
+	public ModifyDialog(String keyWord, String errorMessage, String solutionMessage, DataController dc, int row) {
 		
 		selectedRow = row;
 		
@@ -131,7 +131,7 @@ public class ModifyDialog extends JDialog {
 				else
 				{
 					try {
-						admin.modifyData(keywordText.getText(), errorText.getText(), solutionText.getText(), "MODIFY", selectedRow);
+						dc.modifyData(keywordText.getText(), errorText.getText(), solutionText.getText(), "MODIFY", selectedRow);
 					} catch (Exception e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();

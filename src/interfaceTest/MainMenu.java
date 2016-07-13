@@ -8,16 +8,13 @@ package interfaceTest;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import java.awt.BorderLayout;
 import java.awt.Component;
 
 import javax.swing.border.EmptyBorder;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import net.miginfocom.swing.MigLayout;
-import javax.swing.BoxLayout;
 import java.awt.FlowLayout;
-import javax.swing.SwingConstants;
 
 @SuppressWarnings("serial")
 public class MainMenu extends JFrame {

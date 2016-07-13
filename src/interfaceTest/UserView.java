@@ -93,7 +93,7 @@ public class UserView extends JFrame{
 	private CheckBoxListItem[] listOfKeyWords;
 	private int numKeyWords;
 	
-	private LogParser logParser;
+	protected LogParser logParser;
 	
 	/**
 	 * Create the frame.
@@ -248,6 +248,9 @@ public class UserView extends JFrame{
 			while(errorLine != null)
 			{
 				errorWords = errorLine.split(",(?=([^\"]|\"[^\"]*\")*$)");
+				if (errorWords[0].equals("[===>]")){
+					solutions.put("===>", errorWords[2]);
+				}
 				solutions.put(errorWords[0], errorWords[2]);
 				errorLine = newbr.readLine();
 			}
