@@ -56,9 +56,7 @@ public class UserView extends JFrame{
 								"Keywords", "Error Message", "Suggested Solution"};
 	protected List<Object[]> errorData = new ArrayList<Object[]>();
 	private Object [][] data;
-	private int errorCount;
-	private ProgressDialog dialog;
-	private long progress;
+	protected ProgressDialog dialog;
 	private Thread t;
 	//Holds path of the user given logfile
 	protected String logFile;
@@ -70,21 +68,18 @@ public class UserView extends JFrame{
 	protected String errorLine;
 	//Holds the individual cell entries from errorLine
 	protected String [] errorWords;
-	//ArrayList to hold all the UCodes from the csv file
-	private Object[] entry;
-	
-	private HashMap<String, String> solutions = new HashMap<String, String>();
-	private HashSet<String> keyWords = new HashSet<String>();
-	private HashSet<String> originalKeyWords;
+	protected  HashMap<String, String> solutions = new HashMap<String, String>();
+	protected HashSet<String> keyWords = new HashSet<String>();
+	protected HashSet<String> originalKeyWords;
 	private boolean hasCopiedOriginalKeyWords;
 	
 	
 	//Holds the size of the file in bytes
 	private long fileSize;
 	//Divided by 100 to update the progress bar efficiently
-	private long fileSizeDivHundred;
+	protected long fileSizeDivHundred;
 	
-	private JTable errorTable;
+	protected JTable errorTable;
 	private JPanel contentPane;
 	private JTextField filePath;
 	//User clicks after selecting directory for log file
@@ -92,17 +87,13 @@ public class UserView extends JFrame{
 	//Returns the User back to the Main Menu
 	protected JButton backButton;
 	private JButton chooseFile;
-	private JScrollPane errorScrollPane;
+	protected JScrollPane errorScrollPane;
 	private AdminView admin;
 
 	private CheckBoxListItem[] listOfKeyWords;
 	private int numKeyWords;
 	
-	private int percent;
-	private int oldPercent;
-	
-	private int correct = 0;
-	private int incorrect = 0;
+	private LogParser logParser;
 	
 	/**
 	 * Create the frame.
@@ -118,10 +109,152 @@ public class UserView extends JFrame{
 			}
 			data[i] = temp;
 		}
-		errorCount = 0;
 		fillKeywords();
 		createErrorDictionary();
+		prepareGUI(menu, isAdmin);
+	}
+	
+	
+	/**
+	 * This function fills the ArrayList uCodes by reading in 
+	 * the LogErrors_Suggestions.csv file and taking in all of the data
+	 * from the UCodes column. This data will eventually be used in the
+	 * findLogErrors function. 
+	 * @throws IOException
+	 */
+	void fillKeywords() throws IOException
+	{
+		FileReader errorInput = new FileReader("src/interfaceTest/resources/LogErrors_Suggestions.csv");
+		BufferedReader errorbr = new BufferedReader(errorInput);
+		//Gets to the second line (skips header row of csv)
+		errorLine = errorbr.readLine();
+		errorLine = errorbr.readLine();
+		//Filling the uCodes arraylist
+		while(errorLine != null)
+		{
+			errorWords = errorLine.split(",(?=([^\"]|\"[^\"]*\")*$)");
+			if(errorWords.length > 2)
+			{
+				if (errorWords[0].equals("[===>]")){
+					keyWords.add("===>");
+				}
+				else {
+					keyWords.add(errorWords[0]);
+				}
+				errorLine = errorbr.readLine();
+			}
+			else
+				break;
+		}
+		errorbr.close();
 		
+		numKeyWords = keyWords.size();
+		listOfKeyWords = new CheckBoxListItem[numKeyWords + 1];
+		listOfKeyWords[0] = new CheckBoxListItem("All KeyWords");
+		//All Keywords selected by default
+		listOfKeyWords[0].setSelected(true);
+		
+		int index = 1;
+		for (String s : keyWords){
+			listOfKeyWords[index] = new CheckBoxListItem(s);
+			index++;
+		}
+		
+		if (!hasCopiedOriginalKeyWords){
+			originalKeyWords = new HashSet<String>(keyWords);
+			hasCopiedOriginalKeyWords = true;
+		}
+	}
+	
+	/**
+	 * This function takes in the logfile given by the user and parses through it 
+	 * to find errors by comparing the UCodes in the logFile against the error
+	 * UCodes from LogErrors_Suggestions.csv. If UCodes match, then the timestamp,
+	 * Ucode, corresponding error message, and suggested solution are displayed on the screen. 
+	 * @param path - A filepath from the user 
+	 * @throws IOException
+	 */
+	void findLogErrors(String path) throws IOException
+	{
+		logFile = path;
+		File file = new File(path);
+		if (!file.exists()){
+			JOptionPane.showMessageDialog(null, "The file cannot be found");
+			return;
+		}
+		try {
+			if (noCheckBoxSelected()) return;
+			
+			dialog = new ProgressDialog(file, this);
+			dialog.setVisible(true);
+			logParser = new LogParser(this);
+			} catch (Exception e) {
+				e.printStackTrace();
+			};	
+			t = new Thread(new Runnable()
+			{
+				public void run() {
+					try {
+						fileSize = file.length();
+						fileSizeDivHundred = fileSize/100;
+						
+						submitButton.setEnabled(false);
+						logParser.parseErrors(file, dialog);
+						//parseErrors(file, dialog);
+						} catch (IOException e) {
+						// TODO Auto-generated catch block
+							e.printStackTrace();
+							}
+						}			
+					}
+				);
+		t.start();
+	}
+	
+	void updateKeyWords(){
+		if (listOfKeyWords[0].isSelected()){
+			System.out.println("default selection");
+			keyWords.addAll(originalKeyWords);
+			return;
+		}
+		else {
+			keyWords.clear();
+			for (int i = 1; i <= numKeyWords; i++){
+				if (listOfKeyWords[i].isSelected()){
+					System.out.println("Added:" + listOfKeyWords[i].toString());
+					keyWords.add(listOfKeyWords[i].toString());
+				}
+			}
+		}
+	}
+	
+	boolean noCheckBoxSelected(){
+		for (int i = 0; i <= numKeyWords; i++){
+			if (listOfKeyWords[i].isSelected()){
+				return false;
+			}
+		}
+		JOptionPane.showMessageDialog(null, "Please select a checkbox");
+		return true;
+	}
+	
+	//Maps the key words to solution messages
+	void createErrorDictionary() throws IOException{
+		FileReader errorInput = new FileReader("src/interfaceTest/resources/LogErrors_Suggestions.csv");
+		BufferedReader newbr = new BufferedReader(errorInput);
+		newbr.readLine();
+		errorLine = newbr.readLine();
+			
+			while(errorLine != null)
+			{
+				errorWords = errorLine.split(",(?=([^\"]|\"[^\"]*\")*$)");
+				solutions.put(errorWords[0], errorWords[2]);
+				errorLine = newbr.readLine();
+			}
+			newbr.close();
+	}
+	
+	void prepareGUI(MainMenu menu, boolean isAdmin){
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 1200, 280);
 		setLocationRelativeTo(null);
@@ -287,353 +420,6 @@ public class UserView extends JFrame{
 		
 		setVisible(true);
 	}
-	
-	
-	/**
-	 * This function fills the ArrayList uCodes by reading in 
-	 * the LogErrors_Suggestions.csv file and taking in all of the data
-	 * from the UCodes column. This data will eventually be used in the
-	 * findLogErrors function. 
-	 * @throws IOException
-	 */
-	void fillKeywords() throws IOException
-	{
-		FileReader errorInput = new FileReader("src/interfaceTest/resources/LogErrors_Suggestions.csv");
-		BufferedReader errorbr = new BufferedReader(errorInput);
-		
-		//Gets to the second line (skips header row of csv)
-		errorLine = errorbr.readLine();
-		errorLine = errorbr.readLine();
-		
-		//Filling the uCodes arraylist
-		while(errorLine != null)
-		{
-			errorWords = errorLine.split(",(?=([^\"]|\"[^\"]*\")*$)");
-			if(errorWords.length > 2)
-			{
-				if (errorWords[0].equals("[===>]")){
-					keyWords.add("===>");
-				}
-				else {
-					keyWords.add(errorWords[0]);
-				}
-				errorLine = errorbr.readLine();
-			}
-			else
-				break;
-		}
-		errorbr.close();
-		
-		numKeyWords = keyWords.size();
-		listOfKeyWords = new CheckBoxListItem[numKeyWords + 1];
-		listOfKeyWords[0] = new CheckBoxListItem("All KeyWords");
-		//All Keywords selected by default
-		listOfKeyWords[0].setSelected(true);
-		
-		int index = 1;
-		for (String s : keyWords){
-			listOfKeyWords[index] = new CheckBoxListItem(s);
-			index++;
-		}
-		
-		if (!hasCopiedOriginalKeyWords){
-			originalKeyWords = new HashSet<String>(keyWords);
-			hasCopiedOriginalKeyWords = true;
-		}
-	}
-	
-	/**
-	 * This function takes in the logfile given by the user and parses through it 
-	 * to find errors by comparing the UCodes in the logFile against the error
-	 * UCodes from LogErrors_Suggestions.csv. If UCodes match, then the timestamp,
-	 * Ucode, corresponding error message, and suggested solution are displayed on the screen. 
-	 * @param path - A filepath from the user 
-	 * @throws IOException
-	 */
-	void findLogErrors(String path) throws IOException
-	{
-		logFile = path;
-		File file = new File(path);
-		if (!file.exists()){
-			JOptionPane.showMessageDialog(null, "The file cannot be found");
-			return;
-		}
-		try {
-			if (noCheckBoxSelected()) return;
-			
-			dialog = new ProgressDialog(file, this);
-			dialog.setVisible(true);
-			} catch (Exception e) {
-				e.printStackTrace();
-			};	
-			t = new Thread(new Runnable()
-			{
-
-				public void run() {
-					try {
-						fileSize = file.length();
-						fileSizeDivHundred = fileSize/100;
-						
-						submitButton.setEnabled(false);
-						parseErrors(file, dialog);
-						} catch (IOException e) {
-						// TODO Auto-generated catch block
-							e.printStackTrace();
-							}
-						}			
-					}
-				);
-				
-		t.start();
-	}
-	
-	void parseErrors(File file, ProgressDialog pd) throws IOException
-	{
-		updateKeyWords();
-		
-		percent = 0;
-		oldPercent = 0;
-		
-		errorData.clear();
-		errorCount = 0;
-		progress = 0;
-		String timeStamp = null;
-		StringBuilder errorMessage = new StringBuilder();
-		boolean keywordFound = false;
-		boolean timeStampFound = false;
-		boolean specialCase = false;
-		
-		FileReader logInput = new FileReader(logFile);
-		BufferedReader logbr = new BufferedReader(logInput);
-
-		logLine = logbr.readLine();
-		
-		//Timer for performance testing
-		long startTime = System.nanoTime();
-		while(logLine != null)
-		{
-			progress += logLine.length();
-			
-			percent = (int) (progress / fileSizeDivHundred);
-			if (percent > oldPercent){
-				dialog.updateProgress(percent);
-				oldPercent = percent;
-			}
-
-			logWords = logLine.split(" ");
-			
-			timeStamp = null;
-			//errorMessage = "";
-			errorMessage.setLength(0);
-			entry = null;
-			
-			keywordFound = false;
-			timeStampFound = false;
-			specialCase = false;
-			
-			for (String testWord : logWords){
-				//Timestamp will always come first
-				//Is this a reliable way to find timestamp?
-				//Maybe change to regex
-				if (testWord.length() == 19 && !timeStampFound){
-					timeStamp = testWord;
-					timeStampFound = true;
-				}
-				if(timeStampFound && !keywordFound){
-					//Testing the UCode from the file against the error UCodes
-					if (keyWords.contains(testWord)){
-						keywordFound = true;
-						errorCount++;
-						if (testWord.equals("===>") && logLine.contains("Time critical")) {
-							entry = parseArrowError(logbr, timeStamp, logWords);
-							specialCase = true;
-							break;
-						}
-						else {
-							entry = new Object[5];
-							entry[0] = errorCount;
-							entry[1] = timeStamp;
-							entry[2] = testWord;
-				
-							if (solutions.get(entry[2]) != null){
-								entry[4] = solutions.get(entry[2]);
-							}
-						}
-					}
-				}
-				
-				else if(timeStampFound && keywordFound){
-					errorMessage.append(testWord + " ");
-					/*if (entry != null){
-						entry[3] = errorMessage;
-					}*/
-				}
-			}
-			
-			if(entry != null){
-				if (!specialCase){
-					entry[3] = errorMessage.toString();
-					if (entry[3] == null){
-						entry[3] = " ";
-					}
-				}
-				errorData.add(entry);
-			}
-			logLine = logbr.readLine();
-		}
-		
-		//Logs execution time to the console
-		long endTime = System.nanoTime();
-		long duration = (endTime - startTime)/1000000;
-		System.out.println("Operation completed in " + duration + " ms");
-		
-		dialog.doneParse(errorCount);
-		logbr.close();
-		data = new Object[errorData.size()][];
-		
-		for(int i = 0; i < errorData.size(); i++){
-			data[i] = errorData.get(i);
-		}
-		makeTable();
-		System.out.println("Non-matching arrow errors: " + incorrect + " hidden errors: " + correct);
-	}
-
-	Object[] parseArrowError(BufferedReader logbr, String timeStamp, String[] currArray) throws IOException{
-		
-		Object[] tempEntry = new Object[5];
-		tempEntry[0] = errorCount;
-		tempEntry[1] = timeStamp;
-		tempEntry[2] = "===>";
-		int arrowindex = 0;
-		if (solutions.get(tempEntry[2]) != null){
-			tempEntry[4] = solutions.get(tempEntry[2]);
-		}
-		StringBuilder errorMsg = new StringBuilder();
-
-		boolean closingArrowTagFound = false;
-		for (int i=0; i<currArray.length; i++){
-			if (currArray[i].equals("===>")){
-				for (int j=(i+1); j<currArray.length; j++){
-					errorMsg.append(currArray[j] + " ");
-				}
-				break;
-			}
-		}
-		String firstLineOfError = errorMsg.toString();
-		
-		logLine = logbr.readLine();
-		while (!closingArrowTagFound && logLine != null){
-			progress += logLine.length();
-			
-			percent = (int) (progress / fileSizeDivHundred);
-			if (percent > oldPercent){
-				dialog.updateProgress(percent);
-				oldPercent = percent;
-			}
-			for (String s : keyWords){
-				if (logLine.contains(s) && !s.equals("===>")){
-					System.out.println(s);
-					correct++;
-				}
-			}
-			if (logLine.contains("===>")){
-				if (logLine.contains("Time critical")){
-					System.out.println(logLine);
-					incorrect++;
-					errorCount++;
-					tempEntry[3] = firstLineOfError;
-					String[] tempArray = logLine.split(" ");
-					String tempTimeStamp = "";
-					for (String s : tempArray){
-						if (s.length() == 19){
-							tempTimeStamp = s;
-							break;
-						}
-					}
-					errorData.add(parseArrowError(logbr, tempTimeStamp, tempArray));
-					return tempEntry;
-				}
-				errorMsg.append(logLine + " ");
-				closingArrowTagFound = true;
-				break;
-			}
-			errorMsg.append(logLine + " ");
-			if (!closingArrowTagFound){
-				logLine = logbr.readLine();
-			}
-		}
-		tempEntry[3] = errorMsg.toString();
-		return tempEntry;
-	}
-
-	void makeTable()
-	{
-		DefaultTableModel tableModel = new DefaultTableModel(data, headers) {
-		    @Override
-		    public boolean isCellEditable(int row, int column) {
-		       //all cells false
-		       return false;
-		    }
-		};
-		
-		errorTable = new JTable(tableModel){
-			//Renders each columnn to fit the data
-			public Component prepareRenderer(TableCellRenderer renderer, int row, int column) 
-			{
-				Component component = super.prepareRenderer(renderer, row, column);
-				int rendererWidth = component.getPreferredSize().width;
-	           TableColumn tableColumn = getColumnModel().getColumn(column);
-	           tableColumn.setPreferredWidth(Math.max(rendererWidth + getIntercellSpacing().width, tableColumn.getPreferredWidth()));
-	           return component;
-			}
-		};
-		
-		errorTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-		errorScrollPane.setViewportView(errorTable);
-	}
-	
-	void updateKeyWords(){
-		if (listOfKeyWords[0].isSelected()){
-			System.out.println("default selection");
-			keyWords.addAll(originalKeyWords);
-			return;
-		}
-		else {
-			keyWords.clear();
-			for (int i = 1; i <= numKeyWords; i++){
-				if (listOfKeyWords[i].isSelected()){
-					System.out.println("Added:" + listOfKeyWords[i].toString());
-					keyWords.add(listOfKeyWords[i].toString());
-				}
-			}
-		}
-	}
-	
-	boolean noCheckBoxSelected(){
-		for (int i = 0; i <= numKeyWords; i++){
-			if (listOfKeyWords[i].isSelected()){
-				return false;
-			}
-		}
-		JOptionPane.showMessageDialog(null, "Please select a checkbox");
-		return true;
-	}
-	
-	//Maps the key words to solution messages
-	void createErrorDictionary() throws IOException{
-		FileReader errorInput = new FileReader("src/interfaceTest/resources/LogErrors_Suggestions.csv");
-		BufferedReader newbr = new BufferedReader(errorInput);
-		newbr.readLine();
-		errorLine = newbr.readLine();
-			
-			while(errorLine != null)
-			{
-				errorWords = errorLine.split(",(?=([^\"]|\"[^\"]*\")*$)");
-				solutions.put(errorWords[0], errorWords[2]);
-				errorLine = newbr.readLine();
-			}
-			newbr.close();
-		}
 }
 	
 
