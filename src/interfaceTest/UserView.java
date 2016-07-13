@@ -70,7 +70,6 @@ public class UserView extends JFrame{
 	protected HashSet<String> originalKeyWords;
 	private boolean hasCopiedOriginalKeyWords;
 	
-	
 	//Holds the size of the file in bytes
 	private long fileSize;
 	//Divided by 100 to update the progress bar efficiently
@@ -84,6 +83,7 @@ public class UserView extends JFrame{
 	//Returns the User back to the Main Menu
 	protected JButton backButton;
 	private JButton chooseFile;
+	private JButton preferenceButton;
 	protected JScrollPane errorScrollPane;
 	private AdminView admin;
 
@@ -91,6 +91,9 @@ public class UserView extends JFrame{
 	private int numKeyWords;
 	
 	protected LogParser logParser;
+	
+	protected double lowerBound;
+	protected double upperBound;
 	
 	/**
 	 * Create the frame.
@@ -272,6 +275,15 @@ public class UserView extends JFrame{
 		
 		Component horizontalStrut_4 = Box.createHorizontalStrut(20);
 		bottomPanel.add(horizontalStrut_4);
+		
+		preferenceButton = new JButton("Preferences");
+		preferenceButton.addActionListener(e -> {
+			PreferenceEditor preferenceEditor = new PreferenceEditor(this);
+		});
+		preferenceButton.setToolTipText("Groupings, Time Critical DB Call Intervals ...");
+		bottomPanel.add(preferenceButton);
+		
+		bottomPanel.add(Box.createRigidArea(new Dimension(10,0)));
 		
 		chooseFile = new JButton("Choose File");
 		chooseFile.addActionListener(e -> {
