@@ -71,13 +71,7 @@ public class LogParser {
 		long startTime = System.nanoTime();
 		while(logLine != null)
 		{
-			progress += logLine.length();
-			percent = (int) (progress / view.fileSizeDivHundred);
-			if (percent > oldPercent){
-				view.dialog.updateProgress(percent);
-				oldPercent = percent;
-			}
-
+			updateProgress();
 			logWords = logLine.split(" ");
 			
 			timeStamp = null;
@@ -101,7 +95,12 @@ public class LogParser {
 					if (view.keyWords.contains(testWord)){
 						keywordFound = true;
 						errorCount++;
-						if (testWord.equals("===>") && logLine.contains("Time critical")) {
+						if (testWord.equals("DEADLOCK")){
+							entry = parseDeadlockError(logbr, timeStamp);
+							specialCase = true;
+							break;
+						}
+						else if (testWord.equals("===>") && logLine.contains("Time critical")) {
 							entry = parseArrowError(logbr, timeStamp, logWords);
 							specialCase = true;
 							break;
@@ -155,10 +154,13 @@ public class LogParser {
 	Object[] parseArrowError(BufferedReader logbr, String timeStamp, String[] currArray) throws IOException{
 		
 		Object[] tempEntry = new Object[5];
+		String[] words;
 		tempEntry[0] = errorCount;
 		tempEntry[1] = timeStamp;
 		tempEntry[2] = "===>";
 		int arrowindex = 0;
+		boolean timeStampFound = false;
+        boolean uCodeFound = false;  
 		if (view.solutions.get(tempEntry[2]) != null){
 			tempEntry[4] = view.solutions.get(tempEntry[2]);
 		}
@@ -167,6 +169,7 @@ public class LogParser {
 		boolean closingArrowTagFound = false;
 		for (int i=0; i<currArray.length; i++){
 			if (currArray[i].equals("===>")){
+				arrowindex = i-1;
 				for (int j=(i+1); j<currArray.length; j++){
 					errorMsg.append(currArray[j] + " ");
 				}
@@ -177,19 +180,11 @@ public class LogParser {
 		
 		logLine = logbr.readLine();
 		while (!closingArrowTagFound && logLine != null){
-			progress += logLine.length();
+			updateProgress();
+			timeStampFound = false;
+			uCodeFound = false;
+			words = logLine.split(" ");
 			
-			percent = (int) (progress / view.fileSizeDivHundred);
-			if (percent > oldPercent){
-				view.dialog.updateProgress(percent);
-				oldPercent = percent;
-			}
-			for (String s : view.keyWords){
-				if (logLine.contains(s) && !s.equals("===>")){
-					System.out.println(s);
-					correct++;
-				}
-			}
 			if (logLine.contains("===>")){
 				if (logLine.contains("Time critical")){
 					//System.out.println(logLine);
@@ -207,11 +202,25 @@ public class LogParser {
 					errorData.add(parseArrowError(logbr, tempTimeStamp, tempArray));
 					return tempEntry;
 				}
-				errorMsg.append(logLine + " ");
+				if (arrowindex < words.length){
+					for (int i = arrowindex; i < words.length; i++){
+						errorMsg.append(words[i] + " ");
+					}
+				}
+				else {
+					errorMsg.append(logLine + " ");
+				}
 				closingArrowTagFound = true;
 				break;
 			}
-			errorMsg.append(logLine + " ");
+			if (arrowindex < words.length){
+				for (int i = arrowindex; i < words.length; i++){
+					errorMsg.append(words[i] + " ");
+				}
+			} 
+			else {
+				errorMsg.append(logLine + " ");
+			}
 			if (!closingArrowTagFound){
 				logLine = logbr.readLine();
 			}
@@ -219,9 +228,71 @@ public class LogParser {
 		tempEntry[3] = errorMsg.toString();
 		return tempEntry;
 	}
+	
+	Object[] parseDeadlockError(BufferedReader logbr, String timeStamp) throws IOException {
+           Object[] entry = new Object[5];
+           int difference = 20;
+           ArrayList <String> errorLines = new ArrayList<String>();
+           boolean matchingDeadlock = false;
+           StringBuilder testLine = new StringBuilder();
+           StringBuilder errorMsg = new StringBuilder();
+           String[] words;
+           entry[0] = errorCount;
+           entry[1] = timeStamp;
+           entry[2] = "DEADLOCK";
+           String Line = logbr.readLine();
+           while(!matchingDeadlock && Line != null){
+                  boolean timeStampFound = false;
+                  boolean uCodeFound = false;              
+                  testLine.setLength(0);
+                  updateProgress();
+                  words = Line.split(" ");
+                  for(String testWord : words){
+                        if(!timeStampFound && testWord.length() == 19){
+                               timeStampFound = true;
+                               //If our timestamps are not equal, we 
+                               //don't have a matching deadlock
+                               //Make a new if statement here
+                               if(timeStampDifference(testWord, timeStamp)){
+                                      entry[3] = " ";
+                                      if (view.solutions.get(entry[2]) != null)
+                                             entry[4] = view.solutions.get(entry[2]);
+                                      return entry;
+                               }
+                        }
+       
+                        else if(!uCodeFound && timeStampFound){
+                               if(testWord.length() > 2){
+                                      if(testWord.charAt(0) == 'U' && Character.isDigit(testWord.charAt(1))){
+                                             uCodeFound = true;
+                                      }
+                               }
+                        }
+                        else if(uCodeFound && timeStampFound){
 
-	void makeTable()
-	{
+                               if(testWord.equals("DEADLOCK")){
+                                      matchingDeadlock = true;
+                                      for(int i = 0; i < errorLines.size(); i++){
+                                             errorMsg.append(errorLines.get(i));
+                                      }
+                                      entry[3] = errorMsg.toString();
+                                      if (view.solutions.get(entry[2]) != null)
+                                             entry[4] = view.solutions.get(entry[2]);
+                                      
+                                      return entry;
+                               }
+                               else
+                                      testLine.append(testWord + " ");  
+                        }      
+                  }
+                  //System.out.println("I am adding a line to errormsg");
+                  errorLines.add(testLine.toString());
+                  Line = logbr.readLine();
+           }
+           return entry;
+    }
+
+	void makeTable(){
 		DefaultTableModel tableModel = new DefaultTableModel(data, headers) {
 		    @Override
 		    public boolean isCellEditable(int row, int column) {
@@ -246,4 +317,30 @@ public class LogParser {
 		view.errorScrollPane.setViewportView(view.errorTable);
 	}
 	
+	boolean timeStampDifference(String testStamp, String timeStamp){
+           int i1 = Integer.parseInt(testStamp.substring(16));
+           int i2 = Integer.parseInt(timeStamp.substring(16));
+           if (i1 > i2){
+                  if((i1 - i2) > 20)
+                        return true;
+                  else
+                        return false;
+           }
+           else{
+                  if((i2 - i1) > 20)
+                        return true;
+                  else 
+                        return false;
+           }
+    }
+    
+	//Helper function for the progress bar
+	void updateProgress(){
+		progress += logLine.length();
+		percent = (int) (progress / view.fileSizeDivHundred);
+		if (percent > oldPercent){
+			view.dialog.updateProgress(percent);
+			oldPercent = percent;
+		}
+	}
 }
