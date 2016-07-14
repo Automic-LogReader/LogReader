@@ -438,6 +438,74 @@ public class UserView extends JFrame{
 		
 		setVisible(true);
 	}
+	
+	/******* CODE FOR THE DATABASE ******/
+	/*
+	 * public UserView(MainMenu menu, boolean isAdmin) throws ClassNotFoundException, SQLException {
+		hasCopiedOriginalKeyWords = false;
+		data = new Object[11][];
+		for(int i = 0; i < 11; i ++){
+			Object[] temp = new Object[5];
+			for(int j = 0; j < 5; j++){
+				temp[j] = "";
+			}
+			data[i] = temp;
+		}
+		lowerBound = 0;
+		upperBound = Double.MAX_VALUE;
+		String driver = "com.mysql.jdbc.Driver";
+		Class.forName(driver);
+		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306", "root", "Hakuna.Mattata!");
+
+		Statement stmt = conn.createStatement();
+		String query = "use logsuggestions";
+		int i = stmt.executeUpdate("use logsuggestions");
+		
+		fillKeywords(stmt);
+		createErrorDictionary(stmt);
+		stmt.close();
+		prepareGUI(menu, isAdmin);
+	}
+	
+	void fillKeywords(Statement stmt) throws SQLException 
+	{
+		String query = "select Keywords from logerrors";
+		ResultSet rs = stmt.executeQuery(query);
+		while(rs.next())
+		{
+			keyWords.add(rs.getString("Keywords"));
+		}
+		
+		numKeyWords = keyWords.size();
+		listOfKeyWords = new CheckBoxListItem[numKeyWords + 1];
+		listOfKeyWords[0] = new CheckBoxListItem("All KeyWords");
+		//All Keywords selected by default
+		listOfKeyWords[0].setSelected(true);
+		
+		int index = 1;
+		for (String s : keyWords){
+			listOfKeyWords[index] = new CheckBoxListItem(s);
+			index++;
+		}
+		
+		if (!hasCopiedOriginalKeyWords){
+			originalKeyWords = new HashSet<String>(keyWords);
+			hasCopiedOriginalKeyWords = true;
+		}
+	}
+	
+	void createErrorDictionary(Statement stmt) throws SQLException {
+	
+		String query = "select Keywords, SuggestedSolution from logerrors";
+		ResultSet rs = stmt.executeQuery(query);
+		while(rs.next())
+		{
+			solutions.put(rs.getString("Keywords"), rs.getString("SuggestedSolution"));
+		}
+			
+	}
+	 * 
+	 */
 }
 	
 
