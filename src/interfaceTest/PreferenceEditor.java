@@ -3,6 +3,7 @@ package interfaceTest;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -17,6 +18,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
@@ -38,6 +40,7 @@ public class PreferenceEditor extends JFrame {
 	private JTextField upperBound;
 	protected CheckBoxListItem[] listOfKeyWords;
 	protected JPanel listPanel;
+	protected DefaultListModel<String> model;
 	
 	public PreferenceEditor(UserView view) {
 		prepareGUI(view);
@@ -165,21 +168,25 @@ public class PreferenceEditor extends JFrame {
 		panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
 		panel.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
 	    panel.add(Box.createHorizontalGlue());
-	    String[] data = new String[view.keyWordGroups.size()];
-	    int index = 0;
-	    for (ArrayList<String> list : view.keyWordGroups){
+
+	    model = new DefaultListModel<String>();
+	    updateGroups(view);
+	    JList<String> list = new JList<String>(model);
+	    JScrollPane scrollPane = new JScrollPane(list);
+	    panel.add(scrollPane);
+	    return panel;
+	}
+	
+	void updateGroups(UserView view){
+		model.clear();
+		for (HashSet<String> list : view.keyWordGroups){
 	    	StringBuilder listItem = new StringBuilder();
 	    	listItem.setLength(0);
 	    	for (String s : list){
 	    		listItem.append(s + " ");
 	    	}
-	    	data[index] = listItem.toString();
-	    	++index;
+	    	model.addElement(listItem.toString());
 	    }
-	    JList<String> list = new JList<String>(data);
-	    JScrollPane scrollPane = new JScrollPane(list);
-	    panel.add(scrollPane);
-	    return panel;
 	}
 	
 	void save(UserView view){

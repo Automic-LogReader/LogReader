@@ -97,7 +97,7 @@ public class UserView extends JFrame{
 	
 	protected JList<CheckBoxListItem> list;
 	
-	protected HashSet<ArrayList<String>> keyWordGroups = new HashSet<ArrayList<String>>();
+	protected HashSet<HashSet<String>> keyWordGroups = new HashSet<HashSet<String>>();
 	/**
 	 * Create the frame.
 	 * @throws IOException 

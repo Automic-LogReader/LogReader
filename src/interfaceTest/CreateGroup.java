@@ -25,6 +25,10 @@ import interfaceTest.CheckBoxList.CheckBoxListRenderer;
 
 public class CreateGroup extends JDialog{
 	public CreateGroup(PreferenceEditor editor, UserView view){
+		prepareGUI(editor, view);
+	};
+	
+	void prepareGUI(PreferenceEditor editor, UserView view){
 		JPanel mainPanel = new JPanel(false);
 		getContentPane().add(mainPanel, BorderLayout.CENTER);
 		mainPanel.setBorder(new EmptyBorder(new Insets(10, 10, 10, 10)));
@@ -46,14 +50,13 @@ public class CreateGroup extends JDialog{
 			}
 			else {
 				saveGroups(editor, view);
-				editor.listPanel = editor.displayGroups(view);
+				editor.updateGroups(view);
 				this.setVisible(false);
 			}
 		});
 		mainPanel.add(okButton);
 		setVisible(true);
-	};
-	
+	}
 	
 	JScrollPane createListDisplay(PreferenceEditor editor, UserView view){
 		editor.listOfKeyWords = new CheckBoxListItem[view.keyWords.size()];
@@ -84,7 +87,7 @@ public class CreateGroup extends JDialog{
 	}
 	
 	void saveGroups(PreferenceEditor editor, UserView view){
-		ArrayList<String> group = new ArrayList<String>();
+		HashSet<String> group = new HashSet<String>();
 		for (int i=0; i<editor.listOfKeyWords.length; i++){
 			if (editor.listOfKeyWords[i].isSelected()){
 				group.add(editor.listOfKeyWords[i].toString());
