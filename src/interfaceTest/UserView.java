@@ -95,6 +95,9 @@ public class UserView extends JFrame{
 	protected Double lowerBound;
 	protected Double upperBound;
 	
+	protected JList<CheckBoxListItem> list;
+	
+	protected HashSet<ArrayList<String>> keyWordGroups = new HashSet<ArrayList<String>>();
 	/**
 	 * Create the frame.
 	 * @throws IOException 
@@ -403,7 +406,7 @@ public class UserView extends JFrame{
 		
 		new DefaultTableModel(data, headers);
 		
-		JList<CheckBoxListItem> list = new JList<CheckBoxListItem>(listOfKeyWords);
+		list = new JList<CheckBoxListItem>(listOfKeyWords);
 		list.setCellRenderer(new CheckBoxListRenderer());
 		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		list.addMouseListener(new MouseAdapter(){

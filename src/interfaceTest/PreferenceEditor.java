@@ -14,12 +14,21 @@ import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
+
+import interfaceTest.CheckBoxList.CheckBoxListItem;
+import interfaceTest.CheckBoxList.CheckBoxListRenderer;
+
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
 
@@ -27,6 +36,8 @@ import javax.swing.JTabbedPane;
 public class PreferenceEditor extends JFrame {
 	private JTextField lowerBound;
 	private JTextField upperBound;
+	protected CheckBoxListItem[] listOfKeyWords;
+	protected JPanel listPanel;
 	
 	public PreferenceEditor(UserView view) {
 		prepareGUI(view);
@@ -94,6 +105,23 @@ public class PreferenceEditor extends JFrame {
 		tabbedPane.addTab("Error Groups", tab2);
 		tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
 		
+		tab2.setLayout(new BoxLayout(tab2, BoxLayout.Y_AXIS));
+		tab2.add(Box.createVerticalGlue());
+		
+		listPanel = displayGroups(view);
+		tab2.add(listPanel);
+		
+		JButton createGroup = new JButton("Create Group");
+		createGroup.setPreferredSize(new Dimension(125, 20));
+		createGroup.setAlignmentX(CENTER_ALIGNMENT);
+		createGroup.addActionListener(e -> {
+			System.out.println("create group");
+			CreateGroup groupView = new CreateGroup(this, view);
+		});
+		tab2.add(createGroup);
+		
+		tab2.add(Box.createVerticalGlue());
+		
 		JPanel tab3 = new JPanel(false);
 		tabbedPane.addTab("AND/OR/NOT", tab3);
 		tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
@@ -106,8 +134,8 @@ public class PreferenceEditor extends JFrame {
 		submitPane.setLayout(new FlowLayout());
 		submitPane.setPreferredSize(new Dimension(600, 25));
 		
-		JButton submitButton = new JButton("Submit");
-		submitButton.setPreferredSize(new Dimension(80, 20));
+		JButton submitButton = new JButton("Save Changes");
+		submitButton.setPreferredSize(new Dimension(125, 20));
 		submitButton.addActionListener(e -> {
 			int result = JOptionPane.showConfirmDialog(this,"Save changes?", null, JOptionPane.YES_NO_OPTION);
             switch(result){
@@ -130,6 +158,28 @@ public class PreferenceEditor extends JFrame {
 		getRootPane().setDefaultButton(submitButton);
 		getContentPane().add(mainPanel, BorderLayout.CENTER);
 		setVisible(true);
+	}
+	
+	JPanel displayGroups(UserView view){
+		JPanel panel = new JPanel();
+		panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
+		panel.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
+	    panel.add(Box.createHorizontalGlue());
+	    String[] data = new String[view.keyWordGroups.size()];
+	    int index = 0;
+	    for (ArrayList<String> list : view.keyWordGroups){
+	    	StringBuilder listItem = new StringBuilder();
+	    	listItem.setLength(0);
+	    	for (String s : list){
+	    		listItem.append(s + " ");
+	    	}
+	    	data[index] = listItem.toString();
+	    	++index;
+	    }
+	    JList<String> list = new JList<String>(data);
+	    JScrollPane scrollPane = new JScrollPane(list);
+	    panel.add(scrollPane);
+	    return panel;
 	}
 	
 	void save(UserView view){
@@ -158,5 +208,16 @@ public class PreferenceEditor extends JFrame {
 				return;
 			}
 		}
+	}
+	
+	
+	boolean noCheckBoxSelected(){
+		for (int i = 0; i < listOfKeyWords.length; i++){
+			if (listOfKeyWords[i].isSelected()){
+				return false;
+			}
+		}
+		JOptionPane.showMessageDialog(null, "Please select one or more checkboxes");
+		return true;
 	}
 }
