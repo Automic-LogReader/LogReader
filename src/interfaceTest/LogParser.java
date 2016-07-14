@@ -231,7 +231,7 @@ public class LogParser {
 			}
 		}
 		tempEntry[3] = errorMsg.toString();
-		if (!outsideTimeStampBounds){
+		if (outsideTimeStampBounds){
 			errorCount--;
 			return tempEntry;
 		}

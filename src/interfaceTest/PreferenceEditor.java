@@ -32,6 +32,7 @@ public class PreferenceEditor extends JFrame {
 	protected CheckBoxListItem[] listOfKeyWords;
 	protected JPanel listPanel;
 	protected DefaultListModel<String> model;
+	protected JList<String> list;
 	
 	public PreferenceEditor(UserView view) {
 		prepareGUI(view);
@@ -105,14 +106,24 @@ public class PreferenceEditor extends JFrame {
 		listPanel = displayGroups(view);
 		tab2.add(listPanel);
 		
+		JPanel buttonPanel = new JPanel();
+		tab2.add(buttonPanel);
+		
 		JButton createGroup = new JButton("Create Group");
 		createGroup.setPreferredSize(new Dimension(125, 20));
 		createGroup.setAlignmentX(CENTER_ALIGNMENT);
 		createGroup.addActionListener(e -> {
-			System.out.println("create group");
 			CreateGroup groupView = new CreateGroup(this, view);
 		});
-		tab2.add(createGroup);
+		buttonPanel.add(createGroup);
+		
+		JButton deleteGroup = new JButton("Delete Group");
+		deleteGroup.setPreferredSize(new Dimension(125, 20));
+		deleteGroup.setAlignmentX(CENTER_ALIGNMENT);
+		deleteGroup.addActionListener(e -> {
+			removeGroup(view);
+		});
+		buttonPanel.add(deleteGroup);
 		
 		tab2.add(Box.createVerticalGlue());
 		
@@ -162,7 +173,7 @@ public class PreferenceEditor extends JFrame {
 
 	    model = new DefaultListModel<String>();
 	    updateGroups(view);
-	    JList<String> list = new JList<String>(model);
+	    list = new JList<String>(model);
 	    JScrollPane scrollPane = new JScrollPane(list);
 	    panel.add(scrollPane);
 	    return panel;
@@ -178,6 +189,29 @@ public class PreferenceEditor extends JFrame {
 	    	}
 	    	model.addElement(listItem.toString());
 	    }
+	}
+	
+	void removeGroup(UserView view){
+		String groupToRemove = list.getSelectedValue();
+		if (groupToRemove == null){
+			JOptionPane.showMessageDialog(this, "No group selected");
+			return;
+		}
+		System.out.println(groupToRemove);
+		String[] array = groupToRemove.split(" ");
+		HashSet<String> tempSet = new HashSet<String>();
+		for (int i=0; i<array.length; i++){
+			tempSet.add(array[i]);
+		}
+		for (HashSet<String> list : view.keyWordGroups){
+	    	if (tempSet.equals(list)){
+	    		if (view.keyWordGroups.remove(list)){
+	    			System.out.println("removal successful");
+	    		}
+	    		break;
+	    	}
+	    }
+		updateGroups(view);
 	}
 	
 	void save(UserView view){
@@ -207,7 +241,6 @@ public class PreferenceEditor extends JFrame {
 			}
 		}
 	}
-	
 	
 	boolean noCheckBoxSelected(){
 		for (int i = 0; i < listOfKeyWords.length; i++){
