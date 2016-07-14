@@ -91,7 +91,7 @@ public class UserView extends JFrame{
 	private int numKeyWords;
 	
 	protected LogParser logParser;
-	
+	//Bounds for time-critical DB Calls
 	protected double lowerBound;
 	protected double upperBound;
 	
@@ -109,6 +109,8 @@ public class UserView extends JFrame{
 			}
 			data[i] = temp;
 		}
+		lowerBound = 0;
+		upperBound = Double.MAX_VALUE;
 		fillKeywords();
 		createErrorDictionary();
 		prepareGUI(menu, isAdmin);

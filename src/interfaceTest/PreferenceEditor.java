@@ -82,11 +82,11 @@ public class PreferenceEditor extends JFrame {
 		
 		tab1.add(Box.createVerticalGlue());
 		
-		tabbedPane.addTab("Groups", tab1);
+		tabbedPane.addTab("Time Critical Bounds", tab1);
 		tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
 		
 		JPanel tab2 = new JPanel(false);
-		tabbedPane.addTab("Time Critical Bounds", tab2);
+		tabbedPane.addTab("Error Groups", tab2);
 		tabbedPane.setMnemonicAt(0, KeyEvent.VK_2);
 		
 		tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
@@ -100,7 +100,7 @@ public class PreferenceEditor extends JFrame {
 		JButton submitButton = new JButton("Submit");
 		submitButton.setPreferredSize(new Dimension(80, 20));
 		submitButton.addActionListener(e -> {
-			int result = JOptionPane.showConfirmDialog(this,"Save changes?","",JOptionPane.YES_NO_OPTION);
+			int result = JOptionPane.showConfirmDialog(this,"Save changes?", null, JOptionPane.YES_NO_OPTION);
             switch(result){
                 case JOptionPane.YES_OPTION:
                 	System.out.println("changes saved");
