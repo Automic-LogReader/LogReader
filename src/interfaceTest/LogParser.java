@@ -102,7 +102,7 @@ public class LogParser {
 						}
 						else if (testWord.equals("===>") && logLine.contains("Time critical")) {
 							entry = parseArrowError(logbr, timeStamp, logWords);
-							specialCase = true;
+							specialCase = true;			
 							break;
 						}
 						else {
@@ -161,12 +161,17 @@ public class LogParser {
 		int arrowindex = 0;
 		boolean timeStampFound = false;
         boolean uCodeFound = false;  
+        boolean closingArrowTagFound = false;
+        boolean outsideTimeStampBounds = false;
+        StringBuilder errorMsg = new StringBuilder();
+        
+        if (!compareTimeStamp(currArray)){
+			outsideTimeStampBounds = true;
+		}
 		if (view.solutions.get(tempEntry[2]) != null){
 			tempEntry[4] = view.solutions.get(tempEntry[2]);
 		}
-		StringBuilder errorMsg = new StringBuilder();
 
-		boolean closingArrowTagFound = false;
 		for (int i=0; i<currArray.length; i++){
 			if (currArray[i].equals("===>")){
 				arrowindex = i-1;
@@ -226,7 +231,11 @@ public class LogParser {
 			}
 		}
 		tempEntry[3] = errorMsg.toString();
-		return tempEntry;
+		if (!outsideTimeStampBounds){
+			errorCount--;
+			return tempEntry;
+		}
+		return null;
 	}
 	
 	Object[] parseDeadlockError(BufferedReader logbr, String timeStamp) throws IOException {
@@ -342,5 +351,14 @@ public class LogParser {
 			view.dialog.updateProgress(percent);
 			oldPercent = percent;
 		}
+	}
+	
+	boolean compareTimeStamp(String[] line){
+		String time = line[(line.length-1)].replaceAll("[.]", "");
+		time = time.replaceAll("\'", "");
+		time = time.replace(":", ".");
+		double t = Double.parseDouble(time);
+		//System.out.println(t + " lower: " + view.lowerBound + " upper: " + view.upperBound + " result: " + Boolean.toString((t >= view.lowerBound) && (t <= view.upperBound)));
+		return ((t >= view.lowerBound) && (t <= view.upperBound));
 	}
 }

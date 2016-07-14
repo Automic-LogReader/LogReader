@@ -35,7 +35,7 @@ public class PreferenceEditor extends JFrame {
 	
 	void prepareGUI(UserView view){
 		setTitle("Preference Editor");
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 		setBounds(100, 100, 600, 240);
 		setLocationRelativeTo(null);
 		
@@ -65,7 +65,7 @@ public class PreferenceEditor extends JFrame {
 		JLabel lower = new JLabel("Lower");
 		tab1_lowerPanel.add(lower);
 		
-		lowerBound = new JTextField("0");
+		lowerBound = new JTextField(Double.toString(view.lowerBound));
 		lowerBound.setPreferredSize(new Dimension(100, 20));
 		lowerBound.setHorizontalAlignment(JTextField.CENTER);
 		tab1_lowerPanel.add(lowerBound);
@@ -73,7 +73,12 @@ public class PreferenceEditor extends JFrame {
 		JLabel upper = new JLabel("Upper");
 		tab1_lowerPanel.add(upper);
 		
-		upperBound = new JTextField("INF");
+		if (view.upperBound.equals(Double.MAX_VALUE)){
+			upperBound = new JTextField("INF");
+		} 
+		else {
+			upperBound = new JTextField(Double.toString(view.upperBound));
+		}
 		upperBound.setPreferredSize(new Dimension(100, 20));
 		upperBound.setHorizontalAlignment(JTextField.CENTER);
 		tab1_lowerPanel.add(upperBound);
@@ -87,7 +92,11 @@ public class PreferenceEditor extends JFrame {
 		
 		JPanel tab2 = new JPanel(false);
 		tabbedPane.addTab("Error Groups", tab2);
-		tabbedPane.setMnemonicAt(0, KeyEvent.VK_2);
+		tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
+		
+		JPanel tab3 = new JPanel(false);
+		tabbedPane.addTab("AND/OR/NOT", tab3);
+		tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
 		
 		tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 		UIManager.put("TabbedPane.contentBorderInsets", oldInsets); 
@@ -118,6 +127,7 @@ public class PreferenceEditor extends JFrame {
 		
 		mainPanel.add(submitPane);
 		
+		getRootPane().setDefaultButton(submitButton);
 		getContentPane().add(mainPanel, BorderLayout.CENTER);
 		setVisible(true);
 	}

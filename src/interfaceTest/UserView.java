@@ -92,8 +92,8 @@ public class UserView extends JFrame{
 	
 	protected LogParser logParser;
 	//Bounds for time-critical DB Calls
-	protected double lowerBound;
-	protected double upperBound;
+	protected Double lowerBound;
+	protected Double upperBound;
 	
 	/**
 	 * Create the frame.
@@ -109,7 +109,7 @@ public class UserView extends JFrame{
 			}
 			data[i] = temp;
 		}
-		lowerBound = 0;
+		lowerBound = (double) 0;
 		upperBound = Double.MAX_VALUE;
 		fillKeywords();
 		createErrorDictionary();
