@@ -3,6 +3,9 @@ package interfaceTest;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashSet;
@@ -10,11 +13,13 @@ import java.util.HashSet;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
 
@@ -24,6 +29,7 @@ import interfaceTest.CheckBoxList.CheckBoxListRenderer;
 public class CreateGroup extends JDialog{
 	public CreateGroup(PreferenceEditor editor, UserView view){
 		prepareGUI(editor, view);
+		addEscapeListener(this);
 	};
 	
 	void prepareGUI(PreferenceEditor editor, UserView view){
@@ -102,5 +108,20 @@ public class CreateGroup extends JDialog{
 			}
 		}
 		return true;
+	}
+	
+	public static void addEscapeListener(final JDialog dialog) {
+	    ActionListener escListener = new ActionListener() {
+
+	        @Override
+	        public void actionPerformed(ActionEvent e) {
+	            dialog.setVisible(false);
+	        }
+	    };
+
+	    dialog.getRootPane().registerKeyboardAction(escListener,
+	            KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+	            JComponent.WHEN_IN_FOCUSED_WINDOW);
+
 	}
 }

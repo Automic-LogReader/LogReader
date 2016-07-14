@@ -257,6 +257,7 @@ public class PreferenceEditor extends JFrame {
 		view.lowerBound = low;
 	}
 	
+	
 	boolean noCheckBoxSelected(){
 		for (int i = 0; i < listOfKeyWords.length; i++){
 			if (listOfKeyWords[i].isSelected()){
