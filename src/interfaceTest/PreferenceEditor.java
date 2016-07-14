@@ -219,27 +219,42 @@ public class PreferenceEditor extends JFrame {
 	}
 	
 	void saveTimeBounds(UserView view){
+		double low, high;
 		try {
-			double low = Double.parseDouble(lowerBound.getText());
-			view.lowerBound = low;
+			low = Double.parseDouble(lowerBound.getText());
+			if (low < 0){
+				JOptionPane.showMessageDialog(this, "Invalid lower bound!");
+				return;
+			}
+			//view.lowerBound = low;
 			System.out.println("Lower bound: " + low);
 		} catch (NumberFormatException e){
 			JOptionPane.showMessageDialog(this, "Please enter a valid lower bound");
 			return;
 		}
 		if (upperBound.getText().equals("INF")){
-			view.upperBound = Double.POSITIVE_INFINITY;
+			high = Double.POSITIVE_INFINITY;
 		}
 		else {
 			try{
-				double high = Double.parseDouble(upperBound.getText());
-				view.upperBound = high;
+				high = Double.parseDouble(upperBound.getText());
+				if (high < 0){
+					JOptionPane.showMessageDialog(this,  "Invalid upper bound!");
+					return;
+				}
+				//view.upperBound = high;
 				System.out.println("Higher bound: " + high);
 			} catch (NumberFormatException e){
 				JOptionPane.showMessageDialog(this, "Please enter a valid upper bound");
 				return;
 			}
 		}
+		if (low > high){
+			JOptionPane.showMessageDialog(this,  "Upper bound must be greater than lower bound");
+			return;
+		}
+		view.upperBound = high;
+		view.lowerBound = low;
 	}
 	
 	boolean noCheckBoxSelected(){
