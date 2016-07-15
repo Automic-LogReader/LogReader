@@ -68,7 +68,7 @@ public class UserView extends JFrame{
 	protected String errorLine;
 	//Holds the individual cell entries from errorLine
 	protected String [] errorWords;
-	protected  HashMap<String, String> solutions = new HashMap<String, String>();
+	protected HashMap<String, String> solutions = new HashMap<String, String>();
 	protected HashSet<String> keyWords = new HashSet<String>();
 	protected HashSet<String> originalKeyWords;
 	private boolean hasCopiedOriginalKeyWords;
@@ -108,6 +108,8 @@ public class UserView extends JFrame{
 	
 	protected JList<CheckBoxListItem> groupList;
 	protected CheckBoxListItem[] listOfGroups;
+	
+	protected ArrayList<String> logicalExpression = new ArrayList<String>();
 	/**
 	 * Create the frame.
 	 * @throws IOException 
@@ -455,11 +457,17 @@ public class UserView extends JFrame{
 		
 		groupPanel.add(groupScrollPane);
 		
+		JPanel andOrNotPanel = new JPanel();
+		andOrNotPanel.setLayout(new BoxLayout(andOrNotPanel, BoxLayout.Y_AXIS));
+		
 		tabbedPane.addTab("Keyword Checkbox", keyWordPanel);
 		tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
 		
 		tabbedPane.addTab("Group Checkbox", groupPanel);
 		tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
+		
+		tabbedPane.addTab("And/Or/Not", andOrNotPanel);
+		tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
 		
 		mainPanel.add(tabbedPane);
 		
@@ -489,6 +497,17 @@ public class UserView extends JFrame{
 	    	++index;
 	    }
 		return true;
+	}
+	
+	void createTable(){
+		String andOrNotHeaders[] = {"AND", "OR", "NOT"};
+		DefaultTableModel tableModel = new DefaultTableModel(data, andOrNotHeaders) {
+		    @Override
+		    public boolean isCellEditable(int row, int column) {
+		       //all cells false
+		       return false;
+		    }
+		};
 	}
 	
 	/******* CODE FOR THE DATABASE ******/

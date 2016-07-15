@@ -5,6 +5,8 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
@@ -12,15 +14,21 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Insets;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.Collections;
 import java.util.HashSet;
 
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 
 import interfaceTest.CheckBoxList.CheckBoxListItem;
+import interfaceTest.CheckBoxList.CheckBoxListRenderer;
+
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
@@ -34,6 +42,8 @@ public class PreferenceEditor extends JFrame {
 	protected JPanel listPanel;
 	protected DefaultListModel<String> model;
 	protected JList<String> list;
+	protected JTextField expression;
+	private JComboBox<String> comboBox;
 	
 	public PreferenceEditor(UserView view) {
 		prepareGUI(view);
@@ -133,6 +143,105 @@ public class PreferenceEditor extends JFrame {
 		tabbedPane.addTab("AND/OR/NOT", tab3);
 		tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
 		
+		tab3.setLayout(new BoxLayout(tab3, BoxLayout.Y_AXIS));
+		tab3.add(Box.createVerticalGlue());
+		
+		JPanel tab3_upperPanel = new JPanel();
+		tab3_upperPanel.setLayout(new FlowLayout());
+		
+		
+		expression = new JTextField();
+		expression.setHorizontalAlignment(JTextField.CENTER);
+		expression.setPreferredSize(new Dimension(500, 25));
+		tab3_upperPanel.add(expression);
+		
+		JPanel tab3_middlePanel = new JPanel();
+		tab3_middlePanel.setLayout(new BoxLayout(tab3_middlePanel, BoxLayout.X_AXIS));
+		tab3_middlePanel.add(Box.createRigidArea(new Dimension(10,0)));
+		
+		JButton leftParenButton = new JButton("(");
+		leftParenButton.setPreferredSize(new Dimension(125, 25));
+		leftParenButton.addActionListener(e -> {
+			try {
+				expression.getDocument().insertString(expression.getCaretPosition(), "( ", null);
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+		});
+		tab3_middlePanel.add(leftParenButton);
+		tab3_middlePanel.add(Box.createRigidArea(new Dimension(10,0)));
+		
+		JButton rightParenButton = new JButton(")");
+		rightParenButton.setPreferredSize(new Dimension(125, 25));
+		rightParenButton.addActionListener(e -> {
+			try {
+				expression.getDocument().insertString(expression.getCaretPosition(), " )", null);
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+		});
+		tab3_middlePanel.add(rightParenButton);
+		tab3_middlePanel.add(Box.createRigidArea(new Dimension(10,0)));
+		
+		JButton andButton = new JButton("AND");
+		andButton.setPreferredSize(new Dimension(125, 25));
+		andButton.addActionListener(e -> {
+			try {
+				expression.getDocument().insertString(expression.getCaretPosition(), " AND ", null);
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+		});
+		tab3_middlePanel.add(andButton);
+		tab3_middlePanel.add(Box.createRigidArea(new Dimension(10,0)));
+		
+		JButton orButton = new JButton("OR");
+		orButton.addActionListener(e -> {
+			try {
+				expression.getDocument().insertString(expression.getCaretPosition(), " OR ", null);
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+		});
+		orButton.setPreferredSize(new Dimension(125, 25));
+		tab3_middlePanel.add(orButton);
+		tab3_middlePanel.add(Box.createRigidArea(new Dimension(10,0)));
+		
+		JButton notButton = new JButton("NOT");
+		notButton.addActionListener(e -> {
+			try {
+				expression.getDocument().insertString(expression.getCaretPosition(), " NOT", null);
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+		});
+		notButton.setPreferredSize(new Dimension(125, 25));
+		tab3_middlePanel.add(notButton);
+		
+		JPanel tab3_lowerPanel = new JPanel();
+		tab3_lowerPanel.setLayout(new FlowLayout());
+		
+		comboBox = new JComboBox<String>();
+		comboBox.setSize(new Dimension(15, 25));
+		populateComboBox(view);
+		tab3_lowerPanel.add(comboBox);
+		
+		JButton selectKeyWordButton = new JButton("Add Keyword");
+		selectKeyWordButton.addActionListener(e -> {
+			try {
+				expression.getDocument().insertString(expression.getCaretPosition(), comboBox.getSelectedItem().toString(), null);
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+		});
+		tab3_lowerPanel.add(selectKeyWordButton);
+		
+		tab3.add(tab3_upperPanel);
+		tab3.add(tab3_middlePanel);
+		tab3.add(tab3_lowerPanel);
+		
+		tab3.add(Box.createVerticalGlue());
+		
 		tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 		UIManager.put("TabbedPane.contentBorderInsets", oldInsets); 
 		mainPanel.add(tabbedPane);
@@ -219,6 +328,7 @@ public class PreferenceEditor extends JFrame {
 	
 	void save(UserView view){
 		saveTimeBounds(view);
+		saveAndOrNot(view);
 	}
 	
 	void saveTimeBounds(UserView view){
@@ -260,6 +370,14 @@ public class PreferenceEditor extends JFrame {
 		view.lowerBound = low;
 	}
 	
+	void saveAndOrNot(UserView view){
+		view.logicalExpression.clear();
+		String text = expression.getText().toString();
+		String[] textArray = text.split(" ");
+		for (int i=0; i<textArray.length; i++){
+			view.logicalExpression.add(textArray[i]);
+		}
+	}
 	
 	boolean noCheckBoxSelected(){
 		for (int i = 0; i < listOfKeyWords.length; i++){
@@ -269,5 +387,46 @@ public class PreferenceEditor extends JFrame {
 		}
 		JOptionPane.showMessageDialog(null, "Please select one or more checkboxes");
 		return true;
+	}
+	
+	JScrollPane createListDisplay(UserView view){
+		listOfKeyWords = new CheckBoxListItem[view.keyWords.size()];
+		int index = 0;
+		for (String s : view.keyWords){
+			listOfKeyWords[index] = new CheckBoxListItem(s);
+			++index;
+		}
+		JList<CheckBoxListItem> list = new JList<CheckBoxListItem>(listOfKeyWords);
+		list.setCellRenderer(new CheckBoxListRenderer());
+		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		list.addMouseListener(new MouseAdapter(){
+			 public void mouseClicked(MouseEvent event) {
+		            @SuppressWarnings("unchecked")
+					JList<CheckBoxListItem> list =
+		               (JList<CheckBoxListItem>) event.getSource();
+		            // Get index of item clicked
+		            int index = list.locationToIndex(event.getPoint());
+		            CheckBoxListItem item = (CheckBoxListItem) list.getModel()
+		                  .getElementAt(index);
+		            // Toggle selected state
+		            item.setSelected(!item.isSelected());
+		            // Repaint cell
+		            list.repaint(list.getCellBounds(index, index));
+		         }
+		});
+		return new JScrollPane(list);
+	}
+	
+	boolean areSetsDisjoint(HashSet<String> andSet, HashSet<String> orSet, HashSet<String> notSet){
+		if (Collections.disjoint(andSet, orSet) && Collections.disjoint(orSet, notSet) && Collections.disjoint(notSet, andSet)){
+			return true;
+		}
+		return false;
+	}
+	
+	void populateComboBox(UserView view){
+		for (String s : view.keyWords){
+			comboBox.addItem(s);
+		}
 	}
 }
