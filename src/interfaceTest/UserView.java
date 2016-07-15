@@ -32,16 +32,19 @@ import java.awt.Dimension;
 import javax.swing.AbstractAction;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JList;
 
@@ -98,6 +101,13 @@ public class UserView extends JFrame{
 	protected JList<CheckBoxListItem> list;
 	
 	protected HashSet<HashSet<String>> keyWordGroups = new HashSet<HashSet<String>>();
+	
+	protected DefaultListModel<CheckBoxListItem> model;
+	
+	protected JScrollPane groupScrollPane;
+	
+	protected JList<CheckBoxListItem> groupList;
+	protected CheckBoxListItem[] listOfGroups;
 	/**
 	 * Create the frame.
 	 * @throws IOException 
@@ -383,27 +393,21 @@ public class UserView extends JFrame{
 			setTitle("User View");
 		}
 		
-		
 		Component horizontalStrut_5 = Box.createHorizontalStrut(20);
 		bottomPanel.add(horizontalStrut_5);
 		
 		Component horizontalStrut_3 = Box.createHorizontalStrut(20);
 		bottomPanel.add(horizontalStrut_3);
 		
+		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		
 		JPanel mainPanel = new JPanel();
 		contentPane.add(mainPanel, BorderLayout.CENTER);
 		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.X_AXIS));
 	
-		//Panel holding the keyword selectors
-		JPanel leftPanel = new JPanel();
-		leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
-		
-		JLabel keyWordLabel = new JLabel("Key Words    ");
-		keyWordLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-		keyWordLabel.setBorder(new EmptyBorder(10, 0, 10, 0));
-		//keyWordLabel.setBackground(Color.green);
-		//keyWordLabel.setOpaque(true);
-		leftPanel.add(keyWordLabel);
+		/***** Panel holding the keyword selectors *****/
+		JPanel keyWordPanel = new JPanel();
+		keyWordPanel.setLayout(new BoxLayout(keyWordPanel, BoxLayout.Y_AXIS));
 		
 		new DefaultTableModel(data, headers);
 		
@@ -415,21 +419,49 @@ public class UserView extends JFrame{
 		            @SuppressWarnings("unchecked")
 					JList<CheckBoxListItem> list =
 		               (JList<CheckBoxListItem>) event.getSource();
-		            // Get index of item clicked
 		            int index = list.locationToIndex(event.getPoint());
 		            CheckBoxListItem item = (CheckBoxListItem) list.getModel()
 		                  .getElementAt(index);
-		            // Toggle selected state
 		            item.setSelected(!item.isSelected());
-		            // Repaint cell
 		            list.repaint(list.getCellBounds(index, index));
 		         }
 		});
 		JScrollPane keyWordScrollPane = new JScrollPane(list);
 		keyWordScrollPane.setMinimumSize(new Dimension(50, 100));
-		//mainPanel.add(keyWordScrollPane);
-		leftPanel.add(keyWordScrollPane);
-		mainPanel.add(leftPanel);
+		keyWordPanel.add(keyWordScrollPane);
+		
+		JPanel groupPanel = new JPanel();
+		groupPanel.setLayout(new BoxLayout(groupPanel, BoxLayout.Y_AXIS));
+		
+		/***** Panel holding the group selectors *****/
+		model = new DefaultListModel<CheckBoxListItem>();
+		createGroupDisplay();
+		groupList = new JList<CheckBoxListItem>(model);
+		groupList.setCellRenderer(new CheckBoxListRenderer());
+		groupList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		groupList.addMouseListener(new MouseAdapter(){
+			 public void mouseClicked(MouseEvent event) {
+		            @SuppressWarnings("unchecked")
+					JList<CheckBoxListItem> list =
+		               (JList<CheckBoxListItem>) event.getSource();
+		            int index = list.locationToIndex(event.getPoint());
+		            CheckBoxListItem item = (CheckBoxListItem) list.getModel()
+		                  .getElementAt(index);
+		            item.setSelected(!item.isSelected());
+		            list.repaint(list.getCellBounds(index, index));
+		         }
+		});
+		groupScrollPane = new JScrollPane(groupList);
+		
+		groupPanel.add(groupScrollPane);
+		
+		tabbedPane.addTab("Keyword Checkbox", keyWordPanel);
+		tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
+		
+		tabbedPane.addTab("Group Checkbox", groupPanel);
+		tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
+		
+		mainPanel.add(tabbedPane);
 		
 		errorTable = new JTable(data, headers);
 		errorScrollPane = new JScrollPane(errorTable, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -437,6 +469,26 @@ public class UserView extends JFrame{
 		mainPanel.add(errorScrollPane);
 		
 		setVisible(true);
+	}
+	
+	boolean createGroupDisplay(){
+		model.clear();
+		if (keyWordGroups.isEmpty()){
+			return false;
+		}
+		int index = 0;
+		for (HashSet<String> list : keyWordGroups){
+	    	StringBuilder listItem = new StringBuilder();
+	    	listItem.setLength(0);
+	    	for (String s : list){
+	    		listItem.append(s + " ");
+	    	}
+	    	listOfGroups = new CheckBoxListItem[keyWordGroups.size()];
+	    	listOfGroups[index] = new CheckBoxListItem(listItem.toString());
+	    	model.addElement(listOfGroups[index]);
+	    	++index;
+	    }
+		return true;
 	}
 	
 	/******* CODE FOR THE DATABASE ******/

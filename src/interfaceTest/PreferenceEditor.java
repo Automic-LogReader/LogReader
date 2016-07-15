@@ -18,6 +18,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
+import javax.swing.border.EmptyBorder;
 
 import interfaceTest.CheckBoxList.CheckBoxListItem;
 import javax.swing.JLabel;
@@ -104,6 +105,7 @@ public class PreferenceEditor extends JFrame {
 		tab2.add(Box.createVerticalGlue());
 		
 		listPanel = displayGroups(view);
+		listPanel.setBorder(new EmptyBorder(10,5,0,5));
 		tab2.add(listPanel);
 		
 		JPanel buttonPanel = new JPanel();
@@ -212,6 +214,7 @@ public class PreferenceEditor extends JFrame {
 	    	}
 	    }
 		updateGroups(view);
+		view.createGroupDisplay();
 	}
 	
 	void save(UserView view){

@@ -35,6 +35,26 @@ public class ProgressDialog extends JDialog {
 	private JLabel lblNewLabel_2;
 	
 	public ProgressDialog(File file, UserView view) {
+		prepareGUI(file, view);
+	}
+
+	
+	void updateProgress(int i)
+	{
+		progressBar.setValue(i);
+		lblNewLabel.setText("Parsing through file..." + i + "% complete");
+	}
+	
+	void doneParse(int numErrors)
+	{
+		progressBar.setValue(100);
+		lblNewLabel.setText("Parsing through file... done!");
+		lblNewLabel_2.setText("Number of errors found: " + numErrors); 
+		exportButton.setVisible(true);
+		exitButton.setVisible(true);
+	}
+	
+	void prepareGUI(File file, UserView view){
 		setBounds(200, 200, 300, 200);
 		setLocationRelativeTo(null);
 	
@@ -125,21 +145,4 @@ public class ProgressDialog extends JDialog {
 			}
 		});
 	}
-
-	
-	void updateProgress(int i)
-	{
-		progressBar.setValue(i);
-		lblNewLabel.setText("Parsing through file..." + i + "% complete");
-	}
-	
-	void doneParse(int numErrors)
-	{
-		progressBar.setValue(100);
-		lblNewLabel.setText("Parsing through file... done!");
-		lblNewLabel_2.setText("Number of errors found: " + numErrors); 
-		exportButton.setVisible(true);
-		exitButton.setVisible(true);
-	}
-
 }

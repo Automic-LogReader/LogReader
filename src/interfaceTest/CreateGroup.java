@@ -55,6 +55,7 @@ public class CreateGroup extends JDialog{
 			else {
 				saveGroups(editor, view);
 				editor.updateGroups(view);
+				view.createGroupDisplay();
 				this.setVisible(false);
 			}
 		});
