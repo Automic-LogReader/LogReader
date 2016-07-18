@@ -406,11 +406,18 @@ public class PreferenceEditor extends JFrame {
 	}
 	
 	void saveAndOrNot(UserView view){
+		boolean valid = false;
 		view.logicalExpression.clear();
 		String text = expression.getText().toString();
 		String[] textArray = text.split(" ");
 		for (int i=0; i<textArray.length; i++){
 			view.logicalExpression.add(textArray[i]);
+			if (view.originalKeyWords.contains(textArray[i])){
+				valid = true;
+			}
+		}
+		if (!valid){
+			JOptionPane.showMessageDialog(this, "Expression must contain one or more keywords");
 		}
 	}
 	
@@ -450,13 +457,6 @@ public class PreferenceEditor extends JFrame {
 		         }
 		});
 		return new JScrollPane(list);
-	}
-	
-	boolean areSetsDisjoint(HashSet<String> andSet, HashSet<String> orSet, HashSet<String> notSet){
-		if (Collections.disjoint(andSet, orSet) && Collections.disjoint(orSet, notSet) && Collections.disjoint(notSet, andSet)){
-			return true;
-		}
-		return false;
 	}
 	
 	void populateComboBox(UserView view){
