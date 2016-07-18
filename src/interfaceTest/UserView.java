@@ -109,7 +109,7 @@ public class UserView extends JFrame{
 	protected JList<CheckBoxListItem> groupList;
 	protected CheckBoxListItem[] listOfGroups;
 	
-	protected ArrayList<String> logicalExpression = new ArrayList<String>();
+	protected ArrayList<Object> logicalExpression = new ArrayList<Object>();
 	/**
 	 * Create the frame.
 	 * @throws IOException 

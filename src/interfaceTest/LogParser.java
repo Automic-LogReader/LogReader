@@ -233,9 +233,9 @@ public class LogParser {
 		tempEntry[3] = errorMsg.toString();
 		if (outsideTimeStampBounds){
 			errorCount--;
-			return tempEntry;
+			return null;
 		}
-		return null;
+		return tempEntry;
 	}
 	
 	Object[] parseDeadlockError(BufferedReader logbr, String timeStamp) throws IOException {
