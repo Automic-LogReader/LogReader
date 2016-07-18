@@ -292,7 +292,7 @@ public class PreferenceEditor extends JFrame {
             switch(result){
                 case JOptionPane.YES_OPTION:
                 	System.out.println("changes saved");
-                	save(view);
+                	save(view, tabbedPane.getSelectedIndex());
                     return;
                 case JOptionPane.NO_OPTION:
                 	System.out.println("changes NOT saved");
@@ -361,9 +361,19 @@ public class PreferenceEditor extends JFrame {
 		view.createGroupDisplay();
 	}
 	
-	void save(UserView view){
-		saveTimeBounds(view);
-		saveAndOrNot(view);
+	void save(UserView view, int index){
+		switch (index){
+		case 0:
+			saveTimeBounds(view);
+			System.out.println("zero");
+			return;
+		case 1:
+			return;
+		case 2:
+			saveAndOrNot(view);
+			System.out.println("two");
+			return;
+		}
 	}
 	
 	void saveTimeBounds(UserView view){
