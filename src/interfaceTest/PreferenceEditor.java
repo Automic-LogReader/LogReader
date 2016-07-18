@@ -10,6 +10,7 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Insets;
@@ -18,6 +19,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Stack;
 
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
@@ -44,10 +46,12 @@ public class PreferenceEditor extends JFrame {
 	protected JList<String> list;
 	protected JTextField expression;
 	private JComboBox<String> comboBox;
+	//Used for deleting elements in the expression buidler
+	private Stack<Integer> strLen = new Stack<Integer>();
+	private Stack<Integer> strPos = new Stack<Integer>();
 	
 	public PreferenceEditor(UserView view) {
 		prepareGUI(view);
-
 	}
 	
 	void prepareGUI(UserView view){
@@ -56,6 +60,9 @@ public class PreferenceEditor extends JFrame {
 		setBounds(100, 100, 600, 240);
 		setLocationRelativeTo(null);
 		
+		//Clears stack
+		strLen.clear();
+		strPos.clear();
 		//Gets rid of the ugly tabbed pane border
 		Insets oldInsets = UIManager.getInsets("TabbedPane.contentBorderInsets"); 
 		UIManager.put("TabbedPane.contentBorderInsets", new Insets(1, 0, 0, 0));
@@ -151,6 +158,8 @@ public class PreferenceEditor extends JFrame {
 		
 		
 		expression = new JTextField();
+		expression.setEditable(false);
+		expression.setBackground(Color.WHITE);
 		expression.setHorizontalAlignment(JTextField.CENTER);
 		expression.setPreferredSize(new Dimension(500, 25));
 		tab3_upperPanel.add(expression);
@@ -163,7 +172,9 @@ public class PreferenceEditor extends JFrame {
 		leftParenButton.setPreferredSize(new Dimension(125, 25));
 		leftParenButton.addActionListener(e -> {
 			try {
-				expression.getDocument().insertString(expression.getCaretPosition(), "( ", null);
+				strLen.push(2);
+				strPos.push(expression.getCaretPosition());
+				expression.getDocument().insertString((int) strPos.peek(), "( ", null);
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
@@ -175,7 +186,9 @@ public class PreferenceEditor extends JFrame {
 		rightParenButton.setPreferredSize(new Dimension(125, 25));
 		rightParenButton.addActionListener(e -> {
 			try {
-				expression.getDocument().insertString(expression.getCaretPosition(), " )", null);
+				strLen.push(2);
+				strPos.push(expression.getCaretPosition());
+				expression.getDocument().insertString((int) strPos.peek(), " )", null);
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
@@ -187,7 +200,9 @@ public class PreferenceEditor extends JFrame {
 		andButton.setPreferredSize(new Dimension(125, 25));
 		andButton.addActionListener(e -> {
 			try {
-				expression.getDocument().insertString(expression.getCaretPosition(), " AND ", null);
+				strLen.push(5);
+				strPos.push(expression.getCaretPosition());
+				expression.getDocument().insertString((int) strPos.peek(), " AND ", null);
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
@@ -198,7 +213,9 @@ public class PreferenceEditor extends JFrame {
 		JButton orButton = new JButton("OR");
 		orButton.addActionListener(e -> {
 			try {
-				expression.getDocument().insertString(expression.getCaretPosition(), " OR ", null);
+				strLen.push(4);
+				strPos.push(expression.getCaretPosition());
+				expression.getDocument().insertString((int) strPos.peek(), " OR ", null);
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
@@ -210,7 +227,9 @@ public class PreferenceEditor extends JFrame {
 		JButton notButton = new JButton("NOT");
 		notButton.addActionListener(e -> {
 			try {
-				expression.getDocument().insertString(expression.getCaretPosition(), " NOT", null);
+				strLen.push(5);
+				strPos.push(expression.getCaretPosition());
+				expression.getDocument().insertString((int) strPos.peek(), " NOT ", null);
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
@@ -229,12 +248,28 @@ public class PreferenceEditor extends JFrame {
 		JButton selectKeyWordButton = new JButton("Add Keyword");
 		selectKeyWordButton.addActionListener(e -> {
 			try {
+				strLen.push(comboBox.getSelectedItem().toString().length());
+				strPos.push(expression.getCaretPosition());
 				expression.getDocument().insertString(expression.getCaretPosition(), comboBox.getSelectedItem().toString(), null);
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
 		});
 		tab3_lowerPanel.add(selectKeyWordButton);
+		
+		JButton deleteButton = new JButton("Delete");
+		deleteButton.addActionListener(e-> {
+			if (expression.getText().toString().isEmpty()){
+				return;
+			}
+			String temp = expression.getText().toString();
+			System.out.println(temp);
+			int len = (int) strLen.pop();
+			int pos = (int) strPos.pop();
+			temp = temp.substring(0, pos) + temp.substring(len + pos);
+			expression.setText(temp);
+		});
+		tab3_lowerPanel.add(deleteButton);
 		
 		tab3.add(tab3_upperPanel);
 		tab3.add(tab3_middlePanel);
@@ -425,7 +460,7 @@ public class PreferenceEditor extends JFrame {
 	}
 	
 	void populateComboBox(UserView view){
-		for (String s : view.keyWords){
+		for (String s : view.originalKeyWords){
 			comboBox.addItem(s);
 		}
 	}
