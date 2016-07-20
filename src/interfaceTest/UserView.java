@@ -7,8 +7,10 @@ package interfaceTest;
 import java.sql.*;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -28,6 +30,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JList;
@@ -73,6 +76,7 @@ public class UserView extends JFrame{
 	protected HashMap<String, String> solutions = new HashMap<String, String>();
 	protected HashSet<String> keyWords = new HashSet<String>();
 	protected HashSet<String> originalKeyWords;
+	protected Vector<String> comboBoxKeyWords = new Vector<String>();
 	private boolean hasCopiedOriginalKeyWords;
 	
 	//Holds the size of the file in bytes
@@ -174,9 +178,11 @@ public class UserView extends JFrame{
 		listOfKeyWords[0].setSelected(true);
 		
 		int index = 1;
+		comboBoxKeyWords.clear();
 		for (String s : keyWords){
 			listOfKeyWords[index] = new CheckBoxListItem(s);
 			keyWordCheckBox[index] = new CheckBoxNode(s, false);
+			comboBoxKeyWords.addElement(s);
 			index++;
 		}
 		
@@ -452,7 +458,19 @@ public class UserView extends JFrame{
 		treePanel.add(treeScrollPane);
 		
 		JPanel andOrNotPanel = new JPanel();
+		andOrNotPanel.setBackground(Color.WHITE);
 		andOrNotPanel.setLayout(new BoxLayout(andOrNotPanel, BoxLayout.Y_AXIS));
+		
+		JPanel p1 = new JPanel(new FlowLayout());
+		JComboBox k1 = new JComboBox(comboBoxKeyWords);
+		p1.add(k1);
+		
+		JPanel p2 = new JPanel(new FlowLayout());
+		JComboBox k2 = new JComboBox(comboBoxKeyWords);
+		p2.add(k2);
+		
+		andOrNotPanel.add(p1);
+		andOrNotPanel.add(p2);
 		
 		JPanel groupPanel = new JPanel();
 		groupPanel.setLayout(new BoxLayout(groupPanel, BoxLayout.Y_AXIS));
