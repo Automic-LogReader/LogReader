@@ -4,7 +4,15 @@
 
 package interfaceTest;
 
+import java.sql.*;
 
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -13,21 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.table.DefaultTableModel;
-import interfaceTest.CheckBoxList.CheckBoxListItem;
-import interfaceTest.CheckBoxList.CheckBoxListRenderer;
-
-import javax.swing.JOptionPane;
-
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
+import java.util.Vector;
 
 import javax.swing.AbstractAction;
 import javax.swing.Box;
@@ -35,18 +29,26 @@ import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
-
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
+import javax.swing.JFrame;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
-import javax.swing.JList;
+import javax.swing.JTextField;
+import javax.swing.JTree;
+import javax.swing.ListSelectionModel;
+import javax.swing.border.EmptyBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
+
+import interfaceTest.CheckBoxList.CheckBoxListItem;
+import interfaceTest.CheckBoxList.CheckBoxListRenderer;
 
 @SuppressWarnings("serial")
 
@@ -108,13 +110,19 @@ public class UserView extends JFrame{
 	
 	protected JList<CheckBoxListItem> groupList;
 	protected CheckBoxListItem[] listOfGroups;
-	
+	//For the and/or/not logic
 	protected ArrayList<Object> logicalExpression = new ArrayList<Object>();
+	//For the CheckBoxTree view
+	protected JScrollPane treeScrollPane;
+	protected JTree tree;
+	protected CheckBoxNode keyWordCheckBox[];
+	protected Vector rootVector;
+	protected Vector keyWordVector;
 	/**
 	 * Create the frame.
 	 * @throws IOException 
 	 */
-	public UserView(MainMenu menu, boolean isAdmin) throws IOException {
+	public UserView(MainMenu menu, boolean isAdmin) throws ClassNotFoundException, SQLException {
 		hasCopiedOriginalKeyWords = false;
 		data = new Object[11][];
 		for(int i = 0; i < 11; i ++){
@@ -126,8 +134,16 @@ public class UserView extends JFrame{
 		}
 		lowerBound = (double) 0;
 		upperBound = Double.MAX_VALUE;
-		fillKeywords();
-		createErrorDictionary();
+		//String driver = "com.mysql.jdbc.Driver";
+		String driver = "net.sourceforge.jtds.jdbc.Driver";
+		Class.forName(driver);
+//		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306", "root", "Hakuna.Mattata!");
+		Connection conn = DriverManager.getConnection("jdbc:jtds:sqlserver://vwaswp02:1433/coeus", "coeus", "C0eus");
+		Statement stmt = conn.createStatement();
+
+		fillKeywords(stmt);
+		createErrorDictionary(stmt);
+		stmt.close();
 		prepareGUI(menu, isAdmin);
 	}
 	
@@ -138,35 +154,21 @@ public class UserView extends JFrame{
 	 * from the UCodes column. This data will eventually be used in the
 	 * findLogErrors function. 
 	 * @throws IOException
+	 * @throws SQLException 
 	 */
-	void fillKeywords() throws IOException
+	void fillKeywords(Statement stmt) throws SQLException
 	{
-		FileReader errorInput = new FileReader("src/interfaceTest/resources/LogErrors_Suggestions.csv");
-		BufferedReader errorbr = new BufferedReader(errorInput);
-		//Gets to the second line (skips header row of csv)
-		errorLine = errorbr.readLine();
-		errorLine = errorbr.readLine();
-		//Filling the uCodes arraylist
-		while(errorLine != null)
+		String query = "select Keyword from logerrors";
+		ResultSet rs = stmt.executeQuery(query);
+		while(rs.next())
 		{
-			errorWords = errorLine.split(",(?=([^\"]|\"[^\"]*\")*$)");
-			if(errorWords.length > 2)
-			{
-				if (errorWords[0].equals("[===>]")){
-					keyWords.add("===>");
-				}
-				else {
-					keyWords.add(errorWords[0]);
-				}
-				errorLine = errorbr.readLine();
-			}
-			else
-				break;
+			keyWords.add(rs.getString("Keyword"));
 		}
-		errorbr.close();
 		
 		numKeyWords = keyWords.size();
 		listOfKeyWords = new CheckBoxListItem[numKeyWords + 1];
+		keyWordCheckBox = new CheckBoxNode[numKeyWords + 1];
+		keyWordCheckBox[0] = new CheckBoxNode("All KeyWords", true);
 		listOfKeyWords[0] = new CheckBoxListItem("All KeyWords");
 		//All Keywords selected by default
 		listOfKeyWords[0].setSelected(true);
@@ -174,6 +176,7 @@ public class UserView extends JFrame{
 		int index = 1;
 		for (String s : keyWords){
 			listOfKeyWords[index] = new CheckBoxListItem(s);
+			keyWordCheckBox[index] = new CheckBoxNode(s, false);
 			index++;
 		}
 		
@@ -229,7 +232,7 @@ public class UserView extends JFrame{
 	}
 	
 	void updateKeyWords(){
-		if (listOfKeyWords[0].isSelected()){
+		/*if (listOfKeyWords[0].isSelected()){
 			System.out.println("default selection");
 			keyWords.addAll(originalKeyWords);
 			return;
@@ -242,12 +245,26 @@ public class UserView extends JFrame{
 					keyWords.add(listOfKeyWords[i].toString());
 				}
 			}
+		}*/
+		if (keyWordCheckBox[0].isSelected()){
+			System.out.println("default selection");
+			keyWords.addAll(originalKeyWords);
+			return;
+		}
+		else {
+			keyWords.clear();
+			for (int i = 1; i <= numKeyWords; i++){
+				if (keyWordCheckBox[i].isSelected()){
+					System.out.println("Added:" + keyWordCheckBox[i].toString());
+					keyWords.add(keyWordCheckBox[i].toString());
+				}
+			}
 		}
 	}
 	
 	boolean noCheckBoxSelected(){
 		for (int i = 0; i <= numKeyWords; i++){
-			if (listOfKeyWords[i].isSelected()){
+			if (keyWordCheckBox[i].isSelected()){
 				return false;
 			}
 		}
@@ -256,22 +273,13 @@ public class UserView extends JFrame{
 	}
 	
 	//Maps the key words to solution messages
-	void createErrorDictionary() throws IOException{
-		FileReader errorInput = new FileReader("src/interfaceTest/resources/LogErrors_Suggestions.csv");
-		BufferedReader newbr = new BufferedReader(errorInput);
-		newbr.readLine();
-		errorLine = newbr.readLine();
-			
-			while(errorLine != null)
-			{
-				errorWords = errorLine.split(",(?=([^\"]|\"[^\"]*\")*$)");
-				if (errorWords[0].equals("[===>]")){
-					solutions.put("===>", errorWords[2]);
-				}
-				solutions.put(errorWords[0], errorWords[2]);
-				errorLine = newbr.readLine();
-			}
-			newbr.close();
+	void createErrorDictionary(Statement stmt) throws SQLException{
+		String query = "select Keyword, Suggested_Solution from logerrors";
+		ResultSet rs = stmt.executeQuery(query);
+		while(rs.next())
+		{
+			solutions.put(rs.getString("Keyword"), rs.getString("Suggested_Solution"));
+		}
 	}
 	
 	void prepareGUI(MainMenu menu, boolean isAdmin){
@@ -406,36 +414,49 @@ public class UserView extends JFrame{
 		JPanel mainPanel = new JPanel();
 		contentPane.add(mainPanel, BorderLayout.CENTER);
 		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.X_AXIS));
-	
-		/***** Panel holding the keyword selectors *****/
-		JPanel keyWordPanel = new JPanel();
-		keyWordPanel.setLayout(new BoxLayout(keyWordPanel, BoxLayout.Y_AXIS));
+			
+		JPanel treePanel = new JPanel();
+		treePanel.setLayout(new BoxLayout(treePanel, BoxLayout.Y_AXIS));
 		
-		new DefaultTableModel(data, headers);
-		
-		list = new JList<CheckBoxListItem>(listOfKeyWords);
-		list.setCellRenderer(new CheckBoxListRenderer());
-		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		list.addMouseListener(new MouseAdapter(){
-			 public void mouseClicked(MouseEvent event) {
-		            @SuppressWarnings("unchecked")
-					JList<CheckBoxListItem> list =
-		               (JList<CheckBoxListItem>) event.getSource();
-		            int index = list.locationToIndex(event.getPoint());
-		            CheckBoxListItem item = (CheckBoxListItem) list.getModel()
-		                  .getElementAt(index);
-		            item.setSelected(!item.isSelected());
-		            list.repaint(list.getCellBounds(index, index));
-		         }
+		keyWordVector = new NamedVector("Key Words", keyWordCheckBox);
+		Object rootNodes[] = {keyWordVector};
+		rootVector = new NamedVector("Root", rootNodes);
+		tree = new JTree(rootVector);
+
+		tree.addMouseListener(new MouseAdapter(){
+			public void mouseClicked(MouseEvent me){
+				TreePath tp = tree.getPathForLocation(me.getX(), me.getY());
+			    if (tp != null){
+			    	String path = tp.getLastPathComponent().toString();
+			    	String parent = tp.getParentPath().getLastPathComponent().toString();
+			    	if (parent.equals("Key Words")){
+			    		for (int i=0; i<keyWordCheckBox.length; i++){
+			    			if (path.equals(keyWordCheckBox[i].toString())){
+			    				System.out.println("keyword toggle");
+			    				keyWordCheckBox[i].setSelected(!keyWordCheckBox[i].isSelected());
+			    			}
+			    		}
+			    	}
+			    }
+			    else
+			      return;
+			  
+			}
 		});
-		JScrollPane keyWordScrollPane = new JScrollPane(list);
-		keyWordScrollPane.setMinimumSize(new Dimension(50, 100));
-		keyWordPanel.add(keyWordScrollPane);
+		CheckBoxNodeRenderer renderer = new CheckBoxNodeRenderer();
+		tree.setCellRenderer(renderer);
+		tree.setCellEditor(new CheckBoxNodeEditor(tree));
+		tree.setEditable(true);        
+	    
+		treeScrollPane = new JScrollPane(tree);
+		treePanel.add(treeScrollPane);
+		
+		JPanel andOrNotPanel = new JPanel();
+		andOrNotPanel.setLayout(new BoxLayout(andOrNotPanel, BoxLayout.Y_AXIS));
 		
 		JPanel groupPanel = new JPanel();
 		groupPanel.setLayout(new BoxLayout(groupPanel, BoxLayout.Y_AXIS));
 		
-		/***** Panel holding the group selectors *****/
 		model = new DefaultListModel<CheckBoxListItem>();
 		createGroupDisplay();
 		groupList = new JList<CheckBoxListItem>(model);
@@ -457,23 +478,17 @@ public class UserView extends JFrame{
 		
 		groupPanel.add(groupScrollPane);
 		
-		JPanel andOrNotPanel = new JPanel();
-		andOrNotPanel.setLayout(new BoxLayout(andOrNotPanel, BoxLayout.Y_AXIS));
-		
-		tabbedPane.addTab("Keyword Checkbox", keyWordPanel);
+		tabbedPane.addTab("Tree View", treePanel);
 		tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
-		
-		tabbedPane.addTab("Group Checkbox", groupPanel);
+		tabbedPane.addTab("AND/OR/NOT View", andOrNotPanel);
 		tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
-		
-		tabbedPane.addTab("And/Or/Not", andOrNotPanel);
+		tabbedPane.addTab("Group View", groupPanel);
 		tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
 		
 		mainPanel.add(tabbedPane);
 		
 		errorTable = new JTable(data, headers);
 		errorScrollPane = new JScrollPane(errorTable, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		//errorScrollPane.setMinimumSize(new Dimension(500, 280));
 		mainPanel.add(errorScrollPane);
 		
 		setVisible(true);
@@ -484,6 +499,7 @@ public class UserView extends JFrame{
 		if (keyWordGroups.isEmpty()){
 			return false;
 		}
+		System.out.println("groups not empty");
 		int index = 0;
 		for (HashSet<String> list : keyWordGroups){
 	    	StringBuilder listItem = new StringBuilder();
@@ -491,15 +507,17 @@ public class UserView extends JFrame{
 	    	for (String s : list){
 	    		listItem.append(s + " ");
 	    	}
+	    	System.out.println("adding: " + listItem.toString());
 	    	listOfGroups = new CheckBoxListItem[keyWordGroups.size()];
 	    	listOfGroups[index] = new CheckBoxListItem(listItem.toString());
 	    	model.addElement(listOfGroups[index]);
 	    	++index;
-	    }
+	    }		
 		return true;
 	}
 	
-	void createTable(){
+	//not used as of right now
+	/*void createTable(){
 		String andOrNotHeaders[] = {"AND", "OR", "NOT"};
 		DefaultTableModel tableModel = new DefaultTableModel(data, andOrNotHeaders) {
 		    @Override
@@ -508,75 +526,7 @@ public class UserView extends JFrame{
 		       return false;
 		    }
 		};
-	}
-	
-	/******* CODE FOR THE DATABASE ******/
-	/*
-	 * public UserView(MainMenu menu, boolean isAdmin) throws ClassNotFoundException, SQLException {
-		hasCopiedOriginalKeyWords = false;
-		data = new Object[11][];
-		for(int i = 0; i < 11; i ++){
-			Object[] temp = new Object[5];
-			for(int j = 0; j < 5; j++){
-				temp[j] = "";
-			}
-			data[i] = temp;
-		}
-		lowerBound = 0;
-		upperBound = Double.MAX_VALUE;
-		String driver = "com.mysql.jdbc.Driver";
-		Class.forName(driver);
-		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306", "root", "Hakuna.Mattata!");
-
-		Statement stmt = conn.createStatement();
-		String query = "use logsuggestions";
-		int i = stmt.executeUpdate("use logsuggestions");
-		
-		fillKeywords(stmt);
-		createErrorDictionary(stmt);
-		stmt.close();
-		prepareGUI(menu, isAdmin);
-	}
-	
-	void fillKeywords(Statement stmt) throws SQLException 
-	{
-		String query = "select Keywords from logerrors";
-		ResultSet rs = stmt.executeQuery(query);
-		while(rs.next())
-		{
-			keyWords.add(rs.getString("Keywords"));
-		}
-		
-		numKeyWords = keyWords.size();
-		listOfKeyWords = new CheckBoxListItem[numKeyWords + 1];
-		listOfKeyWords[0] = new CheckBoxListItem("All KeyWords");
-		//All Keywords selected by default
-		listOfKeyWords[0].setSelected(true);
-		
-		int index = 1;
-		for (String s : keyWords){
-			listOfKeyWords[index] = new CheckBoxListItem(s);
-			index++;
-		}
-		
-		if (!hasCopiedOriginalKeyWords){
-			originalKeyWords = new HashSet<String>(keyWords);
-			hasCopiedOriginalKeyWords = true;
-		}
-	}
-	
-	void createErrorDictionary(Statement stmt) throws SQLException {
-	
-		String query = "select Keywords, SuggestedSolution from logerrors";
-		ResultSet rs = stmt.executeQuery(query);
-		while(rs.next())
-		{
-			solutions.put(rs.getString("Keywords"), rs.getString("SuggestedSolution"));
-		}
-			
-	}
-	 * 
-	 */
+	}*/
 }
 	
 

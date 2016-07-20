@@ -15,14 +15,12 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
+import java.sql.*;
+import java.util.HashMap;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-
 import javax.swing.JTextField;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
@@ -34,6 +32,7 @@ public class Login extends JFrame {
 	private JTextField userNameText;
 	private JPasswordField passwordText;
 	
+	private HashMap<String, String> hm = new HashMap<String, String>();
 	//Holds the text from userNameText
 	private String inputUsername;
 	//Holds the text from paswordText
@@ -42,8 +41,6 @@ public class Login extends JFrame {
 	private JButton submitButton;
 	//Returns user back to the main menu
 	private JButton backButton;
-	
-	private Admin admin;
 
 	//Used as a holder for usernames from Usernames_Passwords.csv to 
 	//compare against the inputUsername
@@ -55,8 +52,12 @@ public class Login extends JFrame {
 	
 	/**
 	 * Create the frame.
+	 * @throws ClassNotFoundException 
+	 * @throws SQLException 
 	 */
-	public Login(MainMenu menu) {
+	public Login(MainMenu menu) throws ClassNotFoundException, SQLException {
+		
+		fillHashMap();
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(200, 200, 450, 150);
@@ -87,7 +88,7 @@ public class Login extends JFrame {
 			try {
 				if (checkAdmin(inputUsername, inputPassword))
 				{
-					admin = new Admin(menu);
+					Admin admin = new Admin(menu);
 					this.setVisible(false);
 				}
 				else
@@ -109,7 +110,7 @@ public class Login extends JFrame {
 						try {
 							if (checkAdmin(inputUsername, inputPassword))
 							{
-								admin = new Admin(menu);
+								Admin admin = new Admin(menu);
 								makeInvis();
 							}
 							else
@@ -165,52 +166,43 @@ public class Login extends JFrame {
 	 * 			 entry in Usernames_Passwords.csv, false otherwise
 	 * @throws IOException
 	 */
-	boolean checkAdmin(String userName, char[] passWord) throws IOException
+	boolean checkAdmin(String userName, char[] passWord)
 	{
 		//Blocks against no entries
 		if (userName.equals("") || passWord.equals(""))
 			return false;
-		InputStream userPwReader = getClass().getResourceAsStream(MainController.userPwFile);
-		BufferedReader userPwbf = new BufferedReader(new InputStreamReader(userPwReader));
-		
-		userCheck = userPwbf.readLine();
-		userCheck = userPwbf.readLine();
-		
-		while(userCheck != null)
+		StringBuilder pw = new StringBuilder();
+		for(int i = 0; i < passWord.length; i++)
 		{
-			userPwLine = userCheck.split(",(?=([^\"]|\"[^\"]*\")*$)");
-			
-			//Both the username and password match so we return true
-			if(userName.equals(userPwLine[0]) && checkPassword(passWord, userPwLine[1]))
-					return true;
-			userCheck = userPwbf.readLine();	
-			
+			pw.append(passWord[i]);
 		}
-		userPwbf.close();	
-		return false;
-	}
-	
-	/**
-	 * This function takes in a password from the user and 
-	 * compares it against a password in the file. 
-	 * @param pw - The given password from the user
-	 * @param pwCheck - A password from Usernames_Passwords.csv
-	 * @return - returns true if the params match, false otherwise
-	 */
-	boolean checkPassword(char [] pw, String pwCheck)
-	{
-		if(pw.length != pwCheck.length())
+		
+		if(!hm.containsKey(userName))
 			return false;
-		for(int i = 0; i < pw.length; i++)
-		{
-			if (pwCheck.charAt(i) != pw[i])
-				return false;
-		}
-		return true;
+		else if(pw.toString().equals(hm.get(userName)))
+			return true;
+		else
+			return false;
 	}
 	
 	void makeInvis()
 	{
 		this.setVisible(false);
 	}
+	
+	void fillHashMap() throws ClassNotFoundException, SQLException
+	{
+		String driver = "net.sourceforge.jtds.jdbc.Driver";
+		Class.forName(driver);
+		Connection conn = DriverManager.getConnection("jdbc:jtds:sqlserver://vwaswp02:1433/coeus", "coeus", "C0eus");
+
+		Statement stmt = conn.createStatement();
+		String query = "select Username, Password from Usernames_Passwords";
+		ResultSet rs = stmt.executeQuery(query);
+		while(rs.next())
+		{
+			hm.put(rs.getString("Username"), rs.getString("Password"));
+		}
+	}
+	
 }

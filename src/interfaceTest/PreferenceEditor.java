@@ -1,14 +1,5 @@
 package interfaceTest;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.DefaultListModel;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -17,11 +8,22 @@ import java.awt.Insets;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Stack;
 
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;                                                                                                                                                                             
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
@@ -30,11 +32,6 @@ import javax.swing.border.EmptyBorder;
 
 import interfaceTest.CheckBoxList.CheckBoxListItem;
 import interfaceTest.CheckBoxList.CheckBoxListRenderer;
-
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JTabbedPane;
 
 @SuppressWarnings("serial")
 public class PreferenceEditor extends JFrame {
@@ -126,6 +123,7 @@ public class PreferenceEditor extends JFrame {
 		tab2.add(listPanel);
 		
 		JPanel buttonPanel = new JPanel();
+		buttonPanel.setLayout(new FlowLayout());
 		tab2.add(buttonPanel);
 		
 		JButton createGroup = new JButton("Create Group");
@@ -165,11 +163,11 @@ public class PreferenceEditor extends JFrame {
 		tab3_upperPanel.add(expression);
 		
 		JPanel tab3_middlePanel = new JPanel();
-		tab3_middlePanel.setLayout(new BoxLayout(tab3_middlePanel, BoxLayout.X_AXIS));
+		tab3_middlePanel.setLayout(new FlowLayout());
 		tab3_middlePanel.add(Box.createRigidArea(new Dimension(10,0)));
 		
 		JButton leftParenButton = new JButton("(");
-		leftParenButton.setPreferredSize(new Dimension(125, 25));
+		leftParenButton.setPreferredSize(new Dimension(75, 25));
 		leftParenButton.addActionListener(e -> {
 			try {
 				strLen.push(2);
@@ -183,7 +181,7 @@ public class PreferenceEditor extends JFrame {
 		tab3_middlePanel.add(Box.createRigidArea(new Dimension(10,0)));
 		
 		JButton rightParenButton = new JButton(")");
-		rightParenButton.setPreferredSize(new Dimension(125, 25));
+		rightParenButton.setPreferredSize(new Dimension(75, 25));
 		rightParenButton.addActionListener(e -> {
 			try {
 				strLen.push(2);
@@ -197,7 +195,7 @@ public class PreferenceEditor extends JFrame {
 		tab3_middlePanel.add(Box.createRigidArea(new Dimension(10,0)));
 		
 		JButton andButton = new JButton("AND");
-		andButton.setPreferredSize(new Dimension(125, 25));
+		andButton.setPreferredSize(new Dimension(75, 25));
 		andButton.addActionListener(e -> {
 			try {
 				strLen.push(5);
@@ -220,7 +218,7 @@ public class PreferenceEditor extends JFrame {
 				e1.printStackTrace();
 			}
 		});
-		orButton.setPreferredSize(new Dimension(125, 25));
+		orButton.setPreferredSize(new Dimension(75, 25));
 		tab3_middlePanel.add(orButton);
 		tab3_middlePanel.add(Box.createRigidArea(new Dimension(10,0)));
 		
@@ -234,16 +232,18 @@ public class PreferenceEditor extends JFrame {
 				e1.printStackTrace();
 			}
 		});
-		notButton.setPreferredSize(new Dimension(125, 25));
+		notButton.setPreferredSize(new Dimension(75, 25));
 		tab3_middlePanel.add(notButton);
 		
 		JPanel tab3_lowerPanel = new JPanel();
 		tab3_lowerPanel.setLayout(new FlowLayout());
 		
 		comboBox = new JComboBox<String>();
+		
 		comboBox.setSize(new Dimension(15, 25));
 		populateComboBox(view);
 		tab3_lowerPanel.add(comboBox);
+		tab3_lowerPanel.add(Box.createRigidArea(new Dimension(10,0)));
 		
 		JButton selectKeyWordButton = new JButton("Add Keyword");
 		selectKeyWordButton.addActionListener(e -> {
@@ -256,6 +256,7 @@ public class PreferenceEditor extends JFrame {
 			}
 		});
 		tab3_lowerPanel.add(selectKeyWordButton);
+		tab3_lowerPanel.add(Box.createRigidArea(new Dimension(10,0)));
 		
 		JButton deleteButton = new JButton("Delete");
 		deleteButton.addActionListener(e-> {

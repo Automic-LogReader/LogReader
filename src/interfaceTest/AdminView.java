@@ -12,6 +12,7 @@ package interfaceTest;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.sql.*;
 
 import javax.swing.JFrame;
 import javax.swing.table.AbstractTableModel;
@@ -56,8 +57,8 @@ import javax.swing.JScrollBar;
 @SuppressWarnings({ "serial", "unused" })
 public class AdminView extends JFrame {
 	
-	List <String> defaultList = new ArrayList<String>();
-	List <String> list = new ArrayList<String>();
+	List <String[]> defaultList = new ArrayList<String[]>();
+	List <String[]> list = new ArrayList<String[]>();
 	//Holds a line from the csv file
 	protected String errorLine;
 	//Holds the line from the csv file (each part of the array is a cell from csv)
@@ -87,9 +88,11 @@ public class AdminView extends JFrame {
 	/**
 	 * @param data - An array of object arrays that contains data from the error csv file. 
 	 * 				 The data in here is filled into the JTable.
+	 * @throws SQLException 
+	 * @throws ClassNotFoundException 
 	 * @throws IOException 
 	 */
-	public AdminView() throws IOException {
+	public AdminView() throws ClassNotFoundException, SQLException {
 		
 		
 		setBounds(200, 200, 1000, 300);
@@ -259,35 +262,38 @@ public class AdminView extends JFrame {
 
 	}
 	
-
 	/**
 	 * This function fills myData with arrays. Each array represents a line from
 	 * LogErrors_Suggestions.csv, the array itself being the return value
 	 * from calling split function on the line.
+	 * @throws SQLException 
+	 * @throws ClassNotFoundException 
 	 * @throws IOException
 	 */
-	void createDataTable() throws IOException
-	{
-		dataIndex = 0;
-		//InputStream errorInput = getClass().getResourceAsStream(MainController.errorFile);
-		//BufferedReader errorbr = new BufferedReader(new InputStreamReader(errorInput));
-		
-		FileReader errorInput = new FileReader("src/interfaceTest/resources/LogErrors_Suggestions.csv");
-		BufferedReader errorbr = new BufferedReader(errorInput);
-		
-		errorLine = errorbr.readLine();
-		errorLine = errorbr.readLine();
-		
-		while(errorLine != null)
+	void createDataTable() throws SQLException, ClassNotFoundException 
+	{		
+		String driver = "net.sourceforge.jtds.jdbc.Driver";
+		Class.forName(driver);
+		Connection conn = DriverManager.getConnection("jdbc:jtds:sqlserver://vwaswp02:1433/coeus", "coeus", "C0eus");
+
+		Statement stmt = conn.createStatement();
+		String query2 = "select Keyword, Log_Error_Description, "+
+						"Suggested_Solution from logerrors";
+		ResultSet rs = stmt.executeQuery(query2);
+		while(rs.next())
 		{
-			list.add(errorLine);
-			defaultList.add(errorLine);
-			errorLine = errorbr.readLine();
+			String[] entry = new String[3];
+			entry[0] = rs.getString("Keyword");
+			entry[1] = rs.getString("Log_Error_Description");
+			entry[2] = rs.getString("Suggested_Solution");
+			list.add(entry);
+			defaultList.add(entry);
 		}
-		Collections.sort(list);
-		Collections.sort(defaultList);
-		errorbr.close();
-		
+
+			
+		//Collections.sort(list);
+		//Collections.sort(defaultList);
+		stmt.close();
 	}
 	
 	void resetData()
@@ -297,6 +303,5 @@ public class AdminView extends JFrame {
 		model.fireTableDataChanged();
 	}
 	
-
 	
 }

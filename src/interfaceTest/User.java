@@ -13,6 +13,7 @@ public class User {
 	
 	public User(MainMenu menu, boolean isAdmin)
 	{
+		
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {

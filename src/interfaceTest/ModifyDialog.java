@@ -1,4 +1,4 @@
-package interfaceTest;
+ package interfaceTest;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 
@@ -131,6 +131,9 @@ public class ModifyDialog extends JDialog {
 				else
 				{
 					try {
+						dc.setKeywordChanged(!(keywordText.getText().equals(keyWord)));
+						dc.setErrorMessageChanged(!(errorText.getText().equals(errorMessage)));
+						dc.setSuggestedSolutionChanged(!(solutionText.getText().equals(solutionMessage)));
 						dc.modifyData(keywordText.getText(), errorText.getText(), solutionText.getText(), "MODIFY", selectedRow);
 					} catch (Exception e1) {
 						// TODO Auto-generated catch block
@@ -146,4 +149,5 @@ public class ModifyDialog extends JDialog {
 
 		}
 	}
+	
 }

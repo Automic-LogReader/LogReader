@@ -123,6 +123,5 @@ public class CreateGroup extends JDialog{
 	    dialog.getRootPane().registerKeyboardAction(escListener,
 	            KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
 	            JComponent.WHEN_IN_FOCUSED_WINDOW);
-
 	}
 }

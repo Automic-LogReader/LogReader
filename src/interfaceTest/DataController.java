@@ -1,21 +1,33 @@
 package interfaceTest;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import javax.swing.table.DefaultTableModel;
 
 
 
 public class DataController {
 
-	private List <String> defaultList = new ArrayList<String>();
-	private List <String> list = new ArrayList<String>();
-	private List <String> tempList = new ArrayList<String>();
+	private List <String[]> defaultList = new ArrayList<String[]>();
+	private List <String[]> list = new ArrayList<String[]>();
+	private List <String[]> tempList = new ArrayList<String[]>();
+	private List <String> queries = new ArrayList<String>();
 	private Object [][] defaultData;
 	private Object [][] data;
+	private boolean keywordChanged;
+	private boolean errorMessageChanged;
+	private boolean suggestedSolutionChanged;
 	//Holds a line from the csv file
 	protected String errorLine;
 	//Holds the line from the csv file (each part of the array is a cell from csv)
@@ -25,24 +37,41 @@ public class DataController {
 	DataController(AdminView admin)
 	{
 		this.admin = admin;
+		keywordChanged = false;
+		errorMessageChanged = false;
+		suggestedSolutionChanged = false;
 	}
 	
+	void setKeywordChanged(boolean change)
+	{
+		keywordChanged = change;
+	}
 	
-	void setList(List <String> list)
+	void setErrorMessageChanged(boolean change)
+	{
+		errorMessageChanged = change;
+	}
+	
+	void setSuggestedSolutionChanged(boolean change)
+	{
+		suggestedSolutionChanged = change;
+	}
+	
+	void setList(List <String[]> list)
 	{
 		this.list = list;
 	}
 	
-	void setDefaultList(List <String> defaultList)
+	void setDefaultList(List <String[]> defaultList)
 	{
 		this.defaultList = defaultList;
 	}
 	
-	List<String> getList(){
+	List<String[]> getList(){
 		return list;
 	}
 	
-	List<String> getDefaultList()
+	List<String[]> getDefaultList()
 	{
 		return defaultList;
 	}
@@ -57,33 +86,59 @@ public class DataController {
 	 */
 	
 	
+	//****************************
+	//Note that we will HAVE to go about doing modify a different way
+	
 	void modifyData(String keyWord, String message, String solution, String choice, int row) throws IOException
 	{
-		String newLine = "";
-		//Commas are added between each entry so they are put in individual cells in the csv
-		if(keyWord.contains(","))
-			if(!keyWord.contains("\""))
-				keyWord = "\"" + keyWord + "\"";
-		newLine += (keyWord + ",");
-		// \" is added so that if the message contains a comma, it isn't broken up into separate cells
-		if(message.contains(","))
-			if(!message.contains("\""))
-				message = "\"" + message + "\"";
-		newLine += (message + ",");
-		if(solution.contains(","))
-			if(!solution.contains("\""))
-				solution = "\"" + solution + "\"";
-		newLine += solution;
+		String [] tempArray = new String[3];
+		tempArray[0] = keyWord;
+		tempArray[1] = message;
+		tempArray[2] = solution;
 		if(choice.equals("MODIFY"))
-			list.set(row, newLine);
+		{
+			if(errorMessageChanged)
+				queries.add("update logerrors set Log_Error_Description = \'" +
+					 addSingleQuote(message) + "\' where Keyword = \'" + addSingleQuote(list.get(row)[0]) + "\'");
+			if(suggestedSolutionChanged)
+				queries.add("update logerrors set Suggested_Solution = \'" +
+					 addSingleQuote(solution) + "\' where Keyword = \'" + addSingleQuote(list.get(row)[0]) + "\'");
+			if(keywordChanged)
+				queries.add("update logerrors set Keyword = \'" +
+					addSingleQuote(keyWord) + "\' where Keyword = \'" + addSingleQuote(list.get(row)[0]) + "\'");
+			list.set(row, tempArray);
+		}
 		else
-			list.add(newLine);
-		Collections.sort(list);
+		{
+			queries.add("insert into logerrors values (\'" + addSingleQuote(keyWord) +
+					"\',\'" + addSingleQuote(message) + "\',\'" + addSingleQuote(solution) + "\')");
+			list.add(tempArray);
+		}
+		
+		//Collections.sort(list);
 		transferData("CHANGE");
+		keywordChanged = false;
+		errorMessageChanged = false;
+		suggestedSolutionChanged = false;
+		//Add a query
+		
 		admin.resetData();
 
 	}
 	
+	
+	String addSingleQuote(String oldWord)
+	{
+		StringBuilder newWord = new StringBuilder();
+		for(int i = 0; i < oldWord.length(); i++)
+		{
+			if(oldWord.charAt(i) == '\'')
+				newWord.append("\'\'");
+			else
+				newWord.append(oldWord.charAt(i));
+		}
+		return newWord.toString();
+	}
 
 	/**
 	 * When the user highlights a piece of data and then clicks the delete button, 
@@ -95,7 +150,7 @@ public class DataController {
 	 */
 	void deleteData(int row) throws IOException
 	{
-		int i = 0;
+		queries.add("delete from logerrors where Keyword = \'" + addSingleQuote(list.get(row)[0]) + "\'");
 		list.remove(row);
 		transferData("CHANGE");
 		admin.resetData();
@@ -104,14 +159,16 @@ public class DataController {
 	void transferData(String choice)
 	{
 		if(choice.equals("DEFAULT"))
+		{
 			tempList = defaultList;
+			queries.clear();
+		}
 		else
 			tempList = list;
 		Object[][] myData = new Object[tempList.size()][];
 		for(int i = 0; i < tempList.size(); i++)
 		{
-			errorWords = tempList.get(i).split(",(?=([^\"]|\"[^\"]*\")*$)");
-			myData[i] = errorWords;
+			myData[i] = tempList.get(i);
 		}
 		data = myData;
 	}
@@ -121,33 +178,33 @@ public class DataController {
 		return data;
 	}
 	
-	void saveDefault() throws IOException
+	void saveDefault() throws IOException, ClassNotFoundException, SQLException
 	{
 		defaultList.clear();
-		File oldFile = new File ("src/interfaceTest/resources/LogErrors_Suggestions.csv");
-		File temp = new File("src/interfaceTest/resources/temp.csv");
-		
-		FileWriter fw = new FileWriter (temp, true);
-		fw.write("Keywords,Log Error Description,Suggested Solution\r\n");
-		
-		String newLine = "";
+
 		for(int i = 0; i < list.size(); i++)
 		{
 			defaultList.add(list.get(i));
-			newLine = list.get(i) + "\r\n";
-			fw.write(newLine);
 		}
-		fw.close();
-		if(oldFile.delete())
+		
+		for (int j = 0; j < queries.size(); j++)
 		{
-			temp.renameTo(oldFile);
-			System.out.println("success");
+			System.out.println(queries.get(j));
 		}
-		else
-		{	
-			temp.delete();
-			System.out.println("failed");
+		
+		String driver = "net.sourceforge.jtds.jdbc.Driver";
+		Class.forName(driver);
+		Connection conn = DriverManager.getConnection("jdbc:jtds:sqlserver://vwaswp02:1433/coeus", "coeus", "C0eus");
+
+		Statement stmt = conn.createStatement();
+		for(int j = 0; j < queries.size(); j++)
+		{
+			int x = stmt.executeUpdate(queries.get(j));
 		}
+		
+		stmt.close();
+		
+		queries.clear();
 	}
 	
 }

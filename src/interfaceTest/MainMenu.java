@@ -30,13 +30,14 @@ public class MainMenu extends JFrame {
 	private JButton exitButton;
 	
 	public MainMenu() {
+		
 		prepareGUI();
 		
 	}
 	
 	
 	private void prepareGUI(){
-		this.setTitle("Log Reader");
+		this.setTitle("Project COEUS");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(400, 200, 300, 200);
 		setLocationRelativeTo(null);
@@ -70,7 +71,12 @@ public class MainMenu extends JFrame {
 		
 		adminButton = new JButton("Admin");
 		adminButton.addActionListener(e -> {
-			loginFrame = new Login(this);
+			try {
+				loginFrame = new Login(this);
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 			loginFrame.setVisible(true);
 			this.setVisible(false);
 		});
