@@ -76,7 +76,6 @@ public class UserView extends JFrame{
 	protected HashMap<String, String> solutions = new HashMap<String, String>();
 	protected HashSet<String> keyWords = new HashSet<String>();
 	protected HashSet<String> originalKeyWords;
-	protected Vector<String> comboBoxKeyWords = new Vector<String>();
 	private boolean hasCopiedOriginalKeyWords;
 	
 	//Holds the size of the file in bytes
@@ -116,6 +115,9 @@ public class UserView extends JFrame{
 	protected CheckBoxListItem[] listOfGroups;
 	//For the and/or/not logic
 	protected ArrayList<Object> logicalExpression = new ArrayList<Object>();
+	private String comboBoxStatement;
+	protected Vector<String> comboBoxKeyWords = new Vector<String>();
+	private JTextField statementTextField;
 	//For the CheckBoxTree view
 	protected JScrollPane treeScrollPane;
 	protected JTree tree;
@@ -421,6 +423,7 @@ public class UserView extends JFrame{
 		contentPane.add(mainPanel, BorderLayout.CENTER);
 		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.X_AXIS));
 			
+		/*** TREE PANEL ***/
 		JPanel treePanel = new JPanel();
 		treePanel.setLayout(new BoxLayout(treePanel, BoxLayout.Y_AXIS));
 		
@@ -446,7 +449,6 @@ public class UserView extends JFrame{
 			    }
 			    else
 			      return;
-			  
 			}
 		});
 		CheckBoxNodeRenderer renderer = new CheckBoxNodeRenderer();
@@ -457,21 +459,47 @@ public class UserView extends JFrame{
 		treeScrollPane = new JScrollPane(tree);
 		treePanel.add(treeScrollPane);
 		
+		/*** AND OR NOT PANEL ***/
 		JPanel andOrNotPanel = new JPanel();
+		andOrNotPanel.setOpaque(true);
 		andOrNotPanel.setBackground(Color.WHITE);
 		andOrNotPanel.setLayout(new BoxLayout(andOrNotPanel, BoxLayout.Y_AXIS));
 		
-		JPanel p1 = new JPanel(new FlowLayout());
-		JComboBox k1 = new JComboBox(comboBoxKeyWords);
-		p1.add(k1);
+		JPanel comboBoxPanel = new JPanel(new FlowLayout());
+		comboBoxPanel.setOpaque(true);
+		comboBoxPanel.setBackground(Color.WHITE);
+		JComboBox key1 = logicalComboBox(2);
+		JComboBox logic1 = logicalComboBox(3);
+		JComboBox key2 = logicalComboBox(2);
+		JComboBox logic2 = logicalComboBox(1);
+		JComboBox key3 = logicalComboBox(2);
+		JComboBox logic3 = logicalComboBox(1);
+		JComboBox key4 = logicalComboBox(2);
+		JComboBox logic4 = logicalComboBox(1);
+		JComboBox key5 = logicalComboBox(2);
 		
-		JPanel p2 = new JPanel(new FlowLayout());
-		JComboBox k2 = new JComboBox(comboBoxKeyWords);
-		p2.add(k2);
+		comboBoxPanel.add(key1);
+		comboBoxPanel.add(logic1);
+		comboBoxPanel.add(key2);
+		comboBoxPanel.add(logic2);
+		comboBoxPanel.add(key3);
+		comboBoxPanel.add(logic3);
+		comboBoxPanel.add(key4);
+		comboBoxPanel.add(logic4);
+		comboBoxPanel.add(key5);
 		
-		andOrNotPanel.add(p1);
-		andOrNotPanel.add(p2);
+		JPanel statementPanel = new JPanel(new FlowLayout());
+		statementPanel.setOpaque(true);
+		statementPanel.setBackground(Color.WHITE);
+		statementTextField = new JTextField("");
+		statementTextField.setPreferredSize(new Dimension(550, 20));
+		statementPanel.add(statementTextField);
 		
+		andOrNotPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+		andOrNotPanel.add(comboBoxPanel);
+		andOrNotPanel.add(statementPanel);
+		
+		/*** GROUP PANEL ***/
 		JPanel groupPanel = new JPanel();
 		groupPanel.setLayout(new BoxLayout(groupPanel, BoxLayout.Y_AXIS));
 		
@@ -512,6 +540,42 @@ public class UserView extends JFrame{
 		setVisible(true);
 	}
 	
+	JComboBox<String> logicalComboBox(int option){
+		JComboBox<String> cb = new JComboBox<String>();
+		cb.setOpaque(true);
+		cb.setBackground(Color.WHITE);
+		switch (option){
+		case 1:
+			cb.addItem("-----");
+			cb.setPreferredSize(new Dimension(60, 20));
+			cb.addItem("AND");
+			cb.addItem("OR");
+			cb.addItem("AND NOT");
+			cb.addItem("OR NOT");
+			break;
+		case 2:
+			cb.addItem("--------------");
+			cb.setPreferredSize(new Dimension(90, 20));
+			for (String s: comboBoxKeyWords){
+				cb.addItem(s);
+			}
+			break;
+		case 3:
+			cb.addItem("-----");
+			cb.setPreferredSize(new Dimension(60, 20));
+			cb.addItem("AND");
+			cb.addItem("AND NOT");
+			break;
+		}
+		cb.addActionListener(e ->{
+			if (!cb.getSelectedItem().toString().equals("-----") && !cb.getSelectedItem().toString().equals("--------------")){
+				comboBoxStatement = statementTextField.getText() + " " + cb.getSelectedItem().toString();
+				statementTextField.setText(comboBoxStatement);
+			}
+		});
+		return cb;
+	}
+	
 	boolean createGroupDisplay(){
 		model.clear();
 		if (keyWordGroups.isEmpty()){
@@ -533,18 +597,7 @@ public class UserView extends JFrame{
 	    }		
 		return true;
 	}
-	
-	//not used as of right now
-	/*void createTable(){
-		String andOrNotHeaders[] = {"AND", "OR", "NOT"};
-		DefaultTableModel tableModel = new DefaultTableModel(data, andOrNotHeaders) {
-		    @Override
-		    public boolean isCellEditable(int row, int column) {
-		       //all cells false
-		       return false;
-		    }
-		};
-	}*/
+
 }
 	
 
