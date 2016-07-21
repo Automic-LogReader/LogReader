@@ -144,140 +144,7 @@ public class PreferenceEditor extends JFrame {
 		
 		tab2.add(Box.createVerticalGlue());
 		
-		JPanel tab3 = new JPanel(false);
-		tabbedPane.addTab("AND/OR/NOT", tab3);
-		tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
-		
-		tab3.setLayout(new BoxLayout(tab3, BoxLayout.Y_AXIS));
-		tab3.add(Box.createVerticalGlue());
-		
-		JPanel tab3_upperPanel = new JPanel();
-		tab3_upperPanel.setLayout(new FlowLayout());
-		
-		
-		expression = new JTextField();
-		expression.setEditable(false);
-		expression.setBackground(Color.WHITE);
-		expression.setHorizontalAlignment(JTextField.CENTER);
-		expression.setPreferredSize(new Dimension(500, 25));
-		tab3_upperPanel.add(expression);
-		
-		JPanel tab3_middlePanel = new JPanel();
-		tab3_middlePanel.setLayout(new FlowLayout());
-		tab3_middlePanel.add(Box.createRigidArea(new Dimension(10,0)));
-		
-		JButton leftParenButton = new JButton("(");
-		leftParenButton.setPreferredSize(new Dimension(75, 25));
-		leftParenButton.addActionListener(e -> {
-			try {
-				strLen.push(2);
-				strPos.push(expression.getCaretPosition());
-				expression.getDocument().insertString((int) strPos.peek(), "( ", null);
-			} catch (Exception e1) {
-				e1.printStackTrace();
-			}
-		});
-		tab3_middlePanel.add(leftParenButton);
-		tab3_middlePanel.add(Box.createRigidArea(new Dimension(10,0)));
-		
-		JButton rightParenButton = new JButton(")");
-		rightParenButton.setPreferredSize(new Dimension(75, 25));
-		rightParenButton.addActionListener(e -> {
-			try {
-				strLen.push(2);
-				strPos.push(expression.getCaretPosition());
-				expression.getDocument().insertString((int) strPos.peek(), " )", null);
-			} catch (Exception e1) {
-				e1.printStackTrace();
-			}
-		});
-		tab3_middlePanel.add(rightParenButton);
-		tab3_middlePanel.add(Box.createRigidArea(new Dimension(10,0)));
-		
-		JButton andButton = new JButton("AND");
-		andButton.setPreferredSize(new Dimension(75, 25));
-		andButton.addActionListener(e -> {
-			try {
-				strLen.push(5);
-				strPos.push(expression.getCaretPosition());
-				expression.getDocument().insertString((int) strPos.peek(), " AND ", null);
-			} catch (Exception e1) {
-				e1.printStackTrace();
-			}
-		});
-		tab3_middlePanel.add(andButton);
-		tab3_middlePanel.add(Box.createRigidArea(new Dimension(10,0)));
-		
-		JButton orButton = new JButton("OR");
-		orButton.addActionListener(e -> {
-			try {
-				strLen.push(4);
-				strPos.push(expression.getCaretPosition());
-				expression.getDocument().insertString((int) strPos.peek(), " OR ", null);
-			} catch (Exception e1) {
-				e1.printStackTrace();
-			}
-		});
-		orButton.setPreferredSize(new Dimension(75, 25));
-		tab3_middlePanel.add(orButton);
-		tab3_middlePanel.add(Box.createRigidArea(new Dimension(10,0)));
-		
-		JButton notButton = new JButton("NOT");
-		notButton.addActionListener(e -> {
-			try {
-				strLen.push(5);
-				strPos.push(expression.getCaretPosition());
-				expression.getDocument().insertString((int) strPos.peek(), " NOT ", null);
-			} catch (Exception e1) {
-				e1.printStackTrace();
-			}
-		});
-		notButton.setPreferredSize(new Dimension(75, 25));
-		tab3_middlePanel.add(notButton);
-		
-		JPanel tab3_lowerPanel = new JPanel();
-		tab3_lowerPanel.setLayout(new FlowLayout());
-		
-		comboBox = new JComboBox<String>();
-		
-		comboBox.setSize(new Dimension(15, 25));
-		populateComboBox(view);
-		tab3_lowerPanel.add(comboBox);
-		tab3_lowerPanel.add(Box.createRigidArea(new Dimension(10,0)));
-		
-		JButton selectKeyWordButton = new JButton("Add Keyword");
-		selectKeyWordButton.addActionListener(e -> {
-			try {
-				strLen.push(comboBox.getSelectedItem().toString().length());
-				strPos.push(expression.getCaretPosition());
-				expression.getDocument().insertString(expression.getCaretPosition(), comboBox.getSelectedItem().toString(), null);
-			} catch (Exception e1) {
-				e1.printStackTrace();
-			}
-		});
-		tab3_lowerPanel.add(selectKeyWordButton);
-		tab3_lowerPanel.add(Box.createRigidArea(new Dimension(10,0)));
-		
-		JButton deleteButton = new JButton("Delete");
-		deleteButton.addActionListener(e-> {
-			if (expression.getText().toString().isEmpty()){
-				return;
-			}
-			String temp = expression.getText().toString();
-			System.out.println(temp);
-			int len = (int) strLen.pop();
-			int pos = (int) strPos.pop();
-			temp = temp.substring(0, pos) + temp.substring(len + pos);
-			expression.setText(temp);
-		});
-		tab3_lowerPanel.add(deleteButton);
-		
-		tab3.add(tab3_upperPanel);
-		tab3.add(tab3_middlePanel);
-		tab3.add(tab3_lowerPanel);
-		
-		tab3.add(Box.createVerticalGlue());
-		
+	
 		tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 		UIManager.put("TabbedPane.contentBorderInsets", oldInsets); 
 		mainPanel.add(tabbedPane);
@@ -418,7 +285,7 @@ public class PreferenceEditor extends JFrame {
 	
 	void saveAndOrNot(UserView view){
 		boolean valid = false;
-		view.logicalExpression.clear();
+		/*view.logicalExpression.clear();
 		String text = expression.getText().toString();
 		String[] textArray = text.split(" ");
 		for (int i=0; i<textArray.length; i++){
@@ -429,7 +296,7 @@ public class PreferenceEditor extends JFrame {
 		}
 		if (!valid){
 			JOptionPane.showMessageDialog(this, "Expression must contain one or more keywords");
-		}
+		}*/
 	}
 	
 	boolean noCheckBoxSelected(){

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Stack;
 import java.util.Vector;
 
 import javax.swing.AbstractAction;
@@ -114,16 +115,22 @@ public class UserView extends JFrame{
 	protected JList<CheckBoxListItem> groupList;
 	protected CheckBoxListItem[] listOfGroups;
 	//For the and/or/not logic
-	protected ArrayList<Object> logicalExpression = new ArrayList<Object>();
+	protected ArrayList<String> keyWordArrayList = new ArrayList<String>();
+	protected ArrayList<String> andOrArrayList = new ArrayList<String>();
+	protected ArrayList<Boolean> notArrayList = new ArrayList<Boolean>();
 	private String comboBoxStatement;
 	protected Vector<String> comboBoxKeyWords = new Vector<String>();
 	private JTextField statementTextField;
+	private Stack<Integer> strLen = new Stack<Integer>();
+	private Stack<Integer> strPos = new Stack<Integer>();
+	private Stack<JComboBox<String>> mostRecentCB = new Stack<JComboBox<String>>();
+	
 	//For the CheckBoxTree view
 	protected JScrollPane treeScrollPane;
 	protected JTree tree;
 	protected CheckBoxNode keyWordCheckBox[];
-	protected Vector rootVector;
-	protected Vector keyWordVector;
+	protected Vector<?> rootVector;
+	protected Vector<?> keyWordVector;
 	/**
 	 * Create the frame.
 	 * @throws IOException 
@@ -140,6 +147,9 @@ public class UserView extends JFrame{
 		}
 		lowerBound = (double) 0;
 		upperBound = Double.MAX_VALUE;
+		strLen.clear();
+		strPos.clear();
+		mostRecentCB.clear();
 		//String driver = "com.mysql.jdbc.Driver";
 		String driver = "net.sourceforge.jtds.jdbc.Driver";
 		Class.forName(driver);
@@ -468,15 +478,15 @@ public class UserView extends JFrame{
 		JPanel comboBoxPanel = new JPanel(new FlowLayout());
 		comboBoxPanel.setOpaque(true);
 		comboBoxPanel.setBackground(Color.WHITE);
-		JComboBox key1 = logicalComboBox(2);
-		JComboBox logic1 = logicalComboBox(3);
-		JComboBox key2 = logicalComboBox(2);
-		JComboBox logic2 = logicalComboBox(1);
-		JComboBox key3 = logicalComboBox(2);
-		JComboBox logic3 = logicalComboBox(1);
-		JComboBox key4 = logicalComboBox(2);
-		JComboBox logic4 = logicalComboBox(1);
-		JComboBox key5 = logicalComboBox(2);
+		JComboBox<String> key1 = logicalComboBox(2);
+		JComboBox<String> logic1 = logicalComboBox(3);
+		JComboBox<String> key2 = logicalComboBox(2);
+		JComboBox<String> logic2 = logicalComboBox(1);
+		JComboBox<String> key3 = logicalComboBox(2);
+		JComboBox<String> logic3 = logicalComboBox(1);
+		JComboBox<String> key4 = logicalComboBox(2);
+		JComboBox<String> logic4 = logicalComboBox(1);
+		JComboBox<String> key5 = logicalComboBox(2);
 		
 		comboBoxPanel.add(key1);
 		comboBoxPanel.add(logic1);
@@ -493,11 +503,31 @@ public class UserView extends JFrame{
 		statementPanel.setBackground(Color.WHITE);
 		statementTextField = new JTextField("");
 		statementTextField.setPreferredSize(new Dimension(550, 20));
+		statementTextField.setEditable(false);
+		statementTextField.setOpaque(true);
+		statementTextField.setBackground(Color.WHITE);
 		statementPanel.add(statementTextField);
 		
+		JButton undoButton = new JButton("Undo");
+		undoButton.setAlignmentX(CENTER_ALIGNMENT);
+		undoButton.addActionListener(e -> {
+			if (statementTextField.getText().isEmpty()){
+				return;
+			}
+			String temp = statementTextField.getText().toString();
+			int len = strLen.pop();
+			int pos = strPos.pop();
+			temp = temp.substring(0, pos) + temp.substring(len + pos);
+			statementTextField.setText(temp);
+			mostRecentCB.pop().setSelectedIndex(0);
+		});
+		
+		andOrNotPanel.add(Box.createVerticalGlue());
 		andOrNotPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 		andOrNotPanel.add(comboBoxPanel);
 		andOrNotPanel.add(statementPanel);
+		andOrNotPanel.add(undoButton);
+		andOrNotPanel.add(Box.createVerticalGlue());
 		
 		/*** GROUP PANEL ***/
 		JPanel groupPanel = new JPanel();
@@ -552,6 +582,7 @@ public class UserView extends JFrame{
 			cb.addItem("OR");
 			cb.addItem("AND NOT");
 			cb.addItem("OR NOT");
+			
 			break;
 		case 2:
 			cb.addItem("--------------");
@@ -569,8 +600,11 @@ public class UserView extends JFrame{
 		}
 		cb.addActionListener(e ->{
 			if (!cb.getSelectedItem().toString().equals("-----") && !cb.getSelectedItem().toString().equals("--------------")){
+				strLen.push(cb.getSelectedItem().toString().length() + 1);
+				strPos.push(statementTextField.getText().toString().length());
 				comboBoxStatement = statementTextField.getText() + " " + cb.getSelectedItem().toString();
 				statementTextField.setText(comboBoxStatement);
+				mostRecentCB.push(cb);
 			}
 		});
 		return cb;
