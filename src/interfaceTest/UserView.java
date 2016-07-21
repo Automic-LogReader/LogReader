@@ -110,7 +110,7 @@ public class UserView extends JFrame{
 	protected HashSet<HashSet<String>> keyWordGroups = new HashSet<HashSet<String>>();
 	
 	protected DefaultListModel<CheckBoxListItem> model;
-	
+	private JTabbedPane tabbedPane;
 	protected JScrollPane groupScrollPane;
 	
 	protected JList<CheckBoxListItem> groupList;
@@ -278,6 +278,9 @@ public class UserView extends JFrame{
 	}
 	
 	boolean noCheckBoxSelected(){
+		if (tabbedPane.getSelectedIndex() != 0){
+			return false;
+		}
 		for (int i = 0; i < DBKeyWordCheckBox.length; i++){
 			if (DBKeyWordCheckBox[i].isSelected()){
 				return false;
@@ -430,7 +433,7 @@ public class UserView extends JFrame{
 		Component horizontalStrut_3 = Box.createHorizontalStrut(20);
 		bottomPanel.add(horizontalStrut_3);
 		
-		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		
 		JPanel mainPanel = new JPanel();
 		mainPanel.setMaximumSize(new Dimension(400, 280));
@@ -688,6 +691,9 @@ public class UserView extends JFrame{
 	}
 	
 	void saveAndOrNot(){
+		keyWordArrayList.clear();
+		andOrArrayList.clear();
+		notArrayList.clear();
 		if (!key1.getSelectedItem().toString().equals("--------------")){
 			keyWordArrayList.add(key1.getSelectedItem().toString());
 		}
@@ -765,6 +771,15 @@ public class UserView extends JFrame{
 				andOrArrayList.add("OR");
 				notArrayList.add(true);
 			}
+		}
+		for (String s : keyWordArrayList){
+			System.out.println(s);
+		}
+		for (String s : andOrArrayList){
+			System.out.println(s);
+		}
+		for (boolean b : notArrayList){
+			System.out.println(b);
 		}
 	}
 }
