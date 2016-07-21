@@ -614,8 +614,6 @@ public class UserView extends JFrame{
 			cb.addItem("AND");
 			cb.addItem("OR");
 			cb.addItem("AND NOT");
-			cb.addItem("OR NOT");
-			
 			break;
 		case 2:
 			cb.addItem("--------------");
@@ -731,10 +729,6 @@ public class UserView extends JFrame{
 				operandArrayList.add("OR");
 				notArrayList.add(false);
 			}
-			else {
-				operandArrayList.add("OR");
-				notArrayList.add(true);
-			}
 		}
 		if (!logic3.getSelectedItem().toString().equals("-----")){
 			if (logic3.getSelectedItem().toString().equals("AND")){
@@ -749,10 +743,6 @@ public class UserView extends JFrame{
 				operandArrayList.add("OR");
 				notArrayList.add(false);
 			}
-			else {
-				operandArrayList.add("OR");
-				notArrayList.add(true);
-			}
 		}
 		if (!logic4.getSelectedItem().toString().equals("-----")){
 			if (logic4.getSelectedItem().toString().equals("AND")){
@@ -766,10 +756,6 @@ public class UserView extends JFrame{
 			else if (logic4.getSelectedItem().toString().equals("OR")){
 				operandArrayList.add("OR");
 				notArrayList.add(false);
-			}
-			else {
-				operandArrayList.add("OR");
-				notArrayList.add(true);
 			}
 		}
 		for (String s : keyWordArrayList){
