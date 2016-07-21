@@ -698,16 +698,16 @@ public class UserView extends JFrame{
 			keyWordArrayList.add(key1.getSelectedItem().toString());
 		}
 		if (!key2.getSelectedItem().toString().equals("--------------")){
-			keyWordArrayList.add(key1.getSelectedItem().toString());
+			keyWordArrayList.add(key2.getSelectedItem().toString());
 		}
 		if (!key3.getSelectedItem().toString().equals("--------------")){
-			keyWordArrayList.add(key1.getSelectedItem().toString());
+			keyWordArrayList.add(key3.getSelectedItem().toString());
 		}
 		if (!key4.getSelectedItem().toString().equals("--------------")){
-			keyWordArrayList.add(key1.getSelectedItem().toString());
+			keyWordArrayList.add(key4.getSelectedItem().toString());
 		}
 		if (!key5.getSelectedItem().toString().equals("--------------")){
-			keyWordArrayList.add(key1.getSelectedItem().toString());
+			keyWordArrayList.add(key5.getSelectedItem().toString());
 		}
 		if (!logic1.getSelectedItem().toString().equals("-----")){
 			andOrArrayList.add("AND");
