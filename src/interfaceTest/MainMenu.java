@@ -6,6 +6,7 @@
  */
 package interfaceTest;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import java.awt.Component;
@@ -37,6 +38,13 @@ public class MainMenu extends JFrame {
 	
 	
 	private void prepareGUI(){
+		try {
+		     ClassLoader cl = this.getClass().getClassLoader();
+		     ImageIcon programIcon = new ImageIcon(cl.getResource("res/img.jpg"));
+		     setIconImage(programIcon.getImage());
+		  } catch (Exception e) {
+		     System.out.println("Could not load program icon.");
+		  }
 		this.setTitle("Project COEUS");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(400, 200, 300, 200);
@@ -54,6 +62,7 @@ public class MainMenu extends JFrame {
 		JLabel lblNewLabel = new JLabel("Please select an option:");
 		topPanel.add(lblNewLabel);
 			
+		
 		JPanel middlePanel = new JPanel();
 		contentPane.add(middlePanel, "cell 0 1,grow");
 			
