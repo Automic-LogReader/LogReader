@@ -138,9 +138,12 @@ public class UserView extends JFrame{
 	//For the CheckBoxTree view
 	protected JScrollPane treeScrollPane;
 	protected JTree tree;
-	protected CheckBoxNode keyWordCheckBox[];
+	protected CheckBoxNode allKeyWordCheckBox[];
+	protected CheckBoxNode commonKeyWordCheckBox[];
+	protected CheckBoxNode DBKeyWordCheckBox[];
 	protected Vector<?> rootVector;
-	protected Vector<?> keyWordVector;
+	protected Vector<?> commonKeyWordVector;
+	protected Vector<?> DBKeyWordVector;
 	/**
 	 * Create the frame.
 	 * @throws IOException 
@@ -193,8 +196,8 @@ public class UserView extends JFrame{
 		
 		numKeyWords = keyWords.size();
 		listOfKeyWords = new CheckBoxListItem[numKeyWords + 1];
-		keyWordCheckBox = new CheckBoxNode[numKeyWords + 1];
-		keyWordCheckBox[0] = new CheckBoxNode("All KeyWords", true);
+		allKeyWordCheckBox = new CheckBoxNode[numKeyWords + 1];
+		allKeyWordCheckBox[0] = new CheckBoxNode("All KeyWords", true);
 		listOfKeyWords[0] = new CheckBoxListItem("All KeyWords");
 		//All Keywords selected by default
 		listOfKeyWords[0].setSelected(true);
@@ -203,7 +206,7 @@ public class UserView extends JFrame{
 		comboBoxKeyWords.clear();
 		for (String s : keyWords){
 			listOfKeyWords[index] = new CheckBoxListItem(s);
-			keyWordCheckBox[index] = new CheckBoxNode(s, false);
+			allKeyWordCheckBox[index] = new CheckBoxNode(s, false);
 			comboBoxKeyWords.addElement(s);
 			index++;
 		}
@@ -248,7 +251,6 @@ public class UserView extends JFrame{
 						saveAndOrNot();
 						submitButton.setEnabled(false);
 						logParser.parseErrors(file, dialog);
-						//parseErrors(file, dialog);
 						} catch (IOException e) {
 						// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -260,25 +262,29 @@ public class UserView extends JFrame{
 	}
 	
 	void updateKeyWords(){
-		if (keyWordCheckBox[0].isSelected()){
-			System.out.println("default selection");
-			keyWords.addAll(originalKeyWords);
-			return;
+		keyWords.clear();
+		for (int i = 0; i < commonKeyWordCheckBox.length; i++){
+			if (commonKeyWordCheckBox[i].isSelected()){
+				System.out.println("Added:" + commonKeyWordCheckBox[i].toString());
+				keyWords.add(commonKeyWordCheckBox[i].toString());
+			}
 		}
-		else {
-			keyWords.clear();
-			for (int i = 1; i <= numKeyWords; i++){
-				if (keyWordCheckBox[i].isSelected()){
-					System.out.println("Added:" + keyWordCheckBox[i].toString());
-					keyWords.add(keyWordCheckBox[i].toString());
-				}
+		for (int i = 0; i < DBKeyWordCheckBox.length; i++){
+			if (DBKeyWordCheckBox[i].isSelected()){
+				System.out.println("Added:" + DBKeyWordCheckBox[i].toString());
+				keyWords.add(DBKeyWordCheckBox[i].toString());
 			}
 		}
 	}
 	
 	boolean noCheckBoxSelected(){
-		for (int i = 0; i <= numKeyWords; i++){
-			if (keyWordCheckBox[i].isSelected()){
+		for (int i = 0; i < DBKeyWordCheckBox.length; i++){
+			if (DBKeyWordCheckBox[i].isSelected()){
+				return false;
+			}
+		}
+		for (int i=0; i < commonKeyWordCheckBox.length; i++){
+			if (commonKeyWordCheckBox[i].isSelected()){
 				return false;
 			}
 		}
@@ -434,11 +440,7 @@ public class UserView extends JFrame{
 		/*** TREE PANEL ***/
 		JPanel treePanel = new JPanel();
 		treePanel.setLayout(new BoxLayout(treePanel, BoxLayout.Y_AXIS));
-		
-		keyWordVector = new NamedVector("Key Words", keyWordCheckBox);
-		Object rootNodes[] = {keyWordVector};
-		rootVector = new NamedVector("Root", rootNodes);
-		tree = new JTree(rootVector);
+		createTreeView();
 
 		tree.addMouseListener(new MouseAdapter(){
 			public void mouseClicked(MouseEvent me){
@@ -447,11 +449,19 @@ public class UserView extends JFrame{
 				    if (tp != null){
 				    	String path = tp.getLastPathComponent().toString();
 				    	String parent = tp.getParentPath().getLastPathComponent().toString();
-				    	if (parent.equals("Key Words")){
-				    		for (int i=0; i<keyWordCheckBox.length; i++){
-				    			if (path.equals(keyWordCheckBox[i].toString())){
-				    				System.out.println("keyword toggle");
-				    				keyWordCheckBox[i].setSelected(!keyWordCheckBox[i].isSelected());
+				    	if (parent.equals("Common")){
+				    		for (int i=0; i<commonKeyWordCheckBox.length; i++){
+				    			if (path.equals(commonKeyWordCheckBox[i].toString())){
+				    				System.out.println("keyword toggle: " + commonKeyWordCheckBox[i].toString());
+				    				commonKeyWordCheckBox[i].setSelected(!commonKeyWordCheckBox[i].isSelected());
+				    			}
+				    		}
+				    	}
+				    	else if (parent.equals("Database")){
+				    		for (int i=0; i<DBKeyWordCheckBox.length; i++){
+				    			if (path.equals(DBKeyWordCheckBox[i].toString())){
+				    				System.out.println("keyword toggle: " + DBKeyWordCheckBox[i].toString());
+				    				DBKeyWordCheckBox[i].setSelected(!DBKeyWordCheckBox[i].isSelected());
 				    			}
 				    		}
 				    	}
@@ -466,8 +476,21 @@ public class UserView extends JFrame{
 		tree.setCellEditor(new CheckBoxNodeEditor(tree));
 		tree.setEditable(true);        
 	    
+		JButton toggleAllButton = new JButton("Toggle All");
+		toggleAllButton.addActionListener(e -> {
+			for (int i=0; i<commonKeyWordCheckBox.length; i++){
+    			commonKeyWordCheckBox[i].setSelected(!commonKeyWordCheckBox[i].isSelected());
+    		}
+    		for (int i=0; i<DBKeyWordCheckBox.length; i++){
+    			DBKeyWordCheckBox[i].setSelected(!DBKeyWordCheckBox[i].isSelected());
+    		}
+    		treePanel.repaint();
+		});
+		toggleAllButton.setAlignmentX( Component.CENTER_ALIGNMENT);
+		
 		treeScrollPane = new JScrollPane(tree);
 		treePanel.add(treeScrollPane);
+		treePanel.add(toggleAllButton);
 		
 		/*** AND OR NOT PANEL ***/
 		JPanel andOrNotPanel = new JPanel();
@@ -563,8 +586,14 @@ public class UserView extends JFrame{
 		tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
 		
 		mainPanel.add(tabbedPane);
-		
-		errorTable = new JTable(data, headers);
+		DefaultTableModel tableModel = new DefaultTableModel(data, headers) {
+		    @Override
+		    public boolean isCellEditable(int row, int column) {
+		       //all cells false
+		       return false;
+		    }
+		}; 
+		errorTable = new JTable(tableModel);
 		errorScrollPane = new JScrollPane(errorTable, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		mainPanel.add(errorScrollPane);
 		
@@ -609,6 +638,31 @@ public class UserView extends JFrame{
 			}
 		});
 		return cb;
+	}
+	void createTreeView(){
+		DBKeyWordCheckBox = new CheckBoxNode[2];
+		commonKeyWordCheckBox = new CheckBoxNode[numKeyWords-2];
+		int i = 0;
+		for (CheckBoxNode node : allKeyWordCheckBox){
+			if (node.toString().equals("DEADLOCK")){
+				System.out.println("deadlock");
+				DBKeyWordCheckBox[0] = node;
+			}
+			else if (node.toString().equals("===>")){
+				System.out.println("arrow");
+				DBKeyWordCheckBox[1] = node;
+			}
+			else if (!node.toString().equals("All KeyWords")) {
+				commonKeyWordCheckBox[i] = node;
+				i++;
+				System.out.println(i);
+			}
+		}
+		commonKeyWordVector = new NamedVector("Common", commonKeyWordCheckBox);
+		DBKeyWordVector = new NamedVector("Database", DBKeyWordCheckBox);
+		Object rootNodes[] = {commonKeyWordVector, DBKeyWordVector};
+		rootVector = new NamedVector("Root", rootNodes);
+		tree = new JTree(rootVector);
 	}
 	
 	boolean createGroupDisplay(){
@@ -702,7 +756,7 @@ public class UserView extends JFrame{
 			else if (logic4.getSelectedItem().toString().equals("AND NOT")){
 				andOrArrayList.add("AND");
 				notArrayList.add(true);
-			}
+			} 
 			else if (logic4.getSelectedItem().toString().equals("OR")){
 				andOrArrayList.add("OR");
 				notArrayList.add(false);

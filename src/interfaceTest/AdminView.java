@@ -19,6 +19,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 
 import java.awt.GridBagLayout;
 import java.io.BufferedReader;
@@ -139,6 +140,7 @@ public class AdminView extends JFrame {
 
 		};
 		
+		resizeColumnWidth(table);
 		//Whenever user clicks on a cell, the cell's contents appear in modify textbox
 		/*
 		table.addMouseListener(new MouseAdapter(){
@@ -149,6 +151,8 @@ public class AdminView extends JFrame {
 		    }
 		});
 		*/
+	
+		
 		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		scrollPane.setViewportView(table);
 		
@@ -300,7 +304,21 @@ public class AdminView extends JFrame {
 	{
 		DefaultTableModel model = new DefaultTableModel(dc.getData(), columnHeaders); 
 		table.setModel(model);
+		resizeColumnWidth(table);
 		model.fireTableDataChanged();
+	}
+	
+	public void resizeColumnWidth(JTable table) {
+	    final TableColumnModel columnModel = table.getColumnModel();
+	    for (int column = 0; column < table.getColumnCount(); column++) {
+	        int width = 50; // Min width
+	        for (int row = 0; row < table.getRowCount(); row++) {
+	            TableCellRenderer renderer = table.getCellRenderer(row, column);
+	            Component comp = table.prepareRenderer(renderer, row, column);
+	            width = Math.max(comp.getPreferredSize().width +1 , width);
+	        }
+	        columnModel.getColumn(column).setPreferredWidth(width);
+	    }
 	}
 	
 	
