@@ -43,6 +43,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
@@ -124,6 +125,15 @@ public class UserView extends JFrame{
 	private Stack<Integer> strLen = new Stack<Integer>();
 	private Stack<Integer> strPos = new Stack<Integer>();
 	private Stack<JComboBox<String>> mostRecentCB = new Stack<JComboBox<String>>();
+	private JComboBox<String> key1;
+	private JComboBox<String> logic1;
+	private JComboBox<String> key2;
+	private JComboBox<String> logic2;
+	private JComboBox<String> key3;
+	private JComboBox<String> logic3;
+	private JComboBox<String> key4;
+	private JComboBox<String> logic4;
+	private JComboBox<String> key5;
 	
 	//For the CheckBoxTree view
 	protected JScrollPane treeScrollPane;
@@ -137,8 +147,8 @@ public class UserView extends JFrame{
 	 */
 	public UserView(MainMenu menu, boolean isAdmin) throws ClassNotFoundException, SQLException {
 		hasCopiedOriginalKeyWords = false;
-		data = new Object[11][];
-		for(int i = 0; i < 11; i ++){
+		data = new Object[20][];
+		for(int i = 0; i < 20; i ++){
 			Object[] temp = new Object[5];
 			for(int j = 0; j < 5; j++){
 				temp[j] = "";
@@ -235,7 +245,7 @@ public class UserView extends JFrame{
 					try {
 						fileSize = file.length();
 						fileSizeDivHundred = fileSize/100;
-						
+						saveAndOrNot();
 						submitButton.setEnabled(false);
 						logParser.parseErrors(file, dialog);
 						//parseErrors(file, dialog);
@@ -250,20 +260,6 @@ public class UserView extends JFrame{
 	}
 	
 	void updateKeyWords(){
-		/*if (listOfKeyWords[0].isSelected()){
-			System.out.println("default selection");
-			keyWords.addAll(originalKeyWords);
-			return;
-		}
-		else {
-			keyWords.clear();
-			for (int i = 1; i <= numKeyWords; i++){
-				if (listOfKeyWords[i].isSelected()){
-					System.out.println("Added:" + listOfKeyWords[i].toString());
-					keyWords.add(listOfKeyWords[i].toString());
-				}
-			}
-		}*/
 		if (keyWordCheckBox[0].isSelected()){
 			System.out.println("default selection");
 			keyWords.addAll(originalKeyWords);
@@ -302,7 +298,7 @@ public class UserView extends JFrame{
 	
 	void prepareGUI(MainMenu menu, boolean isAdmin){
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 1200, 280);
+		setBounds(100, 100, 1500, 400);
 		setLocationRelativeTo(null);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -354,6 +350,7 @@ public class UserView extends JFrame{
 		bottomPanel.add(horizontalStrut_1);
 		
 		submitButton = new JButton("Submit");
+		submitButton.setBackground(new Color(0, 209, 54));
 		submitButton.setPreferredSize(new Dimension(80, 30));
 		submitButton.addActionListener(e -> {
 			String path = filePath.getText();
@@ -430,6 +427,7 @@ public class UserView extends JFrame{
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		
 		JPanel mainPanel = new JPanel();
+		mainPanel.setMaximumSize(new Dimension(400, 280));
 		contentPane.add(mainPanel, BorderLayout.CENTER);
 		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.X_AXIS));
 			
@@ -444,21 +442,23 @@ public class UserView extends JFrame{
 
 		tree.addMouseListener(new MouseAdapter(){
 			public void mouseClicked(MouseEvent me){
-				TreePath tp = tree.getPathForLocation(me.getX(), me.getY());
-			    if (tp != null){
-			    	String path = tp.getLastPathComponent().toString();
-			    	String parent = tp.getParentPath().getLastPathComponent().toString();
-			    	if (parent.equals("Key Words")){
-			    		for (int i=0; i<keyWordCheckBox.length; i++){
-			    			if (path.equals(keyWordCheckBox[i].toString())){
-			    				System.out.println("keyword toggle");
-			    				keyWordCheckBox[i].setSelected(!keyWordCheckBox[i].isSelected());
-			    			}
-			    		}
-			    	}
-			    }
-			    else
-			      return;
+				if (SwingUtilities.isLeftMouseButton(me)){
+					TreePath tp = tree.getPathForLocation(me.getX(), me.getY());
+				    if (tp != null){
+				    	String path = tp.getLastPathComponent().toString();
+				    	String parent = tp.getParentPath().getLastPathComponent().toString();
+				    	if (parent.equals("Key Words")){
+				    		for (int i=0; i<keyWordCheckBox.length; i++){
+				    			if (path.equals(keyWordCheckBox[i].toString())){
+				    				System.out.println("keyword toggle");
+				    				keyWordCheckBox[i].setSelected(!keyWordCheckBox[i].isSelected());
+				    			}
+				    		}
+				    	}
+				    }
+				    else
+				      return;
+				}
 			}
 		});
 		CheckBoxNodeRenderer renderer = new CheckBoxNodeRenderer();
@@ -471,6 +471,7 @@ public class UserView extends JFrame{
 		
 		/*** AND OR NOT PANEL ***/
 		JPanel andOrNotPanel = new JPanel();
+		andOrNotPanel.setMaximumSize(new Dimension(400, 280));
 		andOrNotPanel.setOpaque(true);
 		andOrNotPanel.setBackground(Color.WHITE);
 		andOrNotPanel.setLayout(new BoxLayout(andOrNotPanel, BoxLayout.Y_AXIS));
@@ -478,15 +479,15 @@ public class UserView extends JFrame{
 		JPanel comboBoxPanel = new JPanel(new FlowLayout());
 		comboBoxPanel.setOpaque(true);
 		comboBoxPanel.setBackground(Color.WHITE);
-		JComboBox<String> key1 = logicalComboBox(2);
-		JComboBox<String> logic1 = logicalComboBox(3);
-		JComboBox<String> key2 = logicalComboBox(2);
-		JComboBox<String> logic2 = logicalComboBox(1);
-		JComboBox<String> key3 = logicalComboBox(2);
-		JComboBox<String> logic3 = logicalComboBox(1);
-		JComboBox<String> key4 = logicalComboBox(2);
-		JComboBox<String> logic4 = logicalComboBox(1);
-		JComboBox<String> key5 = logicalComboBox(2);
+		key1 = logicalComboBox(2);
+		logic1 = logicalComboBox(3);
+		key2 = logicalComboBox(2);
+		logic2 = logicalComboBox(1);
+		key3 = logicalComboBox(2);
+		logic3 = logicalComboBox(1);
+		key4 = logicalComboBox(2);
+		logic4 = logicalComboBox(1);
+		key5 = logicalComboBox(2);
 		
 		comboBoxPanel.add(key1);
 		comboBoxPanel.add(logic1);
@@ -631,7 +632,87 @@ public class UserView extends JFrame{
 	    }		
 		return true;
 	}
-
+	
+	void saveAndOrNot(){
+		if (!key1.getSelectedItem().toString().equals("--------------")){
+			keyWordArrayList.add(key1.getSelectedItem().toString());
+		}
+		if (!key2.getSelectedItem().toString().equals("--------------")){
+			keyWordArrayList.add(key1.getSelectedItem().toString());
+		}
+		if (!key3.getSelectedItem().toString().equals("--------------")){
+			keyWordArrayList.add(key1.getSelectedItem().toString());
+		}
+		if (!key4.getSelectedItem().toString().equals("--------------")){
+			keyWordArrayList.add(key1.getSelectedItem().toString());
+		}
+		if (!key5.getSelectedItem().toString().equals("--------------")){
+			keyWordArrayList.add(key1.getSelectedItem().toString());
+		}
+		if (!logic1.getSelectedItem().toString().equals("-----")){
+			andOrArrayList.add("AND");
+			if (logic1.getSelectedItem().toString().equals("AND NOT")){
+				notArrayList.add(true);
+			}
+			else {
+				notArrayList.add(false);
+			}
+		}
+		if (!logic2.getSelectedItem().toString().equals("-----")){
+			if (logic2.getSelectedItem().toString().equals("AND")){
+				andOrArrayList.add("AND");
+				notArrayList.add(false);
+			}
+			else if (logic2.getSelectedItem().toString().equals("AND NOT")){
+				andOrArrayList.add("AND");
+				notArrayList.add(true);
+			}
+			else if (logic2.getSelectedItem().toString().equals("OR")){
+				andOrArrayList.add("OR");
+				notArrayList.add(false);
+			}
+			else {
+				andOrArrayList.add("OR");
+				notArrayList.add(true);
+			}
+		}
+		if (!logic3.getSelectedItem().toString().equals("-----")){
+			if (logic3.getSelectedItem().toString().equals("AND")){
+				andOrArrayList.add("AND");
+				notArrayList.add(false);
+			}
+			else if (logic3.getSelectedItem().toString().equals("AND NOT")){
+				andOrArrayList.add("AND");
+				notArrayList.add(true);
+			}
+			else if (logic3.getSelectedItem().toString().equals("OR")){
+				andOrArrayList.add("OR");
+				notArrayList.add(false);
+			}
+			else {
+				andOrArrayList.add("OR");
+				notArrayList.add(true);
+			}
+		}
+		if (!logic4.getSelectedItem().toString().equals("-----")){
+			if (logic4.getSelectedItem().toString().equals("AND")){
+				andOrArrayList.add("AND");
+				notArrayList.add(false);
+			}
+			else if (logic4.getSelectedItem().toString().equals("AND NOT")){
+				andOrArrayList.add("AND");
+				notArrayList.add(true);
+			}
+			else if (logic4.getSelectedItem().toString().equals("OR")){
+				andOrArrayList.add("OR");
+				notArrayList.add(false);
+			}
+			else {
+				andOrArrayList.add("OR");
+				notArrayList.add(true);
+			}
+		}
+	}
 }
 	
 
