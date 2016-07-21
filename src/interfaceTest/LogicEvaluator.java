@@ -1,12 +1,14 @@
 package interfaceTest;
 
+
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class LogicEvaluator {
 
-	private LogParser logParser;
+	private LogParser logParse;
 	private String firstKeyword;
-	private String Testline;
 	private ArrayList<Boolean> hasNot = new ArrayList<Boolean>();
 	private ArrayList<String> ORwords = new ArrayList<String>();
 	private ArrayList<Integer> badIndexes = new ArrayList<Integer>();
@@ -15,10 +17,26 @@ public class LogicEvaluator {
 	private ArrayList<String> operands = new ArrayList<String>();
 	
 	
-	LogicEvaluator(LogParser logParser)
+	LogicEvaluator(LogParser logParse)
 	{
-		this.logParser = logParser;
+		this.logParse = logParse;
 	}
+	
+	void setkeyWords(ArrayList <String> keyWords)
+	{
+		this.keyWords = keyWords;
+	}
+	
+	void setOperands(ArrayList <String> operands)
+	{
+		this.operands = operands;
+	}
+	
+	void setHasNot(ArrayList <Boolean> hasNot)
+	{
+		this.hasNot = hasNot;
+	}
+	
 	
 	//Entry titles will be based off of the first keyword selected
 	void makeEntries()
@@ -59,28 +77,39 @@ public class LogicEvaluator {
 					}
 				}	
 				entry[3] = errorMsg.toString();
-				entry[4] = logParser.view.solutions.get(entry[2]);
+				entry[4] = logParse.view.solutions.get(entry[2]);
+				logParse.errorData.add(entry);
 			}
 		}
+			
 	}
 	
 	
 	//There will be special cases if there is a deadlock or a ==> or a timecritical
-	void addLines(String line, String keyWord)
+	void addLines(String line, BufferedReader br) throws IOException
 	{
-		//If the line contains one of the OR keywords, we count it as valid
-		for(int i = 0; i < ORwords.size(); i++)
+		if(line.contains("DEADLOCK") && (keyWords.contains("DEADLOCK"))
+				&& hasNot.get(keyWords.indexOf("DEADLOCK")) != true)
+			validLines.add(makeDeadlockLine(br, line));
+		else if(ORwords.contains("DEADLOCK") && line.contains("DEADLOCK"))
+			validLines.add(makeDeadlockLine(br, line));
+		else if (ORwords.contains("===>") && line.contains("===>"))
 		{
-			if(line.contains(ORwords.get(i)))
+			//if(makeArrowLine(br, line) == null)
+			//continue;
+		//else
+			//validLines.add(makeArrowLine(br, line));
+		}
+		//If the line contains one of the OR keywords, we count it as valid
+		else
+		{
+			for(int i = 0; i < ORwords.size(); i++)
 			{
-				if(ORwords.get(i).equals("DEADLOCK"))
-					validLines.add(makeDeadlockLine());
-				else if (ORwords.get(i).equals("===>"))
-					validLines.add(makeArrowLine());
-				else
-				//If it contains just one OR word, we only add it once
-					validLines.add(line);
-				return;
+				 if(line.contains(ORwords.get(i)))
+				{
+						validLines.add(line);
+					return;
+				}
 			}
 		}
 	}
@@ -90,7 +119,7 @@ public class LogicEvaluator {
 	{
 		//If keywords is empty, we don't have any AND operands so we 
 		//will leave this function and make entries
-		if(keyWords.isEmpty())
+		if(keyWords.isEmpty() || keyWords == null)
 			return;
 		for(int i = 0; i < validLines.size(); i++)
 		{
@@ -102,11 +131,17 @@ public class LogicEvaluator {
 				//If the line contains a word we DON'T want, it is invalid
 				if(hasNot.get(j)) {
 					if(validLines.get(i).contains(keyWords.get(j)))
+					{
 						isValid = false;
+						break;
+					}
 				}
 				else {
 					if(!validLines.get(i).contains(keyWords.get(j)))
+					{
 						isValid = false;
+						break;
+					}
 				}
 			}
 			if(!isValid)
@@ -116,14 +151,10 @@ public class LogicEvaluator {
 		for(int i = 0; i < badIndexes.size(); i++){
 			System.out.println(badIndexes.get(i));
 		}
-		
-		System.out.println("before the loop");
 		for(int x = badIndexes.size() - 1; x >= 0; x--)
 		{
-			System.out.println("I am removing a line");
 			validLines.remove((int)badIndexes.get(x));
 		}
-		System.out.println("out of the loop");
 	}
 	
 	void addORs()
@@ -131,7 +162,7 @@ public class LogicEvaluator {
 		ORwords.add(keyWords.get(0));
 		firstKeyword = keyWords.get(0);
 		keyWords.remove(0);
-		hasNot.remove(0);
+		//System.out.println(keyWords.size());
 		while(operands.contains("OR"))
 		{
 			int index = operands.indexOf("OR");
@@ -142,15 +173,147 @@ public class LogicEvaluator {
 		}
 	}
 
-	String makeDeadlockLine()
+	String makeDeadlockLine(BufferedReader logbr, String line) throws IOException
 	{
-		return "temp";
+        ArrayList <String> errorLines = new ArrayList<String>();
+        boolean matchingDeadlock = false;
+        StringBuilder testLine = new StringBuilder();
+        StringBuilder fullMsg = new StringBuilder();
+        String timeStamp = "";
+        errorLines.add(line);
+        String[] temp = line.split(" ");
+        for(String word : temp){
+            if(word.length() == 19){
+                   timeStamp = word;
+                   break;
+            }
+        }
+        String[] words;
+        String logLine = logbr.readLine();
+        while(!matchingDeadlock && logLine != null){
+               boolean timeStampFound = false;
+               boolean uCodeFound = false;              
+               testLine.setLength(0);
+               logParse.updateProgress();
+               words = logLine.split(" ");
+               for(String testWord : words){
+                     if(!timeStampFound && testWord.length() == 19){
+                            timeStampFound = true;
+                            //If our timestamps are not equal, we 
+                            //don't have a matching deadlock
+                            //Make a new if statement here
+                            if(logParse.timeStampDifference(testWord, timeStamp)){
+                                   return errorLines.get(0);
+                            }
+                     }
+    
+                     else if(!uCodeFound && timeStampFound){
+                            if(testWord.length() > 2){
+                                   if(testWord.charAt(0) == 'U' && Character.isDigit(testWord.charAt(1))){
+                                          uCodeFound = true;
+                                   }
+                            }
+                     }
+                     else if(uCodeFound && timeStampFound){
+
+                            if(testWord.equals("DEADLOCK")){
+                                   matchingDeadlock = true;
+                                   for(int i = 0; i < errorLines.size(); i++){
+                                	   fullMsg.append(errorLines.get(i));
+                                   }
+                                   return fullMsg.toString();
+                            }
+                            else
+                                   testLine.append(testWord + " ");  
+                     }      
+               }
+               errorLines.add(testLine.toString());
+               logLine = logbr.readLine();
+        }
+        
+        return fullMsg.toString();
 	}
 	
-	String makeArrowLine()
+	
+	String makeArrowLine(BufferedReader logbr, String logLine, String[] currArray) throws IOException
 	{
-		return "temp";
+		String[] words;
+		int arrowindex = 0;
+		boolean timeStampFound = false;
+        boolean uCodeFound = false;  
+        boolean closingArrowTagFound = false;
+        boolean outsideTimeStampBounds = false;
+        StringBuilder errorMsg = new StringBuilder();
+        
+        if (!logParse.compareTimeStamp(currArray)){
+			outsideTimeStampBounds = true;
+
+		for (int i=0; i<currArray.length; i++){
+			if (currArray[i].equals("===>")){
+				arrowindex = i-1;
+				for (int j=(i+1); j<currArray.length; j++){
+					errorMsg.append(currArray[j] + " ");
+				}
+				break;
+			}
+		}
+		String firstLineOfError = errorMsg.toString();
+		
+		logLine = logbr.readLine();
+		while (!closingArrowTagFound && logLine != null){
+			logParse.updateProgress();
+			timeStampFound = false;
+			uCodeFound = false;
+			words = logLine.split(" ");
+			
+			if (logLine.contains("===>")){
+				if (logLine.contains("Time critical")){
+					//System.out.println(logLine);
+					errorMsg.setLength(0);
+					errorMsg.append(firstLineOfError);
+					String[] tempArray = logLine.split(" ");
+					String tempTimeStamp = "";
+					for (String s : tempArray){
+						if (s.length() == 19){
+							tempTimeStamp = s;
+							break;
+						}
+					}
+					validLines.add(makeArrowLine(logbr, tempTimeStamp, tempArray));
+					return errorMsg.toString();
+				}
+				if (arrowindex < words.length){
+					for (int i = arrowindex; i < words.length; i++){
+						errorMsg.append(words[i] + " ");
+					}
+				}
+				else {
+					errorMsg.append(logLine + " ");
+				}
+				closingArrowTagFound = true;
+				break;
+			}
+			if (arrowindex < words.length){
+				for (int i = arrowindex; i < words.length; i++){
+					errorMsg.append(words[i] + " ");
+				}
+			} 
+			else {
+				errorMsg.append(logLine + " ");
+			}
+			if (!closingArrowTagFound){
+				logLine = logbr.readLine();
+			}
+		}
+		if (outsideTimeStampBounds){
+			return null;
+		}
+        }
+		return errorMsg.toString();
+	
 	}
+	
+
 }
 
 

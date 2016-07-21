@@ -117,7 +117,7 @@ public class UserView extends JFrame{
 	protected CheckBoxListItem[] listOfGroups;
 	//For the and/or/not logic
 	protected ArrayList<String> keyWordArrayList = new ArrayList<String>();
-	protected ArrayList<String> andOrArrayList = new ArrayList<String>();
+	protected ArrayList<String> operandArrayList = new ArrayList<String>();
 	protected ArrayList<Boolean> notArrayList = new ArrayList<Boolean>();
 	private String comboBoxStatement;
 	protected Vector<String> comboBoxKeyWords = new Vector<String>();
@@ -235,10 +235,10 @@ public class UserView extends JFrame{
 		}
 		try {
 			if (noCheckBoxSelected()) return;
-			
+			saveAndOrNot();
 			dialog = new ProgressDialog(file, this);
 			dialog.setVisible(true);
-			logParser = new LogParser(this);
+			logParser = new LogParser(this, tabbedPane.getSelectedIndex());
 			} catch (Exception e) {
 				e.printStackTrace();
 			};	
@@ -248,7 +248,7 @@ public class UserView extends JFrame{
 					try {
 						fileSize = file.length();
 						fileSizeDivHundred = fileSize/100;
-						saveAndOrNot();
+						
 						submitButton.setEnabled(false);
 						logParser.parseErrors(file, dialog);
 						} catch (IOException e) {
@@ -692,7 +692,7 @@ public class UserView extends JFrame{
 	
 	void saveAndOrNot(){
 		keyWordArrayList.clear();
-		andOrArrayList.clear();
+		operandArrayList.clear();
 		notArrayList.clear();
 		if (!key1.getSelectedItem().toString().equals("--------------")){
 			keyWordArrayList.add(key1.getSelectedItem().toString());
@@ -710,7 +710,7 @@ public class UserView extends JFrame{
 			keyWordArrayList.add(key5.getSelectedItem().toString());
 		}
 		if (!logic1.getSelectedItem().toString().equals("-----")){
-			andOrArrayList.add("AND");
+			operandArrayList.add("AND");
 			if (logic1.getSelectedItem().toString().equals("AND NOT")){
 				notArrayList.add(true);
 			}
@@ -720,62 +720,62 @@ public class UserView extends JFrame{
 		}
 		if (!logic2.getSelectedItem().toString().equals("-----")){
 			if (logic2.getSelectedItem().toString().equals("AND")){
-				andOrArrayList.add("AND");
+				operandArrayList.add("AND");
 				notArrayList.add(false);
 			}
 			else if (logic2.getSelectedItem().toString().equals("AND NOT")){
-				andOrArrayList.add("AND");
+				operandArrayList.add("AND");
 				notArrayList.add(true);
 			}
 			else if (logic2.getSelectedItem().toString().equals("OR")){
-				andOrArrayList.add("OR");
+				operandArrayList.add("OR");
 				notArrayList.add(false);
 			}
 			else {
-				andOrArrayList.add("OR");
+				operandArrayList.add("OR");
 				notArrayList.add(true);
 			}
 		}
 		if (!logic3.getSelectedItem().toString().equals("-----")){
 			if (logic3.getSelectedItem().toString().equals("AND")){
-				andOrArrayList.add("AND");
+				operandArrayList.add("AND");
 				notArrayList.add(false);
 			}
 			else if (logic3.getSelectedItem().toString().equals("AND NOT")){
-				andOrArrayList.add("AND");
+				operandArrayList.add("AND");
 				notArrayList.add(true);
 			}
 			else if (logic3.getSelectedItem().toString().equals("OR")){
-				andOrArrayList.add("OR");
+				operandArrayList.add("OR");
 				notArrayList.add(false);
 			}
 			else {
-				andOrArrayList.add("OR");
+				operandArrayList.add("OR");
 				notArrayList.add(true);
 			}
 		}
 		if (!logic4.getSelectedItem().toString().equals("-----")){
 			if (logic4.getSelectedItem().toString().equals("AND")){
-				andOrArrayList.add("AND");
+				operandArrayList.add("AND");
 				notArrayList.add(false);
 			}
 			else if (logic4.getSelectedItem().toString().equals("AND NOT")){
-				andOrArrayList.add("AND");
+				operandArrayList.add("AND");
 				notArrayList.add(true);
 			} 
 			else if (logic4.getSelectedItem().toString().equals("OR")){
-				andOrArrayList.add("OR");
+				operandArrayList.add("OR");
 				notArrayList.add(false);
 			}
 			else {
-				andOrArrayList.add("OR");
+				operandArrayList.add("OR");
 				notArrayList.add(true);
 			}
 		}
 		for (String s : keyWordArrayList){
 			System.out.println(s);
 		}
-		for (String s : andOrArrayList){
+		for (String s : operandArrayList){
 			System.out.println(s);
 		}
 		for (boolean b : notArrayList){

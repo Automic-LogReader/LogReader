@@ -25,7 +25,7 @@ public class LogParser {
 	private long progress;
 	private int percent;
 	private int oldPercent;
-
+	private int selectedTab;
 	protected String logLine;
 	//Holds the individual entries from logLine, split by " "
 	protected String[] logWords;
@@ -36,14 +36,27 @@ public class LogParser {
 	//ArrayList to hold all the UCodes from the csv file
 	private Object[] entry;
 	//Holds the size of the file in bytes
+	private LogicEvaluator logicEvaluator;
 	
 	protected static UserView view;
 	
 	private int correct = 0;
 	private int incorrect = 0;
 	
-	public LogParser(UserView view){
+	public LogParser(UserView view, int tab){
+		selectedTab = tab;
 		LogParser.view = view;
+		logicEvaluator = new LogicEvaluator(this);
+	
+		if(view.keyWordArrayList != null)
+			logicEvaluator.setkeyWords(view.keyWordArrayList);
+		if(view.operandArrayList != null)
+			logicEvaluator.setOperands(view.operandArrayList);
+		if(view.notArrayList != null)
+			logicEvaluator.setHasNot(view.notArrayList);
+		//Something will set the arraylists here (if NOT null)
+		logicEvaluator.addORs();
+	
 	}
 	
 	void parseErrors(File file, ProgressDialog pd) throws IOException
@@ -72,69 +85,78 @@ public class LogParser {
 		while(logLine != null)
 		{
 			updateProgress();
-			logWords = logLine.split(" ");
-			
-			timeStamp = null;
-			errorMessage.setLength(0);
-			entry = null;
-			
-			keywordFound = false;
-			timeStampFound = false;
-			specialCase = false;
-			
-			for (String testWord : logWords){
-				//Timestamp will always come first
-				//Is this a reliable way to find timestamp?
-				//Maybe change to regex
-				if (testWord.length() == 19 && !timeStampFound){
-					timeStamp = testWord;
-					timeStampFound = true;
-				}
-				if(timeStampFound && !keywordFound){
-					//Testing the UCode from the file against the error UCodes
-					if (view.keyWords.contains(testWord)){
-						keywordFound = true;
-						errorCount++;
-						if (testWord.equals("DEADLOCK")){
-							entry = parseDeadlockError(logbr, timeStamp);
-							specialCase = true;
-							break;
-						}
-						else if (testWord.equals("===>") && logLine.contains("Time critical")) {
-							entry = parseArrowError(logbr, timeStamp, logWords);
-							specialCase = true;			
-							break;
-						}
-						else {
-							entry = new Object[5];
-							entry[0] = errorCount;
-							entry[1] = timeStamp;
-							entry[2] = testWord;
+			///THIS IS JUST A PLACEHOLDER
+			if(selectedTab == 1)
+			{
+				logicEvaluator.addLines(logLine, logbr);
+			}
+			else
+			{
+				logWords = logLine.split(" ");
+				timeStamp = null;
+				errorMessage.setLength(0);
+				entry = null;
 				
-							if (view.solutions.get(entry[2]) != null){
-								entry[4] = view.solutions.get(entry[2]);
+				keywordFound = false;
+				timeStampFound = false;
+				specialCase = false;
+				
+				for (String testWord : logWords){
+					//Timestamp will always come first
+					//Is this a reliable way to find timestamp?
+					//Maybe change to regex
+					if (testWord.length() == 19 && !timeStampFound){
+						timeStamp = testWord;
+						timeStampFound = true;
+					}
+					if(timeStampFound && !keywordFound){
+						//Testing the UCode from the file against the error UCodes
+						if (view.keyWords.contains(testWord)){
+							keywordFound = true;
+							errorCount++;
+							if (testWord.equals("DEADLOCK")){
+								entry = parseDeadlockError(logbr, timeStamp);
+								specialCase = true;
+								break;
+							}
+							else if (testWord.equals("===>") && logLine.contains("Time critical")) {
+								entry = parseArrowError(logbr, timeStamp, logWords);
+								specialCase = true;			
+								break;
+							}
+							else {
+								entry = new Object[5];
+								entry[0] = errorCount;
+								entry[1] = timeStamp;
+								entry[2] = testWord;
+					
+								if (view.solutions.get(entry[2]) != null){
+									entry[4] = view.solutions.get(entry[2]);
+								}
 							}
 						}
 					}
+					
+					else if(timeStampFound && keywordFound){
+						errorMessage.append(testWord + " ");
+					}
 				}
 				
-				else if(timeStampFound && keywordFound){
-					errorMessage.append(testWord + " ");
-				}
+				if(entry != null){
+					if (!specialCase){
+						entry[3] = errorMessage.toString();
+					}
+					if (entry[3] == null){
+						entry[3] = " ";
+					}
+					errorData.add(entry);
 			}
 			
-			if(entry != null){
-				if (!specialCase){
-					entry[3] = errorMessage.toString();
-				}
-				if (entry[3] == null){
-					entry[3] = " ";
-				}
-				errorData.add(entry);
 			}
 			logLine = logbr.readLine();
 		}
-		
+		logicEvaluator.parseLines();
+		logicEvaluator.makeEntries();
 		//Logs execution time to the console
 		long endTime = System.nanoTime();
 		long duration = (endTime - startTime)/1000000;
