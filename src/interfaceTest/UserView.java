@@ -329,6 +329,7 @@ public class UserView extends JFrame{
 		
 		JPanel bottomPanel = new JPanel();
 		contentPane.add(bottomPanel, BorderLayout.SOUTH);
+		
 		bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.X_AXIS));
 		
 		Component horizontalStrut_2 = Box.createHorizontalStrut(20);
@@ -496,6 +497,7 @@ public class UserView extends JFrame{
 		JButton toggleAllButton = new JButton("Toggle All");
 		toggleAllButton.addActionListener(e -> {
 			for (int i=0; i<commonKeyWordCheckBox.length; i++){
+				
     			commonKeyWordCheckBox[i].setSelected(!commonKeyWordCheckBox[i].isSelected());
     		}
     		for (int i=0; i<DBKeyWordCheckBox.length; i++){

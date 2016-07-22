@@ -18,47 +18,43 @@ public class LogicEvaluator {
 	private int errorCount;
 	
 	
-	LogicEvaluator(LogParser logParse)
-	{
+	LogicEvaluator(LogParser logParse){
 		this.logParse = logParse;
 	}
 	
-	void setkeyWords(ArrayList <String> keyWords)
-	{
+	void setkeyWords(ArrayList <String> keyWords){
 		this.keyWords = keyWords;
 	}
 	
-	void setOperands(ArrayList <String> operands)
-	{
+	void setOperands(ArrayList <String> operands){
 		this.operands = operands;
 	}
 	
-	void setHasNot(ArrayList <Boolean> hasNot)
-	{
+	void setHasNot(ArrayList <Boolean> hasNot){
 		this.hasNot = hasNot;
 	}
 	
-	int getErrorCount()
-	{
+	int getErrorCount(){
 		return errorCount;
 	}
 	
+	
 	//Entry titles will be based off of the first keyword selected
-	void makeEntries()
-	{
+	void makeEntries() {
 		if(validLines == null)
 			return;
-		else
-		{
+		else {
 			errorCount = 0;
-			for(int i = 0; i < validLines.size(); i++)
-			{
+			for(int i = 0; i < validLines.size(); i++) {
 				errorCount++;
 				Object[] entry = new Object[5];
 				boolean timeStampFound = false;
-				boolean uCodeFound = true;
+				boolean uCodeFound = false;
+				boolean hitDeadLock = false;
+				boolean hitArrow = false;
 				StringBuilder errorMsg = new StringBuilder();
 				String[] logWords = validLines.get(i).split(" ");
+				//System.out.println(validLines.get(i));
 				for (String testWord : logWords){
 					if (testWord.length() == 19 && !timeStampFound){
 						entry[0] = errorCount;
@@ -66,21 +62,38 @@ public class LogicEvaluator {
 						entry[2] = firstKeyword;
 						timeStampFound = true;
 					}
-					else if(!uCodeFound && timeStampFound)
-					{
-						if(testWord.length() > 2)
-						{
-							if(testWord.charAt(0) == 'U' && Character.isDigit(testWord.charAt(1)))
-							{
+					else if(!uCodeFound && timeStampFound) {
+						if(testWord.length() > 2) {
+							if(testWord.charAt(0) == 'U' && Character.isDigit(testWord.charAt(1))) {
 								uCodeFound = true;
 							}
 						}
 					}
-					if(uCodeFound && timeStampFound)
-					{
-						errorMsg.append(testWord + " ");	
+					else if(uCodeFound && timeStampFound) {
+						if(validLines.get(i).contains("DEADLOCK")) {
+							//System.out.println("I found a deadlock");
+							if(testWord.equals("DEADLOCK")){
+								hitDeadLock = true;
+								continue;
+							}
+							if(hitDeadLock) {
+								errorMsg.append(testWord + " ");
+							}
+							//System.out.println("I passed all the ifs");
+						}
+						else if(validLines.get(i).contains("===>")){
+							if(testWord.equals("===>")) {
+								hitArrow = true;
+								continue;
+							}
+							if(hitArrow)
+								errorMsg.append(testWord + " ");
+						}
+						else
+							errorMsg.append(testWord + " ");	
 					}
-				}	
+				}
+			
 				entry[3] = errorMsg.toString();
 				entry[4] = logParse.view.solutions.get(entry[2]);
 				logParse.errorData.add(entry);
@@ -100,10 +113,10 @@ public class LogicEvaluator {
 			validLines.add(makeDeadlockLine(br, line));
 		else if (ORwords.contains("===>") && line.contains("===>"))
 		{
-			if(makeArrowLine(br, line, line.split(" ")) == null)
-				return;
-			else
-				validLines.add(makeArrowLine(br, line, line.split(" ")));
+			//if(makeArrowLine(br, line, line.split(" ")) == null)
+				//return;
+		//else
+			//validLines.add(makeArrowLine(br, line, line.split(" ")));
 		}
 		//If the line contains one of the OR keywords, we count it as valid
 		else
@@ -152,10 +165,7 @@ public class LogicEvaluator {
 			if(!isValid)
 				badIndexes.add(i);
 		}
-		
-		for(int i = 0; i < badIndexes.size(); i++){
-			System.out.println(badIndexes.get(i));
-		}
+
 		for(int x = badIndexes.size() - 1; x >= 0; x--)
 		{
 			validLines.remove((int)badIndexes.get(x));
@@ -164,17 +174,22 @@ public class LogicEvaluator {
 	
 	void addORs()
 	{
-		ORwords.add(keyWords.get(0));
-		firstKeyword = keyWords.get(0);
-		keyWords.remove(0);
-		//System.out.println(keyWords.size());
-		while(operands.contains("OR"))
-		{
-			int index = operands.indexOf("OR");
-			ORwords.add(keyWords.get(index));
-			keyWords.remove(index);
-			operands.remove(index);
-			hasNot.remove(index);
+		if(keyWords != null){
+			firstKeyword = keyWords.get(0);
+			if(!operands.contains("OR")) {
+				ORwords.add(keyWords.get(0));
+				keyWords.remove(0);
+				hasNot.remove(0);
+			}
+			else {
+				while(operands.contains("OR")) {
+					int index = operands.indexOf("OR");
+					ORwords.add(keyWords.get(index));
+					keyWords.remove(index + 1);
+					operands.remove(index);
+					hasNot.remove(index + 1);
+				}
+			}
 		}
 	}
 
@@ -185,7 +200,7 @@ public class LogicEvaluator {
         StringBuilder testLine = new StringBuilder();
         StringBuilder fullMsg = new StringBuilder();
         String timeStamp = "";
-        errorLines.add(line);
+        errorLines.add(line + " ");
         String[] temp = line.split(" ");
         for(String word : temp){
             if(word.length() == 19){
@@ -250,9 +265,9 @@ public class LogicEvaluator {
         boolean outsideTimeStampBounds = false;
         StringBuilder errorMsg = new StringBuilder();
         
-        if (!logParse.compareTimeStamp(currArray)){
-			outsideTimeStampBounds = true;
-
+        //if (!logParse.compareTimeStamp(currArray)){
+			//outsideTimeStampBounds = true;
+        //}
 		for (int i=0; i<currArray.length; i++){
 			if (currArray[i].equals("===>")){
 				arrowindex = i-1;
@@ -313,12 +328,11 @@ public class LogicEvaluator {
 		if (outsideTimeStampBounds){
 			return null;
 		}
-        }
+        
 		return errorMsg.toString();
 	
 	}
 	
-
 }
 
 
