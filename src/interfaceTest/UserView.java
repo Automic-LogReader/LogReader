@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Stack;
 import java.util.Vector;
 
@@ -120,9 +121,7 @@ public class UserView extends JFrame{
 	protected ArrayList<String> keyWordArrayList = new ArrayList<String>();
 	protected ArrayList<String> operandArrayList = new ArrayList<String>();
 	protected ArrayList<Boolean> notArrayList = new ArrayList<Boolean>();
-	private String comboBoxStatement;
 	protected Vector<String> comboBoxKeyWords = new Vector<String>();
-	private JTextField statementTextField;
 	private Stack<Integer> strLen = new Stack<Integer>();
 	private Stack<Integer> strPos = new Stack<Integer>();
 	private Stack<JComboBox<String>> mostRecentCB = new Stack<JComboBox<String>>();
@@ -821,6 +820,11 @@ public class UserView extends JFrame{
 				operandArrayList.add("OR");
 				notArrayList.add(false);
 			}
+		}
+		Set<String> set = new HashSet<String>(keyWordArrayList);
+		if (set.size() < keyWordArrayList.size()){
+			JOptionPane.showMessageDialog(null, "Duplicate keywords not allowed");
+			return false;
 		}
 		for (String s : keyWordArrayList){
 			System.out.println(s);
