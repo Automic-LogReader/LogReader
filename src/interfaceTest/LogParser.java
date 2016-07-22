@@ -55,7 +55,9 @@ public class LogParser {
 		if(view.notArrayList != null)
 			logicEvaluator.setHasNot(view.notArrayList);
 		//Something will set the arraylists here (if NOT null)
-		logicEvaluator.addORs();
+		if (tab == 1){
+			logicEvaluator.addORs();
+		}
 	
 	}
 	
@@ -379,6 +381,7 @@ public class LogParser {
 		String time = line[(line.length-1)].replaceAll("[.]", "");
 		time = time.replaceAll("\'", "");
 		time = time.replace(":", ".");
+		//System.out.println(time);
 		double t = Double.parseDouble(time);
 		//System.out.println(t + " lower: " + view.lowerBound + " upper: " + view.upperBound + " result: " + Boolean.toString((t >= view.lowerBound) && (t <= view.upperBound)));
 		return ((t >= view.lowerBound) && (t <= view.upperBound));

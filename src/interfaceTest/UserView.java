@@ -538,35 +538,9 @@ public class UserView extends JFrame{
 		comboBoxPanel.add(logic4);
 		comboBoxPanel.add(key5);
 		
-		JPanel statementPanel = new JPanel(new FlowLayout());
-		statementPanel.setOpaque(true);
-		statementPanel.setBackground(Color.WHITE);
-		statementTextField = new JTextField("");
-		statementTextField.setPreferredSize(new Dimension(550, 20));
-		statementTextField.setEditable(false);
-		statementTextField.setOpaque(true);
-		statementTextField.setBackground(Color.WHITE);
-		statementPanel.add(statementTextField);
-		
-		JButton undoButton = new JButton("Undo");
-		undoButton.setAlignmentX(CENTER_ALIGNMENT);
-		undoButton.addActionListener(e -> {
-			if (statementTextField.getText().isEmpty()){
-				return;
-			}
-			String temp = statementTextField.getText().toString();
-			int len = strLen.pop();
-			int pos = strPos.pop();
-			temp = temp.substring(0, pos) + temp.substring(len + pos);
-			statementTextField.setText(temp);
-			mostRecentCB.pop().setSelectedIndex(0);
-		});
-		
 		andOrNotPanel.add(Box.createVerticalGlue());
 		andOrNotPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 		andOrNotPanel.add(comboBoxPanel);
-		andOrNotPanel.add(statementPanel);
-		andOrNotPanel.add(undoButton);
 		andOrNotPanel.add(Box.createVerticalGlue());
 		
 		/*** GROUP PANEL ***/
@@ -623,35 +597,25 @@ public class UserView extends JFrame{
 		cb.setBackground(Color.WHITE);
 		switch (option){
 		case 1:
-			model.addElement("-----");
 			cb.setPreferredSize(new Dimension(60, 20));
 			model.addElement("AND");
 			model.addElement("OR");
 			model.addElement("AND NOT");
 			break;
 		case 2:
-			model.addElement("--------------");
 			cb.setPreferredSize(new Dimension(90, 20));
 			for (String s: comboBoxKeyWords){
 				model.addElement(s);
 			}
 			break;
 		case 3:
-			model.addElement("-----");
 			cb.setPreferredSize(new Dimension(60, 20));
 			model.addElement("AND");
 			model.addElement("AND NOT");
 			break;
 		}
-		cb.addActionListener(e ->{
-			if (!cb.getSelectedItem().toString().equals("-----") && !cb.getSelectedItem().toString().equals("--------------")){
-				strLen.push(cb.getSelectedItem().toString().length() + 1);
-				strPos.push(statementTextField.getText().toString().length());
-				comboBoxStatement = statementTextField.getText() + " " + cb.getSelectedItem().toString();
-				statementTextField.setText(comboBoxStatement);
-				mostRecentCB.push(cb);
-			}
-		});
+		cb.setSelectedIndex(-1);
+
 		return cb;
 	}
 	void createTreeView(){
@@ -706,26 +670,26 @@ public class UserView extends JFrame{
 		keyWordArrayList.clear();
 		operandArrayList.clear();
 		notArrayList.clear();
-		if (key1.getSelectedItem().toString().equals("--------------") || key2.getSelectedItem().toString().equals("--------------") || logic1.getSelectedItem().toString().equals("-----")){
+		if (key1.getSelectedIndex() == -1 || key2.getSelectedIndex() == -1 || logic1.getSelectedIndex() == -1){
 			JOptionPane.showMessageDialog(null, "Please enter a valid logical statement with at least one operator and two operands");
 			return false;
 		}
-		if (!key1.getSelectedItem().toString().equals("--------------")){
+		if (key1.getSelectedIndex() != -1){
 			keyWordArrayList.add(key1.getSelectedItem().toString());
 		}
-		if (!key2.getSelectedItem().toString().equals("--------------")){
+		if (key2.getSelectedIndex() != -1){
 			keyWordArrayList.add(key2.getSelectedItem().toString());
 		}
-		if (!key3.getSelectedItem().toString().equals("--------------")){
+		if (key3.getSelectedIndex() != -1){
 			keyWordArrayList.add(key3.getSelectedItem().toString());
 		}
-		if (!key4.getSelectedItem().toString().equals("--------------")){
+		if (key4.getSelectedIndex() != -1){
 			keyWordArrayList.add(key4.getSelectedItem().toString());
 		}
-		if (!key5.getSelectedItem().toString().equals("--------------")){
+		if (key5.getSelectedIndex() != -1){
 			keyWordArrayList.add(key5.getSelectedItem().toString());
 		}
-		if (!logic1.getSelectedItem().toString().equals("-----")){
+		if (logic1.getSelectedIndex() != -1){
 			operandArrayList.add("AND");
 			if (logic1.getSelectedItem().toString().equals("AND NOT")){
 				notArrayList.add(true);
@@ -734,7 +698,7 @@ public class UserView extends JFrame{
 				notArrayList.add(false);
 			}
 		}
-		if (!logic2.getSelectedItem().toString().equals("-----")){
+		if (logic2.getSelectedIndex() != -1){
 			if (logic2.getSelectedItem().toString().equals("AND")){
 				operandArrayList.add("AND");
 				notArrayList.add(false);
@@ -748,7 +712,7 @@ public class UserView extends JFrame{
 				notArrayList.add(false);
 			}
 		}
-		if (!logic3.getSelectedItem().toString().equals("-----")){
+		if (logic3.getSelectedIndex() != -1){
 			if (logic3.getSelectedItem().toString().equals("AND")){
 				operandArrayList.add("AND");
 				notArrayList.add(false);
@@ -762,7 +726,7 @@ public class UserView extends JFrame{
 				notArrayList.add(false);
 			}
 		}
-		if (!logic4.getSelectedItem().toString().equals("-----")){
+		if (logic4.getSelectedIndex() != -1){
 			if (logic4.getSelectedItem().toString().equals("AND")){
 				operandArrayList.add("AND");
 				notArrayList.add(false);

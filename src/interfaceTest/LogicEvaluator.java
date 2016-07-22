@@ -95,10 +95,10 @@ public class LogicEvaluator {
 			validLines.add(makeDeadlockLine(br, line));
 		else if (ORwords.contains("===>") && line.contains("===>"))
 		{
-			//if(makeArrowLine(br, line) == null)
-			//continue;
-		//else
-			//validLines.add(makeArrowLine(br, line));
+			if(makeArrowLine(br, line, line.split(" ")) == null)
+				return;
+			else
+				validLines.add(makeArrowLine(br, line, line.split(" ")));
 		}
 		//If the line contains one of the OR keywords, we count it as valid
 		else
