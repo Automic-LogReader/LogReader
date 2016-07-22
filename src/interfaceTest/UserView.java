@@ -43,6 +43,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.ListSelectionModel;
+import javax.swing.MutableComboBoxModel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -234,8 +235,20 @@ public class UserView extends JFrame{
 			return;
 		}
 		try {
-			if (noCheckBoxSelected()) return;
-			saveAndOrNot();
+			if (tabbedPane.getSelectedIndex() == 0){
+				System.out.println("tab 1");
+				if (noCheckBoxSelected()) return;
+			}
+			else if (tabbedPane.getSelectedIndex() == 1){
+				System.out.println("tab 2");
+				if (!saveAndOrNot()){
+					return;
+				}
+			}
+			else if (tabbedPane.getSelectedIndex() == 2){
+				System.out.println("tab 3");
+			}
+			//saveAndOrNot();
 			dialog = new ProgressDialog(file, this);
 			dialog.setVisible(true);
 			logParser = new LogParser(this, tabbedPane.getSelectedIndex());
@@ -605,28 +618,29 @@ public class UserView extends JFrame{
 	
 	JComboBox<String> logicalComboBox(int option){
 		JComboBox<String> cb = new JComboBox<String>();
+		MutableComboBoxModel<String> model = (MutableComboBoxModel<String>)cb.getModel();
 		cb.setOpaque(true);
 		cb.setBackground(Color.WHITE);
 		switch (option){
 		case 1:
-			cb.addItem("-----");
+			model.addElement("-----");
 			cb.setPreferredSize(new Dimension(60, 20));
-			cb.addItem("AND");
-			cb.addItem("OR");
-			cb.addItem("AND NOT");
+			model.addElement("AND");
+			model.addElement("OR");
+			model.addElement("AND NOT");
 			break;
 		case 2:
-			cb.addItem("--------------");
+			model.addElement("--------------");
 			cb.setPreferredSize(new Dimension(90, 20));
 			for (String s: comboBoxKeyWords){
-				cb.addItem(s);
+				model.addElement(s);
 			}
 			break;
 		case 3:
-			cb.addItem("-----");
+			model.addElement("-----");
 			cb.setPreferredSize(new Dimension(60, 20));
-			cb.addItem("AND");
-			cb.addItem("AND NOT");
+			model.addElement("AND");
+			model.addElement("AND NOT");
 			break;
 		}
 		cb.addActionListener(e ->{
@@ -688,10 +702,14 @@ public class UserView extends JFrame{
 		return true;
 	}
 	
-	void saveAndOrNot(){
+	boolean saveAndOrNot(){
 		keyWordArrayList.clear();
 		operandArrayList.clear();
 		notArrayList.clear();
+		if (key1.getSelectedItem().toString().equals("--------------") || key2.getSelectedItem().toString().equals("--------------") || logic1.getSelectedItem().toString().equals("-----")){
+			JOptionPane.showMessageDialog(null, "Please enter a valid logical statement with at least one operator and two operands");
+			return false;
+		}
 		if (!key1.getSelectedItem().toString().equals("--------------")){
 			keyWordArrayList.add(key1.getSelectedItem().toString());
 		}
@@ -767,6 +785,7 @@ public class UserView extends JFrame{
 		for (boolean b : notArrayList){
 			System.out.println(b);
 		}
+		return true;
 	}
 }
 	
