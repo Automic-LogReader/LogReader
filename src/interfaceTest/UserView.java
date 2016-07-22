@@ -519,14 +519,41 @@ public class UserView extends JFrame{
 		comboBoxPanel.setOpaque(true);
 		comboBoxPanel.setBackground(Color.WHITE);
 		key1 = logicalComboBox(2);
+		key1.addActionListener(e -> {
+			if (key1.getSelectedIndex() != -1 && logic1.getSelectedIndex() != -1 && key2.getSelectedIndex() != -1){
+				System.out.println("enabled new fields");
+				logic2.setEnabled(true);
+				key3.setEnabled(true);
+			}
+		});
 		logic1 = logicalComboBox(3);
+		logic1.addActionListener(e -> {
+			if (key1.getSelectedIndex() != -1 && logic1.getSelectedIndex() != -1 && key2.getSelectedIndex() != -1){
+				System.out.println("enabled new fields");
+				logic2.setEnabled(true);
+				key3.setEnabled(true);
+			}
+		});
 		key2 = logicalComboBox(2);
+		key2.addActionListener(e -> {
+			if (key1.getSelectedIndex() != -1 && logic1.getSelectedIndex() != -1 && key2.getSelectedIndex() != -1){
+				System.out.println("enabled new fields");
+				logic2.setEnabled(true);
+				key3.setEnabled(true);
+			}
+		});
 		logic2 = logicalComboBox(1);
+		logic2.setEnabled(false);
 		key3 = logicalComboBox(2);
+		key3.setEnabled(false);
 		logic3 = logicalComboBox(1);
+		logic3.setEnabled(false);
 		key4 = logicalComboBox(2);
+		key4.setEnabled(false);
 		logic4 = logicalComboBox(1);
+		logic4.setEnabled(false);
 		key5 = logicalComboBox(2);
+		key5.setEnabled(false);
 		
 		comboBoxPanel.add(key1);
 		comboBoxPanel.add(logic1);
@@ -538,9 +565,18 @@ public class UserView extends JFrame{
 		comboBoxPanel.add(logic4);
 		comboBoxPanel.add(key5);
 		
+		JButton undoButton = new JButton("Undo");
+		undoButton.setAlignmentX(CENTER_ALIGNMENT);
+		undoButton.addActionListener(e -> {
+			if (!mostRecentCB.isEmpty()){
+				mostRecentCB.pop().setSelectedIndex(-1);
+			}
+		});
+		
 		andOrNotPanel.add(Box.createVerticalGlue());
 		andOrNotPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 		andOrNotPanel.add(comboBoxPanel);
+		andOrNotPanel.add(undoButton);
 		andOrNotPanel.add(Box.createVerticalGlue());
 		
 		/*** GROUP PANEL ***/
@@ -614,6 +650,11 @@ public class UserView extends JFrame{
 			model.addElement("AND NOT");
 			break;
 		}
+		cb.addActionListener(e -> {
+			if (cb.getSelectedIndex() != -1){
+				mostRecentCB.push(cb);
+			}
+		});
 		cb.setSelectedIndex(-1);
 
 		return cb;
@@ -634,7 +675,7 @@ public class UserView extends JFrame{
 			else if (!node.toString().equals("All KeyWords")) {
 				commonKeyWordCheckBox[i] = node;
 				i++;
-				System.out.println(i);
+				//System.out.println(i);
 			}
 		}
 		commonKeyWordVector = new NamedVector("Common", commonKeyWordCheckBox);

@@ -164,6 +164,9 @@ public class LogParser {
 		long duration = (endTime - startTime)/1000000;
 		System.out.println("Operation completed in " + duration + " ms");
 		
+		if(selectedTab ==1){
+			errorCount = logicEvaluator.getErrorCount();
+		}
 		view.dialog.doneParse(errorCount);
 		logbr.close();
 		data = new Object[errorData.size()][];

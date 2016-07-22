@@ -15,6 +15,7 @@ public class LogicEvaluator {
 	private ArrayList<String> validLines = new ArrayList<String>();
 	private ArrayList<String> keyWords = new ArrayList<String>();
 	private ArrayList<String> operands = new ArrayList<String>();
+	private int errorCount;
 	
 	
 	LogicEvaluator(LogParser logParse)
@@ -37,6 +38,10 @@ public class LogicEvaluator {
 		this.hasNot = hasNot;
 	}
 	
+	int getErrorCount()
+	{
+		return errorCount;
+	}
 	
 	//Entry titles will be based off of the first keyword selected
 	void makeEntries()
@@ -45,7 +50,7 @@ public class LogicEvaluator {
 			return;
 		else
 		{
-			int errorCount = 0;
+			errorCount = 0;
 			for(int i = 0; i < validLines.size(); i++)
 			{
 				errorCount++;
