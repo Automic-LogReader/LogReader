@@ -63,7 +63,7 @@ public class LogParser {
 	
 	void parseErrors(File file, ProgressDialog pd) throws IOException
 	{
-		view.updateKeyWords();
+		view.updateKeyWords(selectedTab);
 		
 		percent = 0;
 		oldPercent = 0;

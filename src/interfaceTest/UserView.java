@@ -15,9 +15,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -49,9 +47,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import interfaceTest.CheckBoxList.CheckBoxListItem;
@@ -163,10 +158,8 @@ public class UserView extends JFrame{
 		strLen.clear();
 		strPos.clear();
 		mostRecentCB.clear();
-		//String driver = "com.mysql.jdbc.Driver";
 		String driver = "net.sourceforge.jtds.jdbc.Driver";
 		Class.forName(driver);
-//		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306", "root", "Hakuna.Mattata!");
 		Connection conn = DriverManager.getConnection("jdbc:jtds:sqlserver://vwaswp02:1433/coeus", "coeus", "C0eus");
 		Statement stmt = conn.createStatement();
 
@@ -176,15 +169,6 @@ public class UserView extends JFrame{
 		prepareGUI(menu, isAdmin);
 	}
 	
-	
-	/**
-	 * This function fills the ArrayList uCodes by reading in 
-	 * the LogErrors_Suggestions.csv file and taking in all of the data
-	 * from the UCodes column. This data will eventually be used in the
-	 * findLogErrors function. 
-	 * @throws IOException
-	 * @throws SQLException 
-	 */
 	void fillKeywords(Statement stmt) throws SQLException
 	{
 		String query = "select Keyword from logerrors";
@@ -217,14 +201,6 @@ public class UserView extends JFrame{
 		}
 	}
 	
-	/**
-	 * This function takes in the logfile given by the user and parses through it 
-	 * to find errors by comparing the UCodes in the logFile against the error
-	 * UCodes from LogErrors_Suggestions.csv. If UCodes match, then the timestamp,
-	 * Ucode, corresponding error message, and suggested solution are displayed on the screen. 
-	 * @param path - A filepath from the user 
-	 * @throws IOException
-	 */
 	void findLogErrors(String path) throws IOException
 	{
 		logFile = path;
@@ -236,7 +212,9 @@ public class UserView extends JFrame{
 		try {
 			if (tabbedPane.getSelectedIndex() == 0){
 				System.out.println("tab 1");
-				if (noCheckBoxSelected()) return;
+				if (noCheckBoxSelected()) {
+					return;
+				}
 			}
 			else if (tabbedPane.getSelectedIndex() == 1){
 				System.out.println("tab 2");
@@ -245,9 +223,11 @@ public class UserView extends JFrame{
 				}
 			}
 			else if (tabbedPane.getSelectedIndex() == 2){
+				if (noCheckBoxSelected()){
+					return;
+				}
 				System.out.println("tab 3");
 			}
-			//saveAndOrNot();
 			dialog = new ProgressDialog(file, this);
 			dialog.setVisible(true);
 			logParser = new LogParser(this, tabbedPane.getSelectedIndex());
@@ -273,36 +253,57 @@ public class UserView extends JFrame{
 		t.start();
 	}
 	
-	void updateKeyWords(){
+	//Called in LogParser.java
+	void updateKeyWords(int selectedTab){
 		keyWords.clear();
-		for (int i = 0; i < commonKeyWordCheckBox.length; i++){
-			if (commonKeyWordCheckBox[i].isSelected()){
-				System.out.println("Added:" + commonKeyWordCheckBox[i].toString());
-				keyWords.add(commonKeyWordCheckBox[i].toString());
+		if (selectedTab == 0){
+			for (int i = 0; i < commonKeyWordCheckBox.length; i++){
+				if (commonKeyWordCheckBox[i].isSelected()){
+					System.out.println("Added:" + commonKeyWordCheckBox[i].toString());
+					keyWords.add(commonKeyWordCheckBox[i].toString());
+				}
+			}
+			for (int i = 0; i < DBKeyWordCheckBox.length; i++){
+				if (DBKeyWordCheckBox[i].isSelected()){
+					System.out.println("Added:" + DBKeyWordCheckBox[i].toString());
+					keyWords.add(DBKeyWordCheckBox[i].toString());
+				}
 			}
 		}
-		for (int i = 0; i < DBKeyWordCheckBox.length; i++){
-			if (DBKeyWordCheckBox[i].isSelected()){
-				System.out.println("Added:" + DBKeyWordCheckBox[i].toString());
-				keyWords.add(DBKeyWordCheckBox[i].toString());
+		else if (selectedTab == 2){
+			System.out.println("Group search");
+			for (int i = 0; i < listOfGroups.length; i++){
+				if (listOfGroups[i].isSelected()){
+					String array[] = listOfGroups[i].toString().split(" ");
+					for (String s : array){
+						keyWords.add(s);
+					}
+				}
 			}
 		}
 	}
 	
 	boolean noCheckBoxSelected(){
-		if (tabbedPane.getSelectedIndex() != 0){
-			return false;
-		}
-		for (int i = 0; i < DBKeyWordCheckBox.length; i++){
-			if (DBKeyWordCheckBox[i].isSelected()){
-				return false;
+		if (tabbedPane.getSelectedIndex() == 0){
+			for (int i = 0; i < DBKeyWordCheckBox.length; i++){
+				if (DBKeyWordCheckBox[i].isSelected()){
+					return false;
+				}
+			}
+			for (int i=0; i < commonKeyWordCheckBox.length; i++){
+				if (commonKeyWordCheckBox[i].isSelected()){
+					return false;
+				}
 			}
 		}
-		for (int i=0; i < commonKeyWordCheckBox.length; i++){
-			if (commonKeyWordCheckBox[i].isSelected()){
-				return false;
+		else if (tabbedPane.getSelectedIndex() == 2){
+			for (int i = 0; i < listOfGroups.length; i++){
+				if (listOfGroups[i].isSelected()){
+					return false;
+				}
 			}
 		}
+		
 		JOptionPane.showMessageDialog(null, "Please select a checkbox");
 		return true;
 	}
@@ -480,6 +481,7 @@ public class UserView extends JFrame{
 				    			}
 				    		}
 				    	}
+				    	treePanel.repaint();
 				    }
 				    else
 				      return;
@@ -757,6 +759,7 @@ public class UserView extends JFrame{
 		}
 		if (key1.getSelectedIndex() != -1){
 			keyWordArrayList.add(key1.getSelectedItem().toString());
+			notArrayList.add(false); //Needed so the arraylists are the same size
 		}
 		if (key2.getSelectedIndex() != -1){
 			keyWordArrayList.add(key2.getSelectedItem().toString());
@@ -825,15 +828,6 @@ public class UserView extends JFrame{
 		if (set.size() < keyWordArrayList.size()){
 			JOptionPane.showMessageDialog(null, "Duplicate keywords not allowed");
 			return false;
-		}
-		for (String s : keyWordArrayList){
-			System.out.println(s);
-		}
-		for (String s : operandArrayList){
-			System.out.println(s);
-		}
-		for (boolean b : notArrayList){
-			System.out.println(b);
 		}
 		return true;
 	}
