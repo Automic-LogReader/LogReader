@@ -695,6 +695,9 @@ public class UserView extends JFrame{
 		}
 		cb.addActionListener(e -> {
 			if (cb.getSelectedIndex() != -1){
+				if (!mostRecentCB.isEmpty()){
+					if (mostRecentCB.peek() == cb) return;
+				}
 				mostRecentCB.push(cb);
 			}
 		});
