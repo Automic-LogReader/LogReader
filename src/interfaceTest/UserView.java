@@ -18,6 +18,7 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -47,6 +48,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import interfaceTest.CheckBoxList.CheckBoxListItem;
@@ -707,6 +709,18 @@ public class UserView extends JFrame{
 
 		return cb;
 	}
+	 private void expandAll(JTree tree, TreePath parent) {
+		    TreeNode node = (TreeNode) parent.getLastPathComponent();
+		    if (node.getChildCount() >= 0) {
+		      for (Enumeration e = node.children(); e.hasMoreElements();) {
+		        TreeNode n = (TreeNode) e.nextElement();
+		        TreePath path = parent.pathByAddingChild(n);
+		        expandAll(tree, path);
+		      }
+		    }
+		    tree.expandPath(parent);
+		    // tree.collapsePath(parent);
+		  }
 	void createTreeView(){
 		DBKeyWordCheckBox = new CheckBoxNode[2];
 		commonKeyWordCheckBox = new CheckBoxNode[numKeyWords-2];
@@ -730,6 +744,8 @@ public class UserView extends JFrame{
 		Object rootNodes[] = {commonKeyWordVector, DBKeyWordVector};
 		rootVector = new NamedVector("Root", rootNodes);
 		tree = new JTree(rootVector);
+		TreeNode root = (TreeNode) tree.getModel().getRoot();
+		expandAll(tree, new TreePath(root));
 	}
 	
 	boolean createGroupDisplay(){
