@@ -543,12 +543,36 @@ public class UserView extends JFrame{
 			}
 		});
 		logic2 = logicalComboBox(1);
+		logic2.addActionListener(e -> {
+			if (logic2.getSelectedIndex() != -1 && key3.getSelectedIndex() != -1){
+				logic3.setEnabled(true);
+				key4.setEnabled(true);
+			}
+		});
 		logic2.setEnabled(false);
 		key3 = logicalComboBox(2);
+		key3.addActionListener(e -> {
+			if (logic2.getSelectedIndex() != -1 && key3.getSelectedIndex() != -1){
+				logic3.setEnabled(true);
+				key4.setEnabled(true);
+			}
+		});
 		key3.setEnabled(false);
 		logic3 = logicalComboBox(1);
+		logic3.addActionListener(e -> {
+			if (logic3.getSelectedIndex() != -1 && key4.getSelectedIndex() != -1){
+				logic4.setEnabled(true);
+				key5.setEnabled(true);
+			}
+		});
 		logic3.setEnabled(false);
 		key4 = logicalComboBox(2);
+		key4.addActionListener(e -> {
+			if (logic3.getSelectedIndex() != -1 && key4.getSelectedIndex() != -1){
+				logic4.setEnabled(true);
+				key5.setEnabled(true);
+			}
+		});
 		key4.setEnabled(false);
 		logic4 = logicalComboBox(1);
 		logic4.setEnabled(false);
@@ -570,6 +594,24 @@ public class UserView extends JFrame{
 		undoButton.addActionListener(e -> {
 			if (!mostRecentCB.isEmpty()){
 				mostRecentCB.pop().setSelectedIndex(-1);
+			}
+			if (logic1.getSelectedIndex() == -1 || key1.getSelectedIndex() == -1 || key2.getSelectedIndex() == -1){
+				if (logic2.isEnabled() && key3.isEnabled()){
+					logic2.setEnabled(false);
+					key3.setEnabled(false);
+				}
+			}
+			if (logic2.getSelectedIndex() == -1 || key3.getSelectedIndex() == -1){
+				if (logic3.isEnabled() && key4.isEnabled()){
+					logic3.setEnabled(false);
+					key4.setEnabled(false);
+				}
+			}
+			if (logic3.getSelectedIndex() == -1 || key4.getSelectedIndex() == -1){
+				if (logic4.isEnabled() && key5.isEnabled()){
+					logic4.setEnabled(false);
+					key5.setEnabled(false);
+				}
 			}
 		});
 		
@@ -675,7 +717,6 @@ public class UserView extends JFrame{
 			else if (!node.toString().equals("All KeyWords")) {
 				commonKeyWordCheckBox[i] = node;
 				i++;
-				//System.out.println(i);
 			}
 		}
 		commonKeyWordVector = new NamedVector("Common", commonKeyWordCheckBox);
