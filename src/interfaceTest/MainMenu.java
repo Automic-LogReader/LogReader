@@ -6,16 +6,29 @@
  */
 package interfaceTest;
 
+import javax.print.DocFlavor.URL;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+
+import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
+
 
 import javax.swing.border.EmptyBorder;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+
 import net.miginfocom.swing.MigLayout;
 import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Image;
+import java.awt.Toolkit;
 
 @SuppressWarnings("serial")
 public class MainMenu extends JFrame {
@@ -30,14 +43,13 @@ public class MainMenu extends JFrame {
 	
 	private JButton exitButton;
 	
-	public MainMenu() {
-		
+	public MainMenu() throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException {
 		prepareGUI();
-		
 	}
 	
 	
-	private void prepareGUI(){
+	private void prepareGUI() throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException{
+		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		try {
 		     ClassLoader cl = this.getClass().getClassLoader();
 		     ImageIcon programIcon = new ImageIcon(cl.getResource("res/img.jpg"));
@@ -47,24 +59,47 @@ public class MainMenu extends JFrame {
 		  }
 		this.setTitle("Project COEUS");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(400, 200, 300, 200);
-		setLocationRelativeTo(null);
+		setPreferredSize(new Dimension(350, 250));
 		
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		
-		setContentPane(contentPane);
-		contentPane.setLayout(new MigLayout("", "[260px]", "[]15[]"));
+		this.add(contentPane);
+		contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
 			
+		contentPane.add(Box.createVerticalGlue());
+		
+		JPanel logoPanel = new JPanel();
+		logoPanel.setLayout(new BorderLayout());
+		
+		java.net.URL url = this.getClass().getClassLoader().getResource("res/Automic-Logotype-Black.png");
+		ImageIcon banner = new ImageIcon(url);
+		
+		Image bannerImage = banner.getImage();
+		Image resizedBannerImage = bannerImage.getScaledInstance(200, 40, java.awt.Image.SCALE_SMOOTH);
+		
+		banner = new ImageIcon(resizedBannerImage);
+		
+		JLabel bannerLabel = new JLabel(banner);
+		logoPanel.add(bannerLabel);
+		
+		contentPane.add(logoPanel);
+		
 		JPanel topPanel = new JPanel();
-		contentPane.add(topPanel, "cell 0 0,growx,aligny top");
+		contentPane.add(topPanel);
 			
-		JLabel lblNewLabel = new JLabel("Please select an option:");
-		topPanel.add(lblNewLabel);
+		JLabel label = new JLabel("Please select an option:");
+		topPanel.add(label);
 			
+		Font defaultFont = new JLabel().getFont();
+		String fontName = defaultFont.getFontName();
+		int fontStyle = defaultFont.getStyle();
+		int fontSize = defaultFont.getSize() + 4;
+		
+		label.setFont(new Font(fontName, fontStyle, fontSize));
 		
 		JPanel middlePanel = new JPanel();
-		contentPane.add(middlePanel, "cell 0 1,grow");
+		contentPane.add(middlePanel);
 			
 		userButton = new JButton("User");
 
@@ -93,15 +128,30 @@ public class MainMenu extends JFrame {
 		middlePanel.add(adminButton);
 				
 		JPanel bottomPanel = new JPanel();
-		contentPane.add(bottomPanel, "cell 0 2,growx,aligny top");
+		contentPane.add(bottomPanel);
 		
 		exitButton = new JButton("Exit");
 		exitButton.addActionListener(e ->{
 			setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			System.exit(0);
 		});
+		
 		bottomPanel.add(exitButton);
+		contentPane.add(Box.createVerticalGlue());
+		
+		pack();
+		center(this);
 	}
 	
-	
+	public static void center(JFrame frame){
+		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+		
+		int w = frame.getSize().width;
+		int h = frame.getSize().height;
+		
+		int x = (dim.width - w) / 2;
+		int y = (dim.height - h) / 2;
+		
+		frame.setLocation(x, y);
+	}
 }

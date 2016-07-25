@@ -74,8 +74,6 @@ public class PreferenceEditor extends JFrame {
 		tab1.add(Box.createVerticalGlue());
 		
 		JPanel tab1_upperPanel = new JPanel();
-		tab1_upperPanel.setOpaque(true);
-		tab1_upperPanel.setBackground(Color.WHITE);
 		tab1_upperPanel.setLayout(new FlowLayout());
 		JLabel label1 = new JLabel("Restrict the upper and lower bounds for Time Critical DB Calls (seconds)", SwingConstants.CENTER);
 		tab1_upperPanel.add(label1);
