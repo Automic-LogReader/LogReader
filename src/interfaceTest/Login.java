@@ -89,7 +89,7 @@ public class Login extends JFrame {
 		contentPane.add(panel_1, BorderLayout.SOUTH);
 		
 		submitButton = new JButton("Submit");
-		submitButton.setPreferredSize(new Dimension(80, 30));
+		submitButton.setPreferredSize(new Dimension(80, 25));
 		submitButton.addActionListener(e -> {
 			inputUsername = userNameText.getText();
 			inputPassword = passwordText.getPassword();
@@ -133,7 +133,7 @@ public class Login extends JFrame {
 		panel_1.add(submitButton);
 		
 		backButton = new JButton("Back");
-		backButton.setPreferredSize(new Dimension(80, 30));
+		backButton.setPreferredSize(new Dimension(80, 25));
 		backButton.addActionListener(e ->{
 			menu.setVisible(true);
 			this.setVisible(false);
