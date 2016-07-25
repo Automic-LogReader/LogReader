@@ -244,6 +244,9 @@ public class AdminView extends JFrame {
 		buttonPanel.add(Box.createRigidArea(new Dimension(5, 10)));
 		buttonPanel.add(Box.createVerticalGlue());
 		
+		JPanel tab2 = new JPanel();
+		
+		
 		tabbedPane.add("Edit Entries", tab1);
 	}
 	

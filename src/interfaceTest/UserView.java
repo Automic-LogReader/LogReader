@@ -22,6 +22,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.Vector;
@@ -58,7 +59,7 @@ import interfaceTest.CheckBoxList.CheckBoxListRenderer;
 @SuppressWarnings("serial")
 
 public class UserView extends JFrame{
-
+	protected HashMap<String, String> GroupInfo = new HashMap<String, String>();
 	protected String [] headers = {"Error #", "Timestamp",
 								"Keywords", "Error Message", "Suggested Solution"};
 	protected List<Object[]> errorData = new ArrayList<Object[]>();
@@ -106,8 +107,6 @@ public class UserView extends JFrame{
 	protected Double upperBound;
 	
 	protected JList<CheckBoxListItem> list;
-	
-	protected HashSet<HashSet<String>> keyWordGroups = new HashSet<HashSet<String>>();
 	
 	protected DefaultListModel<CheckBoxListItem> model;
 	private JTabbedPane tabbedPane;
@@ -168,6 +167,11 @@ public class UserView extends JFrame{
 
 		fillKeywords(stmt);
 		createErrorDictionary(stmt);
+		
+		//*****************************************************************
+		//I called it here just because there is already a connection to the db
+		//*****************************************************************
+		loadGroupInfo(stmt);
 		stmt.close();
 		prepareGUI(menu, isAdmin);
 	}
@@ -767,23 +771,17 @@ public class UserView extends JFrame{
 	
 	boolean createGroupDisplay(){
 		model.clear();
-		if (keyWordGroups.isEmpty()){
+		if (GroupInfo.isEmpty()){
 			return false;
 		}
-		System.out.println("groups not empty");
 		int index = 0;
-		for (HashSet<String> list : keyWordGroups){
-	    	StringBuilder listItem = new StringBuilder();
-	    	listItem.setLength(0);
-	    	for (String s : list){
-	    		listItem.append(s + " ");
-	    	}
-	    	System.out.println("adding: " + listItem.toString());
-	    	listOfGroups = new CheckBoxListItem[keyWordGroups.size()];
-	    	listOfGroups[index] = new CheckBoxListItem(listItem.toString());
+		listOfGroups = new CheckBoxListItem[GroupInfo.size()];
+		for (Map.Entry<String, String> entry : GroupInfo.entrySet()){
+			String txt = "(" + entry.getKey() + ")" + " " + entry.getValue();
+	    	listOfGroups[index] = new CheckBoxListItem(txt);
 	    	model.addElement(listOfGroups[index]);
 	    	++index;
-	    }		
+		}
 		return true;
 	}
 	
@@ -868,6 +866,17 @@ public class UserView extends JFrame{
 			return false;
 		}
 		return true;
+	}
+	
+	void loadGroupInfo(Statement stmt) throws SQLException
+	{
+		GroupInfo.clear();
+		String query = "select GroupName, GroupKeywords from Groups";
+		ResultSet rs = stmt.executeQuery(query);
+		while(rs.next())
+		{
+			GroupInfo.put(rs.getString("GroupName"), rs.getString("GroupKeywords"));
+		}
 	}
 }
 	

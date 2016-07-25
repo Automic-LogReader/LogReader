@@ -11,6 +11,10 @@ import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.HashSet;
 
 import javax.swing.Box;
@@ -26,12 +30,21 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.border.EmptyBorder;
 
 import interfaceTest.CheckBoxList.CheckBoxListItem;
 import interfaceTest.CheckBoxList.CheckBoxListRenderer;
 
+
 public class CreateGroup extends JDialog{
+	
+
+	//*****************************************
+	//Made this a private var so the query could see it
+	//****************************************
+	private JTextField nameTextField;
+	
 	public CreateGroup(PreferenceEditor editor, UserView view){
 		prepareGUI(editor, view);
 		addEscapeListener(this);
@@ -58,7 +71,7 @@ public class CreateGroup extends JDialog{
 		
 		mainPanel.add(Box.createRigidArea(new Dimension(0, 5)));
 		
-		JTextField nameTextField = new JTextField("Enter group name");
+		nameTextField = new JTextField("Enter group name");
 		nameTextField.setForeground(Color.gray);
 		nameTextField.addFocusListener(new FocusListener(){
 			public void focusGained(FocusEvent e) {
@@ -84,9 +97,12 @@ public class CreateGroup extends JDialog{
 				JOptionPane.showMessageDialog(null, "Please select one or more checkboxes");
 			}
 			else {
-				saveGroups(editor, view);
-				editor.updateGroups(view);
-				view.createGroupDisplay();
+				try {
+					saveGroups(editor, view);
+				} catch (Exception e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 				this.setVisible(false);
 			}
 		});
@@ -123,15 +139,32 @@ public class CreateGroup extends JDialog{
 		return new JScrollPane(list);
 	}
 	
-	void saveGroups(PreferenceEditor editor, UserView view){
+	void saveGroups(PreferenceEditor editor, UserView view) throws ClassNotFoundException, SQLException{
+		
 		HashSet<String> group = new HashSet<String>();
+		StringBuilder query = new StringBuilder();
 		for (int i=0; i<editor.listOfKeyWords.length; i++){
 			if (editor.listOfKeyWords[i].isSelected()){
 				group.add(editor.listOfKeyWords[i].toString());
+				query.append(editor.listOfKeyWords[i].toString() + " ");
 				System.out.println(editor.listOfKeyWords[i].toString());
 			}
 		}
-		view.keyWordGroups.add(group);
+
+		//*****************************************
+		//NEW CODE HERE
+		//****************************************
+		String driver = "net.sourceforge.jtds.jdbc.Driver";
+		Class.forName(driver);
+		Connection conn = DriverManager.getConnection("jdbc:jtds:sqlserver://vwaswp02:1433/coeus", "coeus", "C0eus");
+
+		Statement stmt = conn.createStatement();
+		stmt.executeUpdate("insert into Groups values (\'" + nameTextField.getText() + 
+							"\',\'" + query.toString() + "\')");
+		view.loadGroupInfo(stmt);
+		stmt.close();
+		view.createGroupDisplay();
+		editor.updateGroups(view);
 	}
 	
 	boolean noCheckBoxSelected(PreferenceEditor editor){

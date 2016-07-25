@@ -7,7 +7,12 @@ import java.awt.Insets;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Stack;
 
 import javax.swing.BorderFactory;
@@ -148,7 +153,12 @@ public class PreferenceEditor extends JFrame {
 			deleteGroup.setPreferredSize(new Dimension(125, 20));
 			deleteGroup.setAlignmentX(CENTER_ALIGNMENT);
 			deleteGroup.addActionListener(e -> {
-				removeGroup(view);
+				try {
+					removeGroup(view);
+				} catch (Exception e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 			});
 			buttonPanel.add(deleteGroup);
 			
@@ -206,36 +216,31 @@ public class PreferenceEditor extends JFrame {
 	
 	void updateGroups(UserView view){
 		model.clear();
-		for (HashSet<String> list : view.keyWordGroups){
-	    	StringBuilder listItem = new StringBuilder();
-	    	listItem.setLength(0);
-	    	for (String s : list){
-	    		listItem.append(s + " ");
-	    	}
-	    	model.addElement(listItem.toString());
-	    }
+		for (Map.Entry<String, String> entry : view.GroupInfo.entrySet()){
+			String keyWords = entry.getValue();
+	    	model.addElement(keyWords);
+		}
 	}
 	
-	void removeGroup(UserView view){
+	void removeGroup(UserView view) throws ClassNotFoundException, SQLException{
 		String groupToRemove = list.getSelectedValue();
 		if (groupToRemove == null){
 			JOptionPane.showMessageDialog(this, "No group selected");
 			return;
 		}
+		String driver = "net.sourceforge.jtds.jdbc.Driver";
+		Class.forName(driver);
+		Connection conn = DriverManager.getConnection("jdbc:jtds:sqlserver://vwaswp02:1433/coeus", "coeus", "C0eus");
+
+		Statement stmt = conn.createStatement();
+		stmt.executeUpdate("delete from Groups where GroupKeywords = \'" + groupToRemove + "\'");
+		view.loadGroupInfo(stmt);
+		stmt.close();
+
 		System.out.println(groupToRemove);
-		String[] array = groupToRemove.split(" ");
-		HashSet<String> tempSet = new HashSet<String>();
-		for (int i=0; i<array.length; i++){
-			tempSet.add(array[i]);
-		}
-		for (HashSet<String> list : view.keyWordGroups){
-	    	if (tempSet.equals(list)){
-	    		if (view.keyWordGroups.remove(list)){
-	    			System.out.println("removal successful");
-	    		}
-	    		break;
-	    	}
-	    }
+		StringBuilder query = new StringBuilder();
+
+		
 		updateGroups(view);
 		view.createGroupDisplay();
 	}
