@@ -358,7 +358,7 @@ public class UserView extends JFrame{
 		preferenceButton = new JButton("Preferences");
 		preferenceButton.addActionListener(e -> {
 			@SuppressWarnings("unused")
-			PreferenceEditor preferenceEditor = new PreferenceEditor(this);
+			PreferenceEditor preferenceEditor = new PreferenceEditor(this, isAdmin);
 		});
 		preferenceButton.setToolTipText("Groupings, Time Critical DB Call Intervals ...");
 		bottomPanel.add(preferenceButton);

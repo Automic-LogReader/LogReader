@@ -12,6 +12,7 @@ import java.util.HashSet;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -19,8 +20,10 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.border.EmptyBorder;
 
 import interfaceTest.CheckBoxList.CheckBoxListItem;
@@ -33,6 +36,13 @@ public class CreateGroup extends JDialog{
 	};
 	
 	void prepareGUI(PreferenceEditor editor, UserView view){
+		try {
+		     ClassLoader cl = this.getClass().getClassLoader();
+		     ImageIcon programIcon = new ImageIcon(cl.getResource("res/logo.png"));
+		     setIconImage(programIcon.getImage());
+		  } catch (Exception e) {
+		     System.out.println("Could not load program icon.");
+		  }
 		JPanel mainPanel = new JPanel(false);
 		getContentPane().add(mainPanel, BorderLayout.CENTER);
 		mainPanel.setBorder(new EmptyBorder(new Insets(10, 10, 10, 10)));
@@ -43,7 +53,10 @@ public class CreateGroup extends JDialog{
 		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 		mainPanel.add(Box.createVerticalGlue());
 		mainPanel.add(createListDisplay(editor, view));
-		mainPanel.add(Box.createVerticalGlue());
+		
+		JTextField nameTextField = new JTextField();
+		nameTextField.setHorizontalAlignment(JTextField.CENTER);
+		mainPanel.add(nameTextField);
 		
 		JButton okButton = new JButton("Create");
 		okButton.setPreferredSize(new Dimension(125, 20));
@@ -60,6 +73,7 @@ public class CreateGroup extends JDialog{
 			}
 		});
 		mainPanel.add(okButton);
+		mainPanel.add(Box.createVerticalGlue());
 		setVisible(true);
 	}
 	

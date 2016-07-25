@@ -46,8 +46,9 @@ public class PreferenceEditor extends JFrame {
 	//Used for deleting elements in the expression buidler
 	private Stack<Integer> strLen = new Stack<Integer>();
 	private Stack<Integer> strPos = new Stack<Integer>();
-	
-	public PreferenceEditor(UserView view) {
+	boolean isAdmin;
+	public PreferenceEditor(UserView view, boolean admin) {
+		this.isAdmin = admin;
 		prepareGUI(view);
 	}
 	
@@ -119,38 +120,40 @@ public class PreferenceEditor extends JFrame {
 		tabbedPane.addTab("Time Critical Bounds", tab1);
 		tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
 		
-		JPanel tab2 = new JPanel(false);
-		tabbedPane.addTab("Error Groups", tab2);
-		tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
-		
-		tab2.setLayout(new BoxLayout(tab2, BoxLayout.Y_AXIS));
-		tab2.add(Box.createVerticalGlue());
-		
-		listPanel = displayGroups(view);
-		listPanel.setBorder(new EmptyBorder(10,5,0,5));
-		tab2.add(listPanel);
-		
-		JPanel buttonPanel = new JPanel();
-		buttonPanel.setLayout(new FlowLayout());
-		tab2.add(buttonPanel);
-		
-		JButton createGroup = new JButton("Create Group");
-		createGroup.setPreferredSize(new Dimension(125, 20));
-		createGroup.setAlignmentX(CENTER_ALIGNMENT);
-		createGroup.addActionListener(e -> {
-			CreateGroup groupView = new CreateGroup(this, view);
-		});
-		buttonPanel.add(createGroup);
-		
-		JButton deleteGroup = new JButton("Delete Group");
-		deleteGroup.setPreferredSize(new Dimension(125, 20));
-		deleteGroup.setAlignmentX(CENTER_ALIGNMENT);
-		deleteGroup.addActionListener(e -> {
-			removeGroup(view);
-		});
-		buttonPanel.add(deleteGroup);
-		
-		tab2.add(Box.createVerticalGlue());
+		if (isAdmin){
+			JPanel tab2 = new JPanel(false);
+			tabbedPane.addTab("Error Groups", tab2);
+			tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
+			
+			tab2.setLayout(new BoxLayout(tab2, BoxLayout.Y_AXIS));
+			tab2.add(Box.createVerticalGlue());
+			
+			listPanel = displayGroups(view);
+			listPanel.setBorder(new EmptyBorder(10,5,0,5));
+			tab2.add(listPanel);
+			
+			JPanel buttonPanel = new JPanel();
+			buttonPanel.setLayout(new FlowLayout());
+			tab2.add(buttonPanel);
+			
+			JButton createGroup = new JButton("Create Group");
+			createGroup.setPreferredSize(new Dimension(125, 20));
+			createGroup.setAlignmentX(CENTER_ALIGNMENT);
+			createGroup.addActionListener(e -> {
+				CreateGroup groupView = new CreateGroup(this, view);
+			});
+			buttonPanel.add(createGroup);
+			
+			JButton deleteGroup = new JButton("Delete Group");
+			deleteGroup.setPreferredSize(new Dimension(125, 20));
+			deleteGroup.setAlignmentX(CENTER_ALIGNMENT);
+			deleteGroup.addActionListener(e -> {
+				removeGroup(view);
+			});
+			buttonPanel.add(deleteGroup);
+			
+			tab2.add(Box.createVerticalGlue());
+		}
 		
 	
 		tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
