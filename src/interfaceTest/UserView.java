@@ -437,9 +437,9 @@ public class UserView extends JFrame{
 		bottomPanel.add(Box.createRigidArea(new Dimension(10,0)));
 		
 		
-		JButton editButton = new JButton("Edit Entries");
-		editButton.setPreferredSize(new Dimension(130, 30));
-		editButton.addActionListener(e -> {
+		JButton adminButton = new JButton("Admin Features");
+		adminButton.setPreferredSize(new Dimension(130, 30));
+		adminButton.addActionListener(e -> {
 			try {
 				admin = new AdminView();
 				admin.setVisible(true);
@@ -449,13 +449,13 @@ public class UserView extends JFrame{
 			}
 			
 		});
-		bottomPanel.add(editButton);
+		bottomPanel.add(adminButton);
 		
 		if(isAdmin){
-			editButton.setVisible(true);
+			adminButton.setVisible(true);
 			setTitle("Administrator View");
 		} else {
-			editButton.setVisible(false);
+			adminButton.setVisible(false);
 			setTitle("User View");
 		}
 		

@@ -248,10 +248,6 @@ public class PreferenceEditor extends JFrame {
 			return;
 		case 1:
 			return;
-		case 2:
-			saveAndOrNot(view);
-			System.out.println("two");
-			return;
 		}
 	}
 	
@@ -293,22 +289,7 @@ public class PreferenceEditor extends JFrame {
 		view.upperBound = high;
 		view.lowerBound = low;
 	}
-	
-	void saveAndOrNot(UserView view){
-		boolean valid = false;
-		/*view.logicalExpression.clear();
-		String text = expression.getText().toString();
-		String[] textArray = text.split(" ");
-		for (int i=0; i<textArray.length; i++){
-			view.logicalExpression.add(textArray[i]);
-			if (view.originalKeyWords.contains(textArray[i])){
-				valid = true;
-			}
-		}
-		if (!valid){
-			JOptionPane.showMessageDialog(this, "Expression must contain one or more keywords");
-		}*/
-	}
+
 	
 	boolean noCheckBoxSelected(){
 		for (int i = 0; i < listOfKeyWords.length; i++){

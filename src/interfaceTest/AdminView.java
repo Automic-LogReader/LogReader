@@ -35,6 +35,8 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+
 import java.awt.GridBagConstraints;
 import javax.swing.JTable;
 import javax.swing.Box;
@@ -96,6 +98,7 @@ public class AdminView extends JFrame {
 	 */
 	public AdminView() throws ClassNotFoundException, SQLException {
 		
+		
 		try {
 		     ClassLoader cl = this.getClass().getClassLoader();
 		     ImageIcon programIcon = new ImageIcon(cl.getResource("res/logo.png"));
@@ -103,9 +106,6 @@ public class AdminView extends JFrame {
 		  } catch (Exception e) {
 		     System.out.println("Could not load program icon.");
 		  }
-		
-		setBounds(200, 200, 1000, 300);
-		setLocationRelativeTo(null);
 		
 		JComponent contentPane = new JPanel();
 		setContentPane(contentPane);
@@ -116,24 +116,26 @@ public class AdminView extends JFrame {
 		dc.setDefaultList(defaultList);
 		dc.transferData("CHANGE");
 		
-		
-		
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(200, 200, 1000, 300);
+		setLocationRelativeTo(null);
 		getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
 		
+		JTabbedPane tabbedPane = new JTabbedPane();
+		getContentPane().add(tabbedPane);
+		
+		JPanel tab1 = new JPanel();
+		tab1.setLayout(new BoxLayout(tab1, BoxLayout.Y_AXIS));
+		
 		JScrollPane scrollPane = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		getContentPane().add(scrollPane);
+		tab1.add(scrollPane);
 		
 		tableModel = new DefaultTableModel(dc.getData(), columnHeaders) {
-
 		    @Override
 		    public boolean isCellEditable(int row, int column) {
 		       //all cells false
 		       return false;
-		    }
-		    
-		    
+		    }     
 		};
 		table = new JTable(tableModel){
 			//Renders each columnn to fit the data
@@ -148,48 +150,35 @@ public class AdminView extends JFrame {
 
 		};
 		
-		resizeColumnWidth(table);
-		//Whenever user clicks on a cell, the cell's contents appear in modify textbox
-		/*
-		table.addMouseListener(new MouseAdapter(){
-			@Override
-		    public void mouseClicked(MouseEvent evnt) {
-		        if (evnt.getClickCount() == 1) 
-		            modifyText.setText((String)table.getValueAt(table.getSelectedRow(), table.getSelectedColumn()));
-		    }
-		});
-		*/
-	
+		resizeColumnWidth(table);	
 		
 		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		scrollPane.setViewportView(table);
 		
-		Component rigidArea_3 = Box.createRigidArea(new Dimension(20, 20));
-		getContentPane().add(rigidArea_3);
+		tab1.add(Box.createRigidArea(new Dimension(0, 5)));
 		
-		JPanel panel = new JPanel();
-		getContentPane().add(panel);
-		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+		JPanel buttonPanel = new JPanel();
+		tab1.add(buttonPanel);
+		buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
+		buttonPanel.add(Box.createVerticalGlue());
 		
-		JPanel panel_1 = new JPanel();
-		panel.add(panel_1);
-		panel_1.setLayout(new BoxLayout(panel_1, BoxLayout.X_AXIS));
+		JPanel topButtonPanel = new JPanel();
+		buttonPanel.add(topButtonPanel);
+		topButtonPanel.setLayout(new BoxLayout(topButtonPanel, BoxLayout.X_AXIS));
 		
 		JButton addButton = new JButton("Add Entry");
 		addButton.addActionListener(e -> {
 			AddDialog add = new AddDialog(dc);
 			add.setVisible(true);
 		});
-		panel_1.add(addButton);
 		
-		Component rigidArea = Box.createRigidArea(new Dimension(20, 20));
-		panel_1.add(rigidArea);
+		topButtonPanel.add(addButton);
+		topButtonPanel.add(Box.createRigidArea(new Dimension(5, 10)));
 		
 		JButton modifyButton = new JButton("Modify Entry");
 		modifyButton.setHorizontalAlignment(SwingConstants.RIGHT);
 		modifyButton.addActionListener(e -> {
-			if(table.getSelectedRow() != -1)
-			{
+			if(table.getSelectedRow() != -1){
 				int rowSelect = table.getSelectedRow();
 				ModifyDialog modify = new ModifyDialog((String)table.getValueAt(rowSelect, 0),
 													 (String)table.getValueAt(rowSelect, 1),
@@ -199,47 +188,35 @@ public class AdminView extends JFrame {
 			}
 			else JOptionPane.showMessageDialog(null, "Please select an entry");	
 		});
-		panel_1.add(modifyButton);
-		
-		Component rigidArea_1 = Box.createRigidArea(new Dimension(20, 20));
-		panel_1.add(rigidArea_1);
+		topButtonPanel.add(modifyButton);
+		topButtonPanel.add(Box.createRigidArea(new Dimension(5, 10)));
 		
 		JButton deleteButton = new JButton("Delete Entry");
 		deleteButton.addActionListener(e -> {
-			
 			int viewIndex = table.getSelectedRow();
-
-			if(viewIndex != -1) 
-			{
+			if(viewIndex != -1) {
 				//Ensures user wants to delete selected entry
 				int confirmation = JOptionPane.showOptionDialog(this,
 				    "This will delete the entire entry. Are you sure you want to continue?",
 				    "",JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
 				    null, options, options[1]);
 				//If yes, then we continue delete process
-				if (confirmation == JOptionPane.YES_OPTION)
-				{
+				if (confirmation == JOptionPane.YES_OPTION){
 					int modelIndex = table.convertRowIndexToModel(viewIndex); 
-					//DefaultTableModel model = (DefaultTableModel)(table.getModel());
-					//model.removeRow(modelIndex);
 					try {
 						dc.deleteData(viewIndex);
-						//makeTable();
 					} catch (Exception e1) {
 					e1.printStackTrace();
 					}
 				}
-			}
-			    
+			} 
 		});
-		panel_1.add(deleteButton);
+		topButtonPanel.add(deleteButton);
+		buttonPanel.add(Box.createRigidArea(new Dimension(5, 10)));
 		
-		Component rigidArea_4 = Box.createRigidArea(new Dimension(20, 20));
-		panel.add(rigidArea_4);
-		
-		JPanel panel_2 = new JPanel();
-		panel.add(panel_2);
-		panel_2.setLayout(new BoxLayout(panel_2, BoxLayout.X_AXIS));
+		JPanel bottomButtonPanel = new JPanel();
+		buttonPanel.add(bottomButtonPanel);
+		bottomButtonPanel.setLayout(new BoxLayout(bottomButtonPanel, BoxLayout.X_AXIS));
 		
 		JButton saveButton = new JButton("Save to Default");
 		saveButton.addActionListener(e -> {
@@ -250,15 +227,11 @@ public class AdminView extends JFrame {
 				e1.printStackTrace();
 			}
 		});
-		
-		panel_2.add(saveButton);
-		
-		
-		Component rigidArea_2 = Box.createRigidArea(new Dimension(20, 20));
-		panel_2.add(rigidArea_2);
+		bottomButtonPanel.add(saveButton);
+		bottomButtonPanel.add(Box.createRigidArea(new Dimension(5, 10)));
 		
 		JButton defaultButton = new JButton("Revert to Default");
-		panel_2.add(defaultButton);
+		bottomButtonPanel.add(defaultButton);
 		defaultButton.addActionListener(e -> {
 			dc.getList().clear();
 			for(int i = 0; i < dc.getDefaultList().size(); i++)
@@ -268,10 +241,10 @@ public class AdminView extends JFrame {
 			dc.transferData("DEFAULT");
 			resetData();
 		});
+		buttonPanel.add(Box.createRigidArea(new Dimension(5, 10)));
+		buttonPanel.add(Box.createVerticalGlue());
 		
-		Component rigidArea_5 = Box.createRigidArea(new Dimension(20, 20));
-		panel.add(rigidArea_5);
-
+		tabbedPane.add("Edit Entries", tab1);
 	}
 	
 	/**
