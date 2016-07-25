@@ -1,10 +1,13 @@
 package interfaceTest;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -54,9 +57,25 @@ public class CreateGroup extends JDialog{
 		mainPanel.add(Box.createVerticalGlue());
 		mainPanel.add(createListDisplay(editor, view));
 		
-		JTextField nameTextField = new JTextField();
+		mainPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+		
+		JTextField nameTextField = new JTextField("Enter group name");
+		nameTextField.setForeground(Color.gray);
+		nameTextField.addFocusListener(new FocusListener(){
+			public void focusGained(FocusEvent e) {
+		        nameTextField.setText("");
+		        nameTextField.setForeground(Color.black);
+		    }
+
+		    public void focusLost(FocusEvent e) {
+		        // nothing
+		    }
+		});
+		
 		nameTextField.setHorizontalAlignment(JTextField.CENTER);
 		mainPanel.add(nameTextField);
+		
+		mainPanel.add(Box.createRigidArea(new Dimension(0, 5)));
 		
 		JButton okButton = new JButton("Create");
 		okButton.setPreferredSize(new Dimension(125, 20));
