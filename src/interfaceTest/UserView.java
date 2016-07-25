@@ -275,6 +275,7 @@ public class UserView extends JFrame{
 		}
 		else if (selectedTab == 2){
 			System.out.println("Group search");
+			if (listOfGroups == null) return; //If list hasn't been intialized yet
 			for (int i = 0; i < listOfGroups.length; i++){
 				if (listOfGroups[i].isSelected()){
 					String array[] = listOfGroups[i].toString().split(" ");
@@ -300,6 +301,10 @@ public class UserView extends JFrame{
 			}
 		}
 		else if (tabbedPane.getSelectedIndex() == 2){
+			if (listOfGroups == null){ // if groups haven't been initialized yet
+				JOptionPane.showMessageDialog(null, "No group selected");
+				return true;
+			}
 			for (int i = 0; i < listOfGroups.length; i++){
 				if (listOfGroups[i].isSelected()){
 					return false;

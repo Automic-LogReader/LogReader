@@ -6,7 +6,6 @@
  */
 package interfaceTest;
 
-import javax.print.DocFlavor.URL;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -24,7 +23,6 @@ import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
-import net.miginfocom.swing.MigLayout;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Image;
