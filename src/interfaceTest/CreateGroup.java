@@ -15,8 +15,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.HashSet;
-
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -30,19 +28,15 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
-import javax.swing.GroupLayout.Alignment;
 import javax.swing.border.EmptyBorder;
 
 import interfaceTest.CheckBoxList.CheckBoxListItem;
 import interfaceTest.CheckBoxList.CheckBoxListRenderer;
 
 
+@SuppressWarnings("serial")
 public class CreateGroup extends JDialog{
 	
-
-	//*****************************************
-	//Made this a private var so the query could see it
-	//****************************************
 	private JTextField nameTextField;
 	
 	public CreateGroup(PreferenceEditor editor, UserView view){
@@ -140,20 +134,17 @@ public class CreateGroup extends JDialog{
 	}
 	
 	void saveGroups(PreferenceEditor editor, UserView view) throws ClassNotFoundException, SQLException{
-		
-		HashSet<String> group = new HashSet<String>();
 		StringBuilder query = new StringBuilder();
 		for (int i=0; i<editor.listOfKeyWords.length; i++){
 			if (editor.listOfKeyWords[i].isSelected()){
-				group.add(editor.listOfKeyWords[i].toString());
 				query.append(editor.listOfKeyWords[i].toString() + " ");
 				System.out.println(editor.listOfKeyWords[i].toString());
 			}
 		}
-
-		//*****************************************
-		//NEW CODE HERE
-		//****************************************
+		if (view.GroupInfo.containsKey(nameTextField.getText()) || view.GroupInfo.containsValue(query.toString())){
+			JOptionPane.showMessageDialog(null, "No duplicates allowed");
+			return;
+		}
 		String driver = "net.sourceforge.jtds.jdbc.Driver";
 		Class.forName(driver);
 		Connection conn = DriverManager.getConnection("jdbc:jtds:sqlserver://vwaswp02:1433/coeus", "coeus", "C0eus");

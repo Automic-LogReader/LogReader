@@ -46,11 +46,8 @@ public class PreferenceEditor extends JFrame {
 	protected JPanel listPanel;
 	protected DefaultListModel<String> model;
 	protected JList<String> list;
-	protected JTextField expression;
 	private JComboBox<String> comboBox;
 	//Used for deleting elements in the expression buidler
-	private Stack<Integer> strLen = new Stack<Integer>();
-	private Stack<Integer> strPos = new Stack<Integer>();
 	boolean isAdmin;
 	public PreferenceEditor(UserView view, boolean admin) {
 		this.isAdmin = admin;
@@ -71,9 +68,6 @@ public class PreferenceEditor extends JFrame {
 		     System.out.println("Could not load program icon.");
 		  }
 		
-		//Clears stack
-		strLen.clear();
-		strPos.clear();
 		//Gets rid of the ugly tabbed pane border
 		Insets oldInsets = UIManager.getInsets("TabbedPane.contentBorderInsets"); 
 		UIManager.put("TabbedPane.contentBorderInsets", new Insets(1, 0, 0, 0));
