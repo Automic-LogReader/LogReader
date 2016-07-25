@@ -50,13 +50,15 @@ public class MainMenu extends JFrame {
 	
 	private void prepareGUI() throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException{
 		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		
 		try {
 		     ClassLoader cl = this.getClass().getClassLoader();
-		     ImageIcon programIcon = new ImageIcon(cl.getResource("res/img.jpg"));
+		     ImageIcon programIcon = new ImageIcon(cl.getResource("res/logo.png"));
 		     setIconImage(programIcon.getImage());
 		  } catch (Exception e) {
 		     System.out.println("Could not load program icon.");
 		  }
+		
 		this.setTitle("Project COEUS");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setPreferredSize(new Dimension(350, 250));
@@ -98,17 +100,20 @@ public class MainMenu extends JFrame {
 		
 		label.setFont(new Font(fontName, fontStyle, fontSize));
 		
+		contentPane.add(Box.createRigidArea(new Dimension(0, 10)));
+		
 		JPanel middlePanel = new JPanel();
 		contentPane.add(middlePanel);
 			
 		userButton = new JButton("User");
-
 		userButton.addActionListener(e -> {
 			user = new User(this, false);
 			this.setVisible(false);
 			
 		});
+		userButton.setPreferredSize(new Dimension(80, 25));
 		userButton.setAlignmentY(Component.CENTER_ALIGNMENT);
+		
 		middlePanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 		middlePanel.add(userButton);
 			
@@ -124,9 +129,12 @@ public class MainMenu extends JFrame {
 			loginFrame.setVisible(true);
 			this.setVisible(false);
 		});
+		adminButton.setPreferredSize(new Dimension(80, 25));
 		adminButton.setAlignmentY(Component.CENTER_ALIGNMENT);
 		middlePanel.add(adminButton);
 				
+		contentPane.add(Box.createRigidArea(new Dimension(0, 10)));
+		
 		JPanel bottomPanel = new JPanel();
 		contentPane.add(bottomPanel);
 		
@@ -135,6 +143,7 @@ public class MainMenu extends JFrame {
 			setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			System.exit(0);
 		});
+		exitButton.setPreferredSize(new Dimension(60, 25));
 		
 		bottomPanel.add(exitButton);
 		contentPane.add(Box.createVerticalGlue());

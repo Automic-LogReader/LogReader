@@ -15,6 +15,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -56,6 +57,14 @@ public class PreferenceEditor extends JFrame {
 		setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 		setBounds(100, 100, 600, 240);
 		setLocationRelativeTo(null);
+		
+		try {
+		     ClassLoader cl = this.getClass().getClassLoader();
+		     ImageIcon programIcon = new ImageIcon(cl.getResource("res/logo.png"));
+		     setIconImage(programIcon.getImage());
+		  } catch (Exception e) {
+		     System.out.println("Could not load program icon.");
+		  }
 		
 		//Clears stack
 		strLen.clear();

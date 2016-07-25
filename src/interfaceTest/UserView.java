@@ -30,6 +30,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
@@ -324,6 +325,15 @@ public class UserView extends JFrame{
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 1500, 400);
 		setLocationRelativeTo(null);
+		
+		try {
+		     ClassLoader cl = this.getClass().getClassLoader();
+		     ImageIcon programIcon = new ImageIcon(cl.getResource("res/logo.png"));
+		     setIconImage(programIcon.getImage());
+		  } catch (Exception e) {
+		     System.out.println("Could not load program icon.");
+		  }
+	
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -353,11 +363,12 @@ public class UserView extends JFrame{
 		chooseFile = new JButton("Choose File");
 		chooseFile.addActionListener(e -> {
 		    JFileChooser chooser = new JFileChooser();
+		    //chooser.showOpenDialog(getRootPane());
 		    FileNameExtensionFilter filter = new FileNameExtensionFilter(
 		        "Text Files", "txt", "text");
 		    chooser.setFileFilter(filter);
 		    chooser.setAcceptAllFileFilterUsed(false);
-		    int returnVal = chooser.showOpenDialog(getParent());
+		    int returnVal = chooser.showOpenDialog(getRootPane());
 		    if(returnVal == JFileChooser.APPROVE_OPTION) {
 		    	 filePath.setText(chooser.getSelectedFile().getAbsolutePath());
 		    }
@@ -499,13 +510,14 @@ public class UserView extends JFrame{
 		JButton toggleAllButton = new JButton("Toggle All");
 		toggleAllButton.addActionListener(e -> {
 			for (int i=0; i<commonKeyWordCheckBox.length; i++){
-				
     			commonKeyWordCheckBox[i].setSelected(!commonKeyWordCheckBox[i].isSelected());
     		}
     		for (int i=0; i<DBKeyWordCheckBox.length; i++){
     			DBKeyWordCheckBox[i].setSelected(!DBKeyWordCheckBox[i].isSelected());
     		}
     		treePanel.repaint();
+    		TreeNode root = (TreeNode) tree.getModel().getRoot();
+    		expandAll(tree, new TreePath(root));
 		});
 		toggleAllButton.setAlignmentX( Component.CENTER_ALIGNMENT);
 		
@@ -709,7 +721,8 @@ public class UserView extends JFrame{
 
 		return cb;
 	}
-	 private void expandAll(JTree tree, TreePath parent) {
+	
+	private void expandAll(JTree tree, TreePath parent) {
 		    TreeNode node = (TreeNode) parent.getLastPathComponent();
 		    if (node.getChildCount() >= 0) {
 		      for (Enumeration e = node.children(); e.hasMoreElements();) {
@@ -720,18 +733,19 @@ public class UserView extends JFrame{
 		    }
 		    tree.expandPath(parent);
 		    // tree.collapsePath(parent);
-		  }
+	}
+	
 	void createTreeView(){
 		DBKeyWordCheckBox = new CheckBoxNode[2];
 		commonKeyWordCheckBox = new CheckBoxNode[numKeyWords-2];
 		int i = 0;
 		for (CheckBoxNode node : allKeyWordCheckBox){
 			if (node.toString().equals("DEADLOCK")){
-				System.out.println("deadlock");
+				//System.out.println("deadlock");
 				DBKeyWordCheckBox[0] = node;
 			}
 			else if (node.toString().equals("===>")){
-				System.out.println("arrow");
+				//System.out.println("arrow");
 				DBKeyWordCheckBox[1] = node;
 			}
 			else if (!node.toString().equals("All KeyWords")) {
@@ -744,8 +758,6 @@ public class UserView extends JFrame{
 		Object rootNodes[] = {commonKeyWordVector, DBKeyWordVector};
 		rootVector = new NamedVector("Root", rootNodes);
 		tree = new JTree(rootVector);
-		TreeNode root = (TreeNode) tree.getModel().getRoot();
-		expandAll(tree, new TreePath(root));
 	}
 	
 	boolean createGroupDisplay(){

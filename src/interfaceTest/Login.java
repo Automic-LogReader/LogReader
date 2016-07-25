@@ -23,6 +23,7 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import javax.swing.JTextField;
 import javax.swing.AbstractAction;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 
 @SuppressWarnings("serial")
@@ -58,6 +59,14 @@ public class Login extends JFrame {
 	public Login(MainMenu menu) throws ClassNotFoundException, SQLException {
 		
 		fillHashMap();
+		
+		try {
+		     ClassLoader cl = this.getClass().getClassLoader();
+		     ImageIcon programIcon = new ImageIcon(cl.getResource("res/logo.png"));
+		     setIconImage(programIcon.getImage());
+		  } catch (Exception e) {
+		     System.out.println("Could not load program icon.");
+		  }
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(200, 200, 450, 150);
