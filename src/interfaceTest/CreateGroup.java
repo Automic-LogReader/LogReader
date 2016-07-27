@@ -145,17 +145,19 @@ public class CreateGroup extends JDialog{
 			JOptionPane.showMessageDialog(null, "No duplicates allowed");
 			return;
 		}
-		String driver = "net.sourceforge.jtds.jdbc.Driver";
-		Class.forName(driver);
-		Connection conn = DriverManager.getConnection("jdbc:jtds:sqlserver://vwaswp02:1433/coeus", "coeus", "C0eus");
-
-		Statement stmt = conn.createStatement();
-		stmt.executeUpdate("insert into Groups values (\'" + nameTextField.getText() + 
-							"\',\'" + query.toString() + "\')");
-		view.loadGroupInfo(stmt);
-		stmt.close();
-		view.createGroupDisplay();
-		editor.updateGroups(view);
+		else {
+			String driver = "net.sourceforge.jtds.jdbc.Driver";
+			Class.forName(driver);
+			Connection conn = DriverManager.getConnection("jdbc:jtds:sqlserver://vwaswp02:1433/coeus", "coeus", "C0eus");
+	
+			Statement stmt = conn.createStatement();
+			stmt.executeUpdate("insert into Groups values (\'" + nameTextField.getText() + 
+								"\',\'" + query.toString() + "\')");
+			view.loadGroupInfo(stmt);
+			stmt.close();
+			view.createGroupDisplay();
+			editor.updateGroups(view);
+		}
 	}
 	
 	public static void addEscapeListener(final JDialog dialog) {

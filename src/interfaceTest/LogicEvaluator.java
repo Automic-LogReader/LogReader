@@ -11,12 +11,11 @@ public class LogicEvaluator {
 	private String firstKeyword;
 	private ArrayList<Boolean> hasNot = new ArrayList<Boolean>();
 	private ArrayList<String> ORwords = new ArrayList<String>();
-	private ArrayList<Integer> badIndexes = new ArrayList<Integer>();
 	private ArrayList<String> validLines = new ArrayList<String>();
 	private ArrayList<String> keyWords = new ArrayList<String>();
 	private ArrayList<String> operands = new ArrayList<String>();
 	private int errorCount;
-	
+	private int noArrow;
 	
 	LogicEvaluator(LogParser logParse){
 		this.logParse = logParse;
@@ -108,7 +107,17 @@ public class LogicEvaluator {
 	{
 		if(line.contains("DEADLOCK") && (keyWords.contains("DEADLOCK"))
 				&& hasNot.get(keyWords.indexOf("DEADLOCK")) != true)
-			validLines.add(makeDeadlockLine(br, line));
+		{
+			if((firstKeyword.equals("===>")) && 
+			  (operands.get(keyWords.indexOf("DEADLOCK")).equals("AND"))
+			  && (!makeDeadlockLine(br, line).contains("===>")))
+			{
+				noArrow++;
+				return;
+			}
+			else
+				validLines.add(makeDeadlockLine(br, line));
+		}
 		else if(ORwords.contains("DEADLOCK") && line.contains("DEADLOCK"))
 			validLines.add(makeDeadlockLine(br, line));
 		else if (ORwords.contains("===>") && line.contains("===>"))
@@ -137,9 +146,10 @@ public class LogicEvaluator {
 	{
 		//If keywords is empty, we don't have any AND operands so we 
 		//will leave this function and make entries
+		System.out.println(noArrow);
 		if(keyWords.isEmpty() || keyWords == null)
 			return;
-		for(int i = 0; i < validLines.size(); i++)
+		for(int i = validLines.size() - 1; i >= 0; i--)
 		{
 			boolean isValid = true;
 			//If the line doesn't contain all of the words
@@ -163,13 +173,9 @@ public class LogicEvaluator {
 				}
 			}
 			if(!isValid)
-				badIndexes.add(i);
+				validLines.remove(i);
 		}
 
-		for(int x = badIndexes.size() - 1; x >= 0; x--)
-		{
-			validLines.remove((int)badIndexes.get(x));
-		}
 	}
 	
 	void addORs()
@@ -186,7 +192,6 @@ public class LogicEvaluator {
 					int index = operands.indexOf("OR");
 					ORwords.add(keyWords.get(index));
 					keyWords.remove(index + 1);
-					operands.remove(index);
 					hasNot.remove(index + 1);
 				}
 			}
