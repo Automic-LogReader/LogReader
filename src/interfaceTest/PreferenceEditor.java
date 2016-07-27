@@ -288,17 +288,6 @@ public class PreferenceEditor extends JFrame {
 		view.upperBound = high;
 		view.lowerBound = low;
 	}
-
-	
-	boolean noCheckBoxSelected(){
-		for (int i = 0; i < listOfKeyWords.length; i++){
-			if (listOfKeyWords[i].isSelected()){
-				return false;
-			}
-		}
-		JOptionPane.showMessageDialog(null, "Please select one or more checkboxes");
-		return true;
-	}
 	
 	JScrollPane createListDisplay(UserView view){
 		listOfKeyWords = new CheckBoxListItem[view.keyWords.size()];

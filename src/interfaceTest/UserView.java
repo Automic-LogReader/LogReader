@@ -219,7 +219,7 @@ public class UserView extends JFrame{
 		try {
 			if (tabbedPane.getSelectedIndex() == 0){
 				System.out.println("tab 1");
-				if (noCheckBoxSelected()) {
+				if (Utility.noCheckBoxSelected(DBKeyWordCheckBox) || Utility.noCheckBoxSelected(commonKeyWordCheckBox)) {
 					return;
 				}
 			}
@@ -230,10 +230,10 @@ public class UserView extends JFrame{
 				}
 			}
 			else if (tabbedPane.getSelectedIndex() == 2){
-				if (noCheckBoxSelected()){
+				System.out.println("tab 3");
+				if (Utility.noCheckBoxSelected(listOfGroups)){
 					return;
 				}
-				System.out.println("tab 3");
 			}
 			dialog = new ProgressDialog(file, this);
 			dialog.setVisible(true);
@@ -290,36 +290,7 @@ public class UserView extends JFrame{
 			}
 		}
 	}
-	
-	boolean noCheckBoxSelected(){
-		if (tabbedPane.getSelectedIndex() == 0){
-			for (int i = 0; i < DBKeyWordCheckBox.length; i++){
-				if (DBKeyWordCheckBox[i].isSelected()){
-					return false;
-				}
-			}
-			for (int i=0; i < commonKeyWordCheckBox.length; i++){
-				if (commonKeyWordCheckBox[i].isSelected()){
-					return false;
-				}
-			}
-		}
-		else if (tabbedPane.getSelectedIndex() == 2){
-			if (listOfGroups == null){ // if groups haven't been initialized yet
-				JOptionPane.showMessageDialog(null, "No group selected");
-				return true;
-			}
-			for (int i = 0; i < listOfGroups.length; i++){
-				if (listOfGroups[i].isSelected()){
-					return false;
-				}
-			}
-		}
 		
-		JOptionPane.showMessageDialog(null, "Please select a checkbox");
-		return true;
-	}
-	
 	//Maps the key words to solution messages
 	void createErrorDictionary(Statement stmt) throws SQLException{
 		String query = "select Keyword, Suggested_Solution from logerrors";

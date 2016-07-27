@@ -87,8 +87,8 @@ public class CreateGroup extends JDialog{
 		okButton.setPreferredSize(new Dimension(125, 20));
 		okButton.setAlignmentX(CENTER_ALIGNMENT);
 		okButton.addActionListener(e -> {
-			if (noCheckBoxSelected(editor)){
-				JOptionPane.showMessageDialog(null, "Please select one or more checkboxes");
+			if (Utility.noCheckBoxSelected(editor.listOfKeyWords)){
+				//Do nothing
 			}
 			else {
 				try {
@@ -156,15 +156,6 @@ public class CreateGroup extends JDialog{
 		stmt.close();
 		view.createGroupDisplay();
 		editor.updateGroups(view);
-	}
-	
-	boolean noCheckBoxSelected(PreferenceEditor editor){
-		for (int i = 0; i < editor.listOfKeyWords.length; i++){
-			if (editor.listOfKeyWords[i].isSelected()){
-				return false;
-			}
-		}
-		return true;
 	}
 	
 	public static void addEscapeListener(final JDialog dialog) {
