@@ -119,46 +119,6 @@ public class PreferenceEditor extends JFrame {
 		tabbedPane.addTab("Time Critical Bounds", tab1);
 		tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
 		
-		if (isAdmin){
-			JPanel tab2 = new JPanel(false);
-			tabbedPane.addTab("Error Groups", tab2);
-			tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
-			
-			tab2.setLayout(new BoxLayout(tab2, BoxLayout.Y_AXIS));
-			tab2.add(Box.createVerticalGlue());
-			
-			listPanel = displayGroups(view);
-			listPanel.setBorder(new EmptyBorder(10,5,0,5));
-			tab2.add(listPanel);
-			
-			JPanel buttonPanel = new JPanel();
-			buttonPanel.setLayout(new FlowLayout());
-			tab2.add(buttonPanel);
-			
-			JButton createGroup = new JButton("Create Group");
-			createGroup.setPreferredSize(new Dimension(125, 20));
-			createGroup.setAlignmentX(CENTER_ALIGNMENT);
-			createGroup.addActionListener(e -> {
-				CreateGroup groupView = new CreateGroup(this, view);
-			});
-			buttonPanel.add(createGroup);
-			
-			JButton deleteGroup = new JButton("Delete Group");
-			deleteGroup.setPreferredSize(new Dimension(125, 20));
-			deleteGroup.setAlignmentX(CENTER_ALIGNMENT);
-			deleteGroup.addActionListener(e -> {
-				try {
-					removeGroup(view);
-				} catch (Exception e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-			});
-			buttonPanel.add(deleteGroup);
-			
-			tab2.add(Box.createVerticalGlue());
-		}
-		
 	
 		tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
 		UIManager.put("TabbedPane.contentBorderInsets", oldInsets); 
@@ -192,51 +152,6 @@ public class PreferenceEditor extends JFrame {
 		getRootPane().setDefaultButton(submitButton);
 		getContentPane().add(mainPanel, BorderLayout.CENTER);
 		setVisible(true);
-	}
-	
-	JPanel displayGroups(UserView view){
-		JPanel panel = new JPanel();
-		panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
-		panel.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
-	    panel.add(Box.createHorizontalGlue());
-
-	    model = new DefaultListModel<String>();
-	    updateGroups(view);
-	    list = new JList<String>(model);
-	    JScrollPane scrollPane = new JScrollPane(list);
-	    panel.add(scrollPane);
-	    return panel;
-	}
-	
-	void updateGroups(UserView view){
-		model.clear();
-		for (Map.Entry<String, String> entry : view.GroupInfo.entrySet()){
-			String keyWords = entry.getValue();
-	    	model.addElement(keyWords);
-		}
-	}
-	
-	void removeGroup(UserView view) throws ClassNotFoundException, SQLException{
-		String groupToRemove = list.getSelectedValue();
-		if (groupToRemove == null){
-			JOptionPane.showMessageDialog(this, "No group selected");
-			return;
-		}
-		String driver = "net.sourceforge.jtds.jdbc.Driver";
-		Class.forName(driver);
-		Connection conn = DriverManager.getConnection("jdbc:jtds:sqlserver://vwaswp02:1433/coeus", "coeus", "C0eus");
-
-		Statement stmt = conn.createStatement();
-		stmt.executeUpdate("delete from Groups where GroupKeywords = \'" + groupToRemove + "\'");
-		view.loadGroupInfo(stmt);
-		stmt.close();
-
-		System.out.println(groupToRemove);
-		StringBuilder query = new StringBuilder();
-
-		
-		updateGroups(view);
-		view.createGroupDisplay();
 	}
 	
 	void save(UserView view, int index){

@@ -411,7 +411,7 @@ public class UserView extends JFrame{
 		adminButton.setPreferredSize(new Dimension(130, 30));
 		adminButton.addActionListener(e -> {
 			try {
-				admin = new AdminView();
+				admin = new AdminView(this);
 				admin.setVisible(true);
 			} catch (Exception e1) {
 				// TODO Auto-generated catch block

@@ -12,6 +12,7 @@ package interfaceTest;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.sql.*;
 
 import javax.swing.JFrame;
@@ -33,23 +34,28 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 
 import java.awt.GridBagConstraints;
 import javax.swing.JTable;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 
 import java.awt.Insets;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -87,6 +93,11 @@ public class AdminView extends JFrame {
 	private JTable table;
 	//Field for when the user wants to modify an entry
 	private JTextField modifyText;
+	
+	protected JPanel listPanel;
+	protected JList<String> groupList;
+	protected DefaultListModel<String> model;
+	
 	Object[] options = {"Yes", "Cancel"};
 	private DefaultTableModel tableModel;
 	DataController dc;
@@ -98,7 +109,7 @@ public class AdminView extends JFrame {
 	 * @throws ClassNotFoundException 
 	 * @throws IOException 
 	 */
-	public AdminView() throws ClassNotFoundException, SQLException {
+	public AdminView(UserView view) throws ClassNotFoundException, SQLException {
 		
 		
 		try {
@@ -159,13 +170,13 @@ public class AdminView extends JFrame {
 		
 		tab1.add(Box.createRigidArea(new Dimension(0, 5)));
 		
-		JPanel buttonPanel = new JPanel();
-		tab1.add(buttonPanel);
-		buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
-		buttonPanel.add(Box.createVerticalGlue());
+		JPanel tab1_buttonPanel = new JPanel();
+		tab1.add(tab1_buttonPanel);
+		tab1_buttonPanel.setLayout(new BoxLayout(tab1_buttonPanel, BoxLayout.Y_AXIS));
+		tab1_buttonPanel.add(Box.createVerticalGlue());
 		
 		JPanel topButtonPanel = new JPanel();
-		buttonPanel.add(topButtonPanel);
+		tab1_buttonPanel.add(topButtonPanel);
 		topButtonPanel.setLayout(new BoxLayout(topButtonPanel, BoxLayout.X_AXIS));
 		
 		JButton addButton = new JButton("Add Entry");
@@ -215,10 +226,10 @@ public class AdminView extends JFrame {
 			} 
 		});
 		topButtonPanel.add(deleteButton);
-		buttonPanel.add(Box.createRigidArea(new Dimension(5, 10)));
+		tab1_buttonPanel.add(Box.createRigidArea(new Dimension(5, 10)));
 		
 		JPanel bottomButtonPanel = new JPanel();
-		buttonPanel.add(bottomButtonPanel);
+		tab1_buttonPanel.add(bottomButtonPanel);
 		bottomButtonPanel.setLayout(new BoxLayout(bottomButtonPanel, BoxLayout.X_AXIS));
 		
 		JButton saveButton = new JButton("Save to Default");
@@ -244,13 +255,48 @@ public class AdminView extends JFrame {
 			dc.transferData("DEFAULT");
 			resetData();
 		});
-		buttonPanel.add(Box.createRigidArea(new Dimension(5, 10)));
-		buttonPanel.add(Box.createVerticalGlue());
+		tab1_buttonPanel.add(Box.createRigidArea(new Dimension(5, 10)));
+		tab1_buttonPanel.add(Box.createVerticalGlue());
 		
 		JPanel tab2 = new JPanel();
+		tab2.setLayout(new BoxLayout(tab2, BoxLayout.Y_AXIS));
+		tab2.add(Box.createVerticalGlue());
 		
+		listPanel = displayGroups(view);
+		listPanel.setBorder(new EmptyBorder(10,5,0,5));
+		tab2.add(listPanel);
+		
+		JPanel tab2_buttonPanel = new JPanel();
+		tab2_buttonPanel.setLayout(new FlowLayout());
+		tab2.add(tab2_buttonPanel);
+		
+		JButton createGroup = new JButton("Create Group");
+		createGroup.setPreferredSize(new Dimension(125, 20));
+		createGroup.setAlignmentX(CENTER_ALIGNMENT);
+		createGroup.addActionListener(e -> {
+			CreateGroup groupView = new CreateGroup(this, view);
+		});
+		tab2_buttonPanel.add(createGroup);
+		
+		JButton deleteGroup = new JButton("Delete Group");
+		deleteGroup.setPreferredSize(new Dimension(125, 20));
+		deleteGroup.setAlignmentX(CENTER_ALIGNMENT);
+		deleteGroup.addActionListener(e -> {
+			try {
+				removeGroup(view);
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		});
+		tab2_buttonPanel.add(deleteGroup);
+		
+		tab2.add(Box.createVerticalGlue());
 		
 		tabbedPane.add("Edit Entries", tab1);
+		tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
+		tabbedPane.add("Create Groups", tab2);
+		tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
 	}
 	
 	/**
@@ -283,13 +329,52 @@ public class AdminView extends JFrame {
 			list.add(entry);
 			defaultList.add(entry);
 		}
-
-			
-		//Collections.sort(list);
-		//Collections.sort(defaultList);
 		stmt.close();
 	}
 	
+	JPanel displayGroups(UserView view){
+		JPanel panel = new JPanel();
+		panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
+		panel.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
+	    panel.add(Box.createHorizontalGlue());
+
+	    model = new DefaultListModel<String>();
+	    updateGroups(view);
+	    groupList = new JList<String>(model);
+	    JScrollPane scrollPane = new JScrollPane(groupList);
+	    panel.add(scrollPane);
+	    return panel;
+	}
+	void updateGroups(UserView view){
+		model.clear();
+		for (Map.Entry<String, String> entry : view.GroupInfo.entrySet()){
+			String keyWords = entry.getValue();
+	    	model.addElement(keyWords);
+		}
+	}
+	
+	void removeGroup(UserView view) throws ClassNotFoundException, SQLException{
+		String groupToRemove = groupList.getSelectedValue();
+		if (groupToRemove == null){
+			JOptionPane.showMessageDialog(this, "No group selected");
+			return;
+		}
+		String driver = "net.sourceforge.jtds.jdbc.Driver";
+		Class.forName(driver);
+		Connection conn = DriverManager.getConnection("jdbc:jtds:sqlserver://vwaswp02:1433/coeus", "coeus", "C0eus");
+
+		Statement stmt = conn.createStatement();
+		stmt.executeUpdate("delete from Groups where GroupKeywords = \'" + groupToRemove + "\'");
+		view.loadGroupInfo(stmt);
+		stmt.close();
+
+		System.out.println(groupToRemove);
+		StringBuilder query = new StringBuilder();
+
+		
+		updateGroups(view);
+		view.createGroupDisplay();
+	}
 	void resetData()
 	{
 		DefaultTableModel model = new DefaultTableModel(dc.getData(), columnHeaders); 

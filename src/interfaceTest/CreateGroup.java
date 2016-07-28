@@ -38,13 +38,13 @@ import interfaceTest.CheckBoxList.CheckBoxListRenderer;
 public class CreateGroup extends JDialog{
 	
 	private JTextField nameTextField;
-	
-	public CreateGroup(PreferenceEditor editor, UserView view){
-		prepareGUI(editor, view);
+	private CheckBoxListItem[] listOfKeyWords;
+	public CreateGroup(AdminView admin, UserView view){
+		prepareGUI(admin, view);
 		addEscapeListener(this);
 	};
 	
-	void prepareGUI(PreferenceEditor editor, UserView view){
+	void prepareGUI(AdminView admin, UserView view){
 		try {
 		     ClassLoader cl = this.getClass().getClassLoader();
 		     ImageIcon programIcon = new ImageIcon(cl.getResource("res/logo.png"));
@@ -55,13 +55,13 @@ public class CreateGroup extends JDialog{
 		JPanel mainPanel = new JPanel(false);
 		getContentPane().add(mainPanel, BorderLayout.CENTER);
 		mainPanel.setBorder(new EmptyBorder(new Insets(10, 10, 10, 10)));
-		setBounds(200, 200, 300, 200);
+		setBounds(200, 200, 300, 300);
 		setTitle("Create Groups");
 		setLocationRelativeTo(null);
 	
 		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 		mainPanel.add(Box.createVerticalGlue());
-		mainPanel.add(createListDisplay(editor, view));
+		mainPanel.add(createListDisplay( view));
 		
 		mainPanel.add(Box.createRigidArea(new Dimension(0, 5)));
 		
@@ -87,12 +87,12 @@ public class CreateGroup extends JDialog{
 		okButton.setPreferredSize(new Dimension(125, 20));
 		okButton.setAlignmentX(CENTER_ALIGNMENT);
 		okButton.addActionListener(e -> {
-			if (Utility.noCheckBoxSelected(editor.listOfKeyWords)){
+			if (Utility.noCheckBoxSelected(listOfKeyWords)){
 				//Do nothing
 			}
 			else {
 				try {
-					saveGroups(editor, view);
+					saveGroups(admin, view);
 				} catch (Exception e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
@@ -105,14 +105,14 @@ public class CreateGroup extends JDialog{
 		setVisible(true);
 	}
 	
-	JScrollPane createListDisplay(PreferenceEditor editor, UserView view){
-		editor.listOfKeyWords = new CheckBoxListItem[view.keyWords.size()];
+	JScrollPane createListDisplay(UserView view){
+		listOfKeyWords = new CheckBoxListItem[view.keyWords.size()];
 		int index = 0;
 		for (String s : view.keyWords){
-			editor.listOfKeyWords[index] = new CheckBoxListItem(s);
+			listOfKeyWords[index] = new CheckBoxListItem(s);
 			++index;
 		}
-		JList<CheckBoxListItem> list = new JList<CheckBoxListItem>(editor.listOfKeyWords);
+		JList<CheckBoxListItem> list = new JList<CheckBoxListItem>(listOfKeyWords);
 		list.setCellRenderer(new CheckBoxListRenderer());
 		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		list.addMouseListener(new MouseAdapter(){
@@ -133,12 +133,12 @@ public class CreateGroup extends JDialog{
 		return new JScrollPane(list);
 	}
 	
-	void saveGroups(PreferenceEditor editor, UserView view) throws ClassNotFoundException, SQLException{
+	void saveGroups(AdminView admin, UserView view) throws ClassNotFoundException, SQLException{
 		StringBuilder query = new StringBuilder();
-		for (int i=0; i<editor.listOfKeyWords.length; i++){
-			if (editor.listOfKeyWords[i].isSelected()){
-				query.append(editor.listOfKeyWords[i].toString() + " ");
-				System.out.println(editor.listOfKeyWords[i].toString());
+		for (int i=0; i<listOfKeyWords.length; i++){
+			if (listOfKeyWords[i].isSelected()){
+				query.append(listOfKeyWords[i].toString() + " ");
+				System.out.println(listOfKeyWords[i].toString());
 			}
 		}
 		if (view.GroupInfo.containsKey(nameTextField.getText()) || view.GroupInfo.containsValue(query.toString())){
@@ -156,7 +156,7 @@ public class CreateGroup extends JDialog{
 			view.loadGroupInfo(stmt);
 			stmt.close();
 			view.createGroupDisplay();
-			editor.updateGroups(view);
+			admin.updateGroups(view);
 		}
 	}
 	
