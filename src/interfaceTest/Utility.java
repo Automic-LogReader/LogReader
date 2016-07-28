@@ -1,6 +1,9 @@
 package interfaceTest;
 
+import java.util.Enumeration;
+
 import javax.swing.JOptionPane;
+import javax.swing.tree.DefaultMutableTreeNode;
 
 import interfaceTest.CheckBoxList.CheckBoxListItem;
 
@@ -23,16 +26,23 @@ public final class Utility {
 		return true;
 	}
 	
-	static boolean noCheckBoxSelected(CheckBoxNode[] cbList){
-		if (cbList == null){
+	static boolean noCheckBoxSelected(CBTree tree){
+		if (tree == null){
 			return true;
 		}
-		for (int i = 0; i <cbList.length; i++){
-			if (cbList[i].isSelected()){
-				return false;
+		Enumeration g = ((DefaultMutableTreeNode) tree.getModel().getRoot()).preorderEnumeration();
+		while (g.hasMoreElements()){
+			DefaultMutableTreeNode node = (DefaultMutableTreeNode) g.nextElement();
+			Object obj = node.getUserObject();  
+			if (obj instanceof TreeNodeCheckBox){
+				TreeNodeCheckBox cb = (TreeNodeCheckBox) obj;
+				if (cb.isSelected()){
+					return false;
+				}
+				
 			}
 		}
-		JOptionPane.showMessageDialog(null, "Please select a checkbox");
+		JOptionPane.showMessageDialog(null, "No checkbox selected");
 		return true;
 	}
 }

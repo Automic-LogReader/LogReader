@@ -20,16 +20,17 @@ public class ModifyDialog extends JDialog {
 	private JTextField keywordText;
 	private JTextField errorText;
 	private JTextField solutionText;
+	private JTextField folderText;
 	private int selectedRow;
 
 	/**
 	 * Create the dialog.
 	 */
-	public ModifyDialog(String keyWord, String errorMessage, String solutionMessage, DataController dc, int row) {
+	public ModifyDialog(String folder, String keyWord, String errorMessage,
+						String solutionMessage,  DataController dc, int row) {
 		
 		selectedRow = row;
-		
-		setBounds(200, 200, 450, 200);
+		setBounds(200, 200, 450, 250);
 		getContentPane().setLayout(new BorderLayout());
 		{
 			Component rigidArea = Box.createRigidArea(new Dimension(20, 20));
@@ -43,7 +44,7 @@ public class ModifyDialog extends JDialog {
 			contentPanel.add(panel);
 			panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 			{
-				JLabel lblNewLabel = new JLabel("Keyword:                 ");
+				JLabel lblNewLabel = new JLabel("Folder:                  ");
 				panel.add(lblNewLabel);
 			}
 			{
@@ -51,10 +52,10 @@ public class ModifyDialog extends JDialog {
 				panel.add(rigidArea);
 			}
 			{
-				keywordText = new JTextField();
-				panel.add(keywordText);
-				keywordText.setColumns(10);
-				keywordText.setText(keyWord);
+				folderText = new JTextField();
+				folderText.setText(folder);
+				panel.add(folderText);
+				folderText.setColumns(10);
 			}
 			{
 				Component rigidArea = Box.createRigidArea(new Dimension(20, 20));
@@ -70,7 +71,7 @@ public class ModifyDialog extends JDialog {
 			contentPanel.add(panel);
 			panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 			{
-				JLabel lblNewLabel_1 = new JLabel("Error Message:      ");
+				JLabel lblNewLabel_1 = new JLabel("Keyword:              ");
 				panel.add(lblNewLabel_1);
 			}
 			{
@@ -78,9 +79,36 @@ public class ModifyDialog extends JDialog {
 				panel.add(rigidArea);
 			}
 			{
+				keywordText = new JTextField();
+				keywordText.setText(keyWord);
+				panel.add(keywordText);
+				keywordText.setColumns(10);
+			}
+			{
+				Component rigidArea = Box.createRigidArea(new Dimension(20, 20));
+				panel.add(rigidArea);
+			}
+		}
+		{
+			Component rigidArea = Box.createRigidArea(new Dimension(20, 20));
+			contentPanel.add(rigidArea);
+		}
+		{
+			JPanel panel = new JPanel();
+			contentPanel.add(panel);
+			panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+			{
+				JLabel lblNewLabel_2 = new JLabel("Error Message:     ");
+				panel.add(lblNewLabel_2);
+			}
+			{
+				Component rigidArea = Box.createRigidArea(new Dimension(20, 20));
+				panel.add(rigidArea);
+			}
+			{
 				errorText = new JTextField();
-				panel.add(errorText);
 				errorText.setText(errorMessage);
+				panel.add(errorText);
 				errorText.setColumns(10);
 			}
 			{
@@ -97,8 +125,8 @@ public class ModifyDialog extends JDialog {
 			contentPanel.add(panel);
 			panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 			{
-				JLabel lblNewLabel_2 = new JLabel("Solution Message:");
-				panel.add(lblNewLabel_2);
+				JLabel lblNewLabel_3 = new JLabel("Solution Message:");
+				panel.add(lblNewLabel_3);
 			}
 			{
 				Component rigidArea = Box.createRigidArea(new Dimension(20, 20));
@@ -106,18 +134,14 @@ public class ModifyDialog extends JDialog {
 			}
 			{
 				solutionText = new JTextField();
+				solutionText.setText(solutionMessage);
 				panel.add(solutionText);
 				solutionText.setColumns(10);
-				solutionText.setText(solutionMessage);
 			}
 			{
 				Component rigidArea = Box.createRigidArea(new Dimension(20, 20));
 				panel.add(rigidArea);
 			}
-		}
-		{
-			Component rigidArea = Box.createRigidArea(new Dimension(20, 20));
-			getContentPane().add(rigidArea, BorderLayout.NORTH);
 		}
 		{
 			JPanel buttonPane = new JPanel();
@@ -128,18 +152,23 @@ public class ModifyDialog extends JDialog {
 				okButton.addActionListener(e ->{
 				if (keywordText.getText().equals("") || errorText.getText().equals("") || solutionText.getText().equals(""))
 					JOptionPane.showMessageDialog(null, "All entries must be filled");
+				else if (dc.getAdmin().savedWords.contains(keywordText.getText())) {
+					if(!keyWord.equals(keywordText.getText()))
+						JOptionPane.showMessageDialog(null, "No duplicate keywords allowed");
+				}
 				else
 				{
 					try {
+						dc.setFolderChanged(!(folderText.getText().equals(folder)));
 						dc.setKeywordChanged(!(keywordText.getText().equals(keyWord)));
 						dc.setErrorMessageChanged(!(errorText.getText().equals(errorMessage)));
 						dc.setSuggestedSolutionChanged(!(solutionText.getText().equals(solutionMessage)));
-						dc.modifyData(keywordText.getText(), errorText.getText(), solutionText.getText(), "MODIFY", selectedRow);
+						dc.modifyData(folderText.getText(), keywordText.getText(), errorText.getText(),
+								solutionText.getText(), "MODIFY", selectedRow);
 					} catch (Exception e1) {
 						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-					this.setVisible(false);
+						e1.printStackTrace();						}
+							this.setVisible(false);
 				}
 				});
 				okButton.setActionCommand("OK");
@@ -149,5 +178,5 @@ public class ModifyDialog extends JDialog {
 
 		}
 	}
-	
 }
+		

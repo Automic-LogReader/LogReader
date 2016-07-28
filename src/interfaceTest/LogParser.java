@@ -152,7 +152,7 @@ public class LogParser {
 						entry[3] = " ";
 					}
 					errorData.add(entry);
-			}
+				}
 			
 			}
 			logLine = logbr.readLine();

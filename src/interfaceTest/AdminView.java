@@ -61,6 +61,7 @@ import javax.swing.JScrollBar;
 @SuppressWarnings({ "serial", "unused" })
 public class AdminView extends JFrame {
 	
+	List <String> savedWords = new ArrayList<String>();
 	List <String[]> defaultList = new ArrayList<String[]>();
 	List <String[]> list = new ArrayList<String[]>();
 	//Holds a line from the csv file
@@ -74,7 +75,8 @@ public class AdminView extends JFrame {
 	//Used as a current index marker for the function createDataTable
 	private int dataIndex;
 	//Headers for the JTable
-	private String[] columnHeaders = {"U Code", "Log Error Description", "Suggested Solution"};
+	private String[] columnHeaders = {"Folder", "Keyword", "Log Error Description",
+									"Suggested Solution"};
 	//Solution field when the user wants to add an entry
 	private JTextField solutionText;
 	//Error field when the user wants to add an entry
@@ -182,7 +184,8 @@ public class AdminView extends JFrame {
 				int rowSelect = table.getSelectedRow();
 				ModifyDialog modify = new ModifyDialog((String)table.getValueAt(rowSelect, 0),
 													 (String)table.getValueAt(rowSelect, 1),
-													 (String)table.getValueAt(rowSelect, 2), 
+													 (String)table.getValueAt(rowSelect, 2),
+													 (String)table.getValueAt(rowSelect, 3),
 													 dc, rowSelect);
 				modify.setVisible(true);
 			}
@@ -266,14 +269,17 @@ public class AdminView extends JFrame {
 
 		Statement stmt = conn.createStatement();
 		String query2 = "select Keyword, Log_Error_Description, "+
-						"Suggested_Solution from logerrors";
+						"Suggested_Solution, Folder from logerrors";
 		ResultSet rs = stmt.executeQuery(query2);
 		while(rs.next())
 		{
-			String[] entry = new String[3];
-			entry[0] = rs.getString("Keyword");
-			entry[1] = rs.getString("Log_Error_Description");
-			entry[2] = rs.getString("Suggested_Solution");
+			String[] entry = new String[4];
+			entry[0] = rs.getString("Folder");
+			entry[1] = rs.getString("Keyword");
+			entry[2] = rs.getString("Log_Error_Description");
+			entry[3] = rs.getString("Suggested_Solution");
+			keyWords.add(rs.getString("Keyword"));
+			savedWords.add(rs.getString("Keyword"));
 			list.add(entry);
 			defaultList.add(entry);
 		}

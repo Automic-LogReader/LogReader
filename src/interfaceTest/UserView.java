@@ -46,10 +46,12 @@ import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.ListSelectionModel;
 import javax.swing.MutableComboBoxModel;
-import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
+
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
@@ -77,6 +79,9 @@ public class UserView extends JFrame{
 	//Holds the individual cell entries from errorLine
 	protected String [] errorWords;
 	protected HashMap<String, String> solutions = new HashMap<String, String>();
+	protected HashMap<String, String> folderMap = new HashMap<String, String>();
+	protected HashSet<String> folderSet = new HashSet<String>();
+	protected HashMap<String, ArrayList<String>> treeMap = new HashMap<String, ArrayList<String>>();
 	protected HashSet<String> keyWords = new HashSet<String>();
 	protected HashSet<String> originalKeyWords;
 	private boolean hasCopiedOriginalKeyWords;
@@ -97,9 +102,6 @@ public class UserView extends JFrame{
 	private JButton preferenceButton;
 	protected JScrollPane errorScrollPane;
 	private AdminView admin;
-
-	private CheckBoxListItem[] listOfKeyWords;
-	private int numKeyWords;
 	
 	protected LogParser logParser;
 	//Bounds for time-critical DB Calls
@@ -119,28 +121,19 @@ public class UserView extends JFrame{
 	protected ArrayList<String> operandArrayList = new ArrayList<String>();
 	protected ArrayList<Boolean> notArrayList = new ArrayList<Boolean>();
 	protected Vector<String> comboBoxKeyWords = new Vector<String>();
-	private Stack<Integer> strLen = new Stack<Integer>();
-	private Stack<Integer> strPos = new Stack<Integer>();
 	private Stack<JComboBox<String>> mostRecentCB = new Stack<JComboBox<String>>();
 	private JComboBox<String> key1;
 	private JComboBox<String> logic1;
 	private JComboBox<String> key2;
 	private JComboBox<String> logic2;
 	private JComboBox<String> key3;
-	private JComboBox<String> logic3;
-	private JComboBox<String> key4;
-	private JComboBox<String> logic4;
-	private JComboBox<String> key5;
 	
 	//For the CheckBoxTree view
+	protected CBTree cbTree;
+	protected DefaultMutableTreeNode rt;
+	protected DefaultTreeModel treeModel;
+	public HashMap<String, TreeNodeCheckBox> checkBoxMap = new HashMap<String, TreeNodeCheckBox>();
 	protected JScrollPane treeScrollPane;
-	protected JTree tree;
-	protected CheckBoxNode allKeyWordCheckBox[];
-	protected CheckBoxNode commonKeyWordCheckBox[];
-	protected CheckBoxNode DBKeyWordCheckBox[];
-	protected Vector<?> rootVector;
-	protected Vector<?> commonKeyWordVector;
-	protected Vector<?> DBKeyWordVector;
 	/**
 	 * Create the frame.
 	 * @throws IOException 
@@ -157,8 +150,7 @@ public class UserView extends JFrame{
 		}
 		lowerBound = (double) 0;
 		upperBound = Double.MAX_VALUE;
-		strLen.clear();
-		strPos.clear();
+
 		mostRecentCB.clear();
 		String driver = "net.sourceforge.jtds.jdbc.Driver";
 		Class.forName(driver);
@@ -178,28 +170,30 @@ public class UserView extends JFrame{
 	
 	void fillKeywords(Statement stmt) throws SQLException
 	{
-		String query = "select Keyword from logerrors";
+		String query = "select Keyword, Folder from logerrors";
 		ResultSet rs = stmt.executeQuery(query);
 		while(rs.next())
 		{
 			keyWords.add(rs.getString("Keyword"));
+			folderMap.put(rs.getString("Keyword"), rs.getString("Folder"));
+			folderSet.add(rs.getString("Folder"));
 		}
+		//Fills the treeMap
+		System.out.println(folderSet.size());
+		for (String folderName : folderSet){
+			ArrayList<String> tempList = new ArrayList<String>();
+			for (Map.Entry<String, String> entry : folderMap.entrySet()){
+				if (entry.getValue().equals(folderName)){
+					tempList.add(entry.getKey());
+				}
+			}	
+			treeMap.put(folderName, tempList);
+		}
+		System.out.println("size of treemap: " + treeMap.size());
 		
-		numKeyWords = keyWords.size();
-		listOfKeyWords = new CheckBoxListItem[numKeyWords + 1];
-		allKeyWordCheckBox = new CheckBoxNode[numKeyWords + 1];
-		allKeyWordCheckBox[0] = new CheckBoxNode("All KeyWords", true);
-		listOfKeyWords[0] = new CheckBoxListItem("All KeyWords");
-		//All Keywords selected by default
-		listOfKeyWords[0].setSelected(true);
-		
-		int index = 1;
 		comboBoxKeyWords.clear();
 		for (String s : keyWords){
-			listOfKeyWords[index] = new CheckBoxListItem(s);
-			allKeyWordCheckBox[index] = new CheckBoxNode(s, false);
 			comboBoxKeyWords.addElement(s);
-			index++;
 		}
 		
 		if (!hasCopiedOriginalKeyWords){
@@ -219,7 +213,7 @@ public class UserView extends JFrame{
 		try {
 			if (tabbedPane.getSelectedIndex() == 0){
 				System.out.println("tab 1");
-				if (Utility.noCheckBoxSelected(DBKeyWordCheckBox) || Utility.noCheckBoxSelected(commonKeyWordCheckBox)) {
+				if (Utility.noCheckBoxSelected(cbTree)) {
 					return;
 				}
 			}
@@ -264,16 +258,17 @@ public class UserView extends JFrame{
 	void updateKeyWords(int selectedTab){
 		keyWords.clear();
 		if (selectedTab == 0){
-			for (int i = 0; i < commonKeyWordCheckBox.length; i++){
-				if (commonKeyWordCheckBox[i].isSelected()){
-					System.out.println("Added:" + commonKeyWordCheckBox[i].toString());
-					keyWords.add(commonKeyWordCheckBox[i].toString());
-				}
-			}
-			for (int i = 0; i < DBKeyWordCheckBox.length; i++){
-				if (DBKeyWordCheckBox[i].isSelected()){
-					System.out.println("Added:" + DBKeyWordCheckBox[i].toString());
-					keyWords.add(DBKeyWordCheckBox[i].toString());
+			Enumeration g = ((DefaultMutableTreeNode) cbTree.getModel().getRoot()).preorderEnumeration();
+			while (g.hasMoreElements()){
+				DefaultMutableTreeNode node = (DefaultMutableTreeNode) g.nextElement();
+				Object obj = node.getUserObject();  
+				if (obj instanceof TreeNodeCheckBox){
+					TreeNodeCheckBox cb = (TreeNodeCheckBox) obj;
+					if (cb.isSelected()){
+						keyWords.add(cb.getText());
+						System.out.println("Added: " + cb.getText());
+					}
+					
 				}
 			}
 		}
@@ -451,57 +446,36 @@ public class UserView extends JFrame{
 		JPanel treePanel = new JPanel();
 		treePanel.setLayout(new BoxLayout(treePanel, BoxLayout.Y_AXIS));
 		createTreeView();
-
-		tree.addMouseListener(new MouseAdapter(){
-			public void mouseClicked(MouseEvent me){
-				if (SwingUtilities.isLeftMouseButton(me)){
-					TreePath tp = tree.getPathForLocation(me.getX(), me.getY());
-				    if (tp != null){
-				    	String path = tp.getLastPathComponent().toString();
-				    	String parent = tp.getParentPath().getLastPathComponent().toString();
-				    	if (parent.equals("Common")){
-				    		for (int i=0; i<commonKeyWordCheckBox.length; i++){
-				    			if (path.equals(commonKeyWordCheckBox[i].toString())){
-				    				System.out.println("keyword toggle: " + commonKeyWordCheckBox[i].toString());
-				    				commonKeyWordCheckBox[i].setSelected(!commonKeyWordCheckBox[i].isSelected());
-				    			}
-				    		}
-				    	}
-				    	else if (parent.equals("Database")){
-				    		for (int i=0; i<DBKeyWordCheckBox.length; i++){
-				    			if (path.equals(DBKeyWordCheckBox[i].toString())){
-				    				System.out.println("keyword toggle: " + DBKeyWordCheckBox[i].toString());
-				    				DBKeyWordCheckBox[i].setSelected(!DBKeyWordCheckBox[i].isSelected());
-				    			}
-				    		}
-				    	}
-				    	treePanel.repaint();
-				    }
-				    else
-				      return;
-				}
-			}
-		});
-		CheckBoxNodeRenderer renderer = new CheckBoxNodeRenderer();
-		tree.setCellRenderer(renderer);
-		tree.setCellEditor(new CheckBoxNodeEditor(tree));
-		tree.setEditable(true);        
-	    
+		
+		
 		JButton toggleAllButton = new JButton("Toggle All");
 		toggleAllButton.addActionListener(e -> {
-			for (int i=0; i<commonKeyWordCheckBox.length; i++){
-    			commonKeyWordCheckBox[i].setSelected(!commonKeyWordCheckBox[i].isSelected());
-    		}
-    		for (int i=0; i<DBKeyWordCheckBox.length; i++){
-    			DBKeyWordCheckBox[i].setSelected(!DBKeyWordCheckBox[i].isSelected());
-    		}
+			expandAll(cbTree, new TreePath(cbTree.getModel().getRoot()));
+			Enumeration g = ((DefaultMutableTreeNode) cbTree.getModel().getRoot()).preorderEnumeration();
+			while (g.hasMoreElements()){
+				DefaultMutableTreeNode node = (DefaultMutableTreeNode) g.nextElement();
+				//System.out.println(node.toString());
+				Object obj = node.getUserObject();  
+				if (obj instanceof TreeNodeCheckBox){
+					TreeNodeCheckBox cb = (TreeNodeCheckBox) obj;
+					cb.setSelected(!cb.isSelected());
+				}
+				
+				else if (obj instanceof String){
+					if (cbTree.getModel().getChildCount(node) == 0){
+						System.out.println(obj);
+						System.out.println(node.getClass().toGenericString());
+					}
+				}
+				else {
+					System.out.println("asdf");
+				}
+			}
     		treePanel.repaint();
-    		TreeNode root = (TreeNode) tree.getModel().getRoot();
-    		expandAll(tree, new TreePath(root));
 		});
 		toggleAllButton.setAlignmentX( Component.CENTER_ALIGNMENT);
 		
-		treeScrollPane = new JScrollPane(tree);
+		treeScrollPane = new JScrollPane(cbTree);
 		treePanel.add(treeScrollPane);
 		treePanel.add(toggleAllButton);
 		
@@ -540,52 +514,16 @@ public class UserView extends JFrame{
 			}
 		});
 		logic2 = logicalComboBox(1);
-		logic2.addActionListener(e -> {
-			if (logic2.getSelectedIndex() != -1 && key3.getSelectedIndex() != -1){
-				logic3.setEnabled(true);
-				key4.setEnabled(true);
-			}
-		});
 		logic2.setEnabled(false);
 		key3 = logicalComboBox(2);
-		key3.addActionListener(e -> {
-			if (logic2.getSelectedIndex() != -1 && key3.getSelectedIndex() != -1){
-				logic3.setEnabled(true);
-				key4.setEnabled(true);
-			}
-		});
 		key3.setEnabled(false);
-		logic3 = logicalComboBox(1);
-		logic3.addActionListener(e -> {
-			if (logic3.getSelectedIndex() != -1 && key4.getSelectedIndex() != -1){
-				logic4.setEnabled(true);
-				key5.setEnabled(true);
-			}
-		});
-		logic3.setEnabled(false);
-		key4 = logicalComboBox(2);
-		key4.addActionListener(e -> {
-			if (logic3.getSelectedIndex() != -1 && key4.getSelectedIndex() != -1){
-				logic4.setEnabled(true);
-				key5.setEnabled(true);
-			}
-		});
-		key4.setEnabled(false);
-		logic4 = logicalComboBox(1);
-		logic4.setEnabled(false);
-		key5 = logicalComboBox(2);
-		key5.setEnabled(false);
 		
 		comboBoxPanel.add(key1);
 		comboBoxPanel.add(logic1);
 		comboBoxPanel.add(key2);
 		comboBoxPanel.add(logic2);
 		comboBoxPanel.add(key3);
-		comboBoxPanel.add(logic3);
-		comboBoxPanel.add(key4);
-		comboBoxPanel.add(logic4);
-		comboBoxPanel.add(key5);
-		
+
 		JButton undoButton = new JButton("Undo");
 		undoButton.setAlignmentX(CENTER_ALIGNMENT);
 		undoButton.addActionListener(e -> {
@@ -596,18 +534,6 @@ public class UserView extends JFrame{
 				if (logic2.isEnabled() && key3.isEnabled()){
 					logic2.setEnabled(false);
 					key3.setEnabled(false);
-				}
-			}
-			if (logic2.getSelectedIndex() == -1 || key3.getSelectedIndex() == -1){
-				if (logic3.isEnabled() && key4.isEnabled()){
-					logic3.setEnabled(false);
-					key4.setEnabled(false);
-				}
-			}
-			if (logic3.getSelectedIndex() == -1 || key4.getSelectedIndex() == -1){
-				if (logic4.isEnabled() && key5.isEnabled()){
-					logic4.setEnabled(false);
-					key5.setEnabled(false);
 				}
 			}
 		});
@@ -672,19 +598,19 @@ public class UserView extends JFrame{
 		cb.setBackground(Color.WHITE);
 		switch (option){
 		case 1:
-			cb.setPreferredSize(new Dimension(60, 20));
+			cb.setPreferredSize(new Dimension(80, 20));
 			model.addElement("AND");
 			model.addElement("OR");
 			model.addElement("AND NOT");
 			break;
 		case 2:
-			cb.setPreferredSize(new Dimension(90, 20));
+			cb.setPreferredSize(new Dimension(100, 20));
 			for (String s: comboBoxKeyWords){
 				model.addElement(s);
 			}
 			break;
 		case 3:
-			cb.setPreferredSize(new Dimension(60, 20));
+			cb.setPreferredSize(new Dimension(80, 20));
 			model.addElement("AND");
 			model.addElement("AND NOT");
 			break;
@@ -712,32 +638,32 @@ public class UserView extends JFrame{
 		      }
 		    }
 		    tree.expandPath(parent);
-		    // tree.collapsePath(parent);
 	}
 	
 	void createTreeView(){
-		DBKeyWordCheckBox = new CheckBoxNode[2];
-		commonKeyWordCheckBox = new CheckBoxNode[numKeyWords-2];
-		int i = 0;
-		for (CheckBoxNode node : allKeyWordCheckBox){
-			if (node.toString().equals("DEADLOCK")){
-				//System.out.println("deadlock");
-				DBKeyWordCheckBox[0] = node;
-			}
-			else if (node.toString().equals("===>")){
-				//System.out.println("arrow");
-				DBKeyWordCheckBox[1] = node;
-			}
-			else if (!node.toString().equals("All KeyWords")) {
-				commonKeyWordCheckBox[i] = node;
-				i++;
+		cbTree = new CBTree();
+		rt = new DefaultMutableTreeNode("Root");
+		treeModel = new DefaultTreeModel(rt);
+		cbTree.setModel(treeModel);
+		for (Map.Entry<String, ArrayList<String>> entry : treeMap.entrySet()){
+			DefaultMutableTreeNode node = new DefaultMutableTreeNode(entry.getKey());
+			rt.add(node);
+			for (int j = 0; j < entry.getValue().size(); j++){
+				node.add(new DefaultMutableTreeNode(entry.getValue().get(j)));
 			}
 		}
-		commonKeyWordVector = new NamedVector("Common", commonKeyWordCheckBox);
-		DBKeyWordVector = new NamedVector("Database", DBKeyWordCheckBox);
-		Object rootNodes[] = {commonKeyWordVector, DBKeyWordVector};
-		rootVector = new NamedVector("Root", rootNodes);
-		tree = new JTree(rootVector);
+		for (Enumeration<?> e = rt.depthFirstEnumeration(); e.hasMoreElements(); ){
+			DefaultMutableTreeNode node = (DefaultMutableTreeNode) e.nextElement();
+			Object obj = node.getUserObject();  
+			if (obj instanceof TreeNodeCheckBox){
+				TreeNodeCheckBox cb = (TreeNodeCheckBox) obj;
+				System.out.println("instance of cb");
+			}
+		}
+		cbTree.expandRow(0);
+		cbTree.setRootVisible(false);
+		System.out.println(((CheckBoxTreeNodeRenderer) cbTree.getCellRenderer()).getCheckBoxRenderer().isSelected());
+		
 	}
 	
 	boolean createGroupDisplay(){
@@ -774,12 +700,7 @@ public class UserView extends JFrame{
 		if (key3.getSelectedIndex() != -1){
 			keyWordArrayList.add(key3.getSelectedItem().toString());
 		}
-		if (key4.getSelectedIndex() != -1){
-			keyWordArrayList.add(key4.getSelectedItem().toString());
-		}
-		if (key5.getSelectedIndex() != -1){
-			keyWordArrayList.add(key5.getSelectedItem().toString());
-		}
+
 		if (logic1.getSelectedIndex() != -1){
 			operandArrayList.add("AND");
 			if (logic1.getSelectedItem().toString().equals("AND NOT")){
@@ -803,34 +724,7 @@ public class UserView extends JFrame{
 				notArrayList.add(false);
 			}
 		}
-		if (logic3.getSelectedIndex() != -1){
-			if (logic3.getSelectedItem().toString().equals("AND")){
-				operandArrayList.add("AND");
-				notArrayList.add(false);
-			}
-			else if (logic3.getSelectedItem().toString().equals("AND NOT")){
-				operandArrayList.add("AND");
-				notArrayList.add(true);
-			}
-			else if (logic3.getSelectedItem().toString().equals("OR")){
-				operandArrayList.add("OR");
-				notArrayList.add(false);
-			}
-		}
-		if (logic4.getSelectedIndex() != -1){
-			if (logic4.getSelectedItem().toString().equals("AND")){
-				operandArrayList.add("AND");
-				notArrayList.add(false);
-			}
-			else if (logic4.getSelectedItem().toString().equals("AND NOT")){
-				operandArrayList.add("AND");
-				notArrayList.add(true);
-			} 
-			else if (logic4.getSelectedItem().toString().equals("OR")){
-				operandArrayList.add("OR");
-				notArrayList.add(false);
-			}
-		}
+		//For finding duplicates
 		Set<String> set = new HashSet<String>(keyWordArrayList);
 		if (set.size() < keyWordArrayList.size()){
 			JOptionPane.showMessageDialog(null, "Duplicate keywords not allowed");
@@ -850,5 +744,4 @@ public class UserView extends JFrame{
 		}
 	}
 }
-	
 

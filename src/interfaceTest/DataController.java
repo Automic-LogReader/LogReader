@@ -21,6 +21,7 @@ public class DataController {
 	private boolean keywordChanged;
 	private boolean errorMessageChanged;
 	private boolean suggestedSolutionChanged;
+	private boolean folderChanged;
 	//Holds a line from the csv file
 	protected String errorLine;
 	//Holds the line from the csv file (each part of the array is a cell from csv)
@@ -33,6 +34,12 @@ public class DataController {
 		keywordChanged = false;
 		errorMessageChanged = false;
 		suggestedSolutionChanged = false;
+		folderChanged = false;
+	}
+	
+	AdminView getAdmin()
+	{
+		return admin;
 	}
 	
 	void setKeywordChanged(boolean change)
@@ -48,6 +55,11 @@ public class DataController {
 	void setSuggestedSolutionChanged(boolean change)
 	{
 		suggestedSolutionChanged = change;
+	}
+	
+	void setFolderChanged(boolean change)
+	{
+		folderChanged = true;
 	}
 	
 	void setList(List <String[]> list)
@@ -82,38 +94,46 @@ public class DataController {
 	//****************************
 	//Note that we will HAVE to go about doing modify a different way
 	
-	void modifyData(String keyWord, String message, String solution, String choice, int row) throws IOException
+	void modifyData(String folder, String keyWord, String message, String solution, String choice, int row) throws IOException
 	{
-		String [] tempArray = new String[3];
-		tempArray[0] = keyWord;
-		tempArray[1] = message;
-		tempArray[2] = solution;
+		String [] tempArray = new String[4];
+		tempArray[0] = folder;
+		tempArray[1] = keyWord;
+		tempArray[2] = message;
+		tempArray[3] = solution;
 		if(choice.equals("MODIFY"))
 		{
+			if(folderChanged)
+				queries.add("update logerrors set Folder = \'" + 
+					addSingleQuote(folder) + "\' where Keyword = \'" + addSingleQuote(list.get(row)[1]) + "\'");
 			if(errorMessageChanged)
 				queries.add("update logerrors set Log_Error_Description = \'" +
-					 addSingleQuote(message) + "\' where Keyword = \'" + addSingleQuote(list.get(row)[0]) + "\'");
+					 addSingleQuote(message) + "\' where Keyword = \'" + addSingleQuote(list.get(row)[1]) + "\'");
 			if(suggestedSolutionChanged)
 				queries.add("update logerrors set Suggested_Solution = \'" +
-					 addSingleQuote(solution) + "\' where Keyword = \'" + addSingleQuote(list.get(row)[0]) + "\'");
+					 addSingleQuote(solution) + "\' where Keyword = \'" + addSingleQuote(list.get(row)[1]) + "\'");
 			if(keywordChanged)
 				queries.add("update logerrors set Keyword = \'" +
-					addSingleQuote(keyWord) + "\' where Keyword = \'" + addSingleQuote(list.get(row)[0]) + "\'");
+					addSingleQuote(keyWord) + "\' where Keyword = \'" + addSingleQuote(list.get(row)[1]) + "\'");
+			admin.savedWords.remove(list.get(row)[1]);
+			admin.savedWords.add(keyWord);
 			list.set(row, tempArray);
+
 		}
 		else
 		{
-			queries.add("insert into logerrors values (\'" + addSingleQuote(keyWord) +
-					"\',\'" + addSingleQuote(message) + "\',\'" + addSingleQuote(solution) + "\')");
+			queries.add("insert into logerrors values (\'" + addSingleQuote(keyWord) + "\',\'"
+					+ addSingleQuote(message) + "\',\'" + addSingleQuote(solution) + "\',\'" +
+					addSingleQuote(folder) + "\')");
 			list.add(tempArray);
+			admin.savedWords.add(keyWord);
 		}
 		
-		//Collections.sort(list);
 		transferData("CHANGE");
+		folderChanged = false;
 		keywordChanged = false;
 		errorMessageChanged = false;
 		suggestedSolutionChanged = false;
-		//Add a query
 		
 		admin.resetData();
 
@@ -143,10 +163,11 @@ public class DataController {
 	 */
 	void deleteData(int row) throws IOException
 	{
-		queries.add("delete from logerrors where Keyword = \'" + addSingleQuote(list.get(row)[0]) + "\'");
+		queries.add("delete from logerrors where Keyword = \'" + addSingleQuote(list.get(row)[1]) + "\'");
 		list.remove(row);
 		transferData("CHANGE");
 		admin.resetData();
+		admin.savedWords.remove(list.get(row)[1]);
 	}
 
 	void transferData(String choice)
@@ -155,15 +176,18 @@ public class DataController {
 		{
 			tempList = defaultList;
 			queries.clear();
+			admin.savedWords = admin.keyWords;
 		}
-		else
+		else {
 			tempList = list;
+		}
 		Object[][] myData = new Object[tempList.size()][];
 		for(int i = 0; i < tempList.size(); i++)
 		{
 			myData[i] = tempList.get(i);
 		}
 		data = myData;
+		
 	}
 	
 	Object[][] getData()
@@ -174,6 +198,11 @@ public class DataController {
 	void saveDefault() throws IOException, ClassNotFoundException, SQLException
 	{
 		defaultList.clear();
+		admin.keyWords.clear();
+		for(int x = 0; x < admin.savedWords.size(); x++)
+		{
+			admin.keyWords.add(admin.savedWords.get(x));
+		}
 
 		for(int i = 0; i < list.size(); i++)
 		{

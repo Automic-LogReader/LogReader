@@ -21,13 +21,12 @@ public class AddDialog extends JDialog {
 	private JTextField keywordText;
 	private JTextField errorText;
 	private JTextField solutionText;
+	private JTextField folderText;
 
 
-	/**
-	 * Create the dialog.
-	 */
 	public AddDialog(DataController dc) {
-		setBounds(200, 200, 450, 200);
+
+		setBounds(200, 200, 450, 250);
 		getContentPane().setLayout(new BorderLayout());
 		{
 			Component rigidArea = Box.createRigidArea(new Dimension(20, 20));
@@ -41,8 +40,34 @@ public class AddDialog extends JDialog {
 			contentPanel.add(panel);
 			panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 			{
-				JLabel lblNewLabel = new JLabel("Keyword:                 ");
+				JLabel lblNewLabel = new JLabel("Folder:                  ");
 				panel.add(lblNewLabel);
+			}
+			{
+				Component rigidArea = Box.createRigidArea(new Dimension(20, 20));
+				panel.add(rigidArea);
+			}
+			{
+				folderText = new JTextField();
+				panel.add(folderText);
+				folderText.setColumns(10);
+			}
+			{
+				Component rigidArea = Box.createRigidArea(new Dimension(20, 20));
+				panel.add(rigidArea);
+			}
+		}
+		{
+			Component rigidArea = Box.createRigidArea(new Dimension(20, 20));
+			contentPanel.add(rigidArea);
+		}
+		{
+			JPanel panel = new JPanel();
+			contentPanel.add(panel);
+			panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+			{
+				JLabel lblNewLabel_1 = new JLabel("Keyword:              ");
+				panel.add(lblNewLabel_1);
 			}
 			{
 				Component rigidArea = Box.createRigidArea(new Dimension(20, 20));
@@ -67,8 +92,8 @@ public class AddDialog extends JDialog {
 			contentPanel.add(panel);
 			panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 			{
-				JLabel lblNewLabel_1 = new JLabel("Error Message:      ");
-				panel.add(lblNewLabel_1);
+				JLabel lblNewLabel_2 = new JLabel("Error Message:     ");
+				panel.add(lblNewLabel_2);
 			}
 			{
 				Component rigidArea = Box.createRigidArea(new Dimension(20, 20));
@@ -93,8 +118,8 @@ public class AddDialog extends JDialog {
 			contentPanel.add(panel);
 			panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 			{
-				JLabel lblNewLabel_2 = new JLabel("Solution Message:");
-				panel.add(lblNewLabel_2);
+				JLabel lblNewLabel_3 = new JLabel("Solution Message:");
+				panel.add(lblNewLabel_3);
 			}
 			{
 				Component rigidArea = Box.createRigidArea(new Dimension(20, 20));
@@ -111,27 +136,26 @@ public class AddDialog extends JDialog {
 			}
 		}
 		{
-			Component rigidArea = Box.createRigidArea(new Dimension(20, 20));
-			getContentPane().add(rigidArea, BorderLayout.NORTH);
-		}
-		{
 			JPanel buttonPane = new JPanel();
 			buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
 			getContentPane().add(buttonPane, BorderLayout.SOUTH);
 			{
 				JButton okButton = new JButton("Add");
 				okButton.addActionListener(e ->{
-				if (keywordText.getText().equals("") || errorText.getText().equals("") || solutionText.getText().equals(""))
+				if (folderText.getText().equals("") || keywordText.getText().equals("") ||
+					errorText.getText().equals("") || solutionText.getText().equals(""))
 					JOptionPane.showMessageDialog(null, "All entries must be filled");
+				else if (dc.getAdmin().savedWords.contains(keywordText.getText()))
+					JOptionPane.showMessageDialog(null, "No duplicate keywords allowed");
 				else
 				{
 					try {
-						dc.modifyData(keywordText.getText(), errorText.getText(), solutionText.getText(), "ADD", 0);
+						dc.modifyData(folderText.getText(), keywordText.getText(), 
+									errorText.getText(), solutionText.getText(), "ADD", 0);
 					} catch (Exception e1) {
 						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-					this.setVisible(false);
+						e1.printStackTrace();						}
+							this.setVisible(false);
 				}
 				});
 				okButton.setActionCommand("OK");
@@ -142,3 +166,4 @@ public class AddDialog extends JDialog {
 		}
 	}
 }
+	

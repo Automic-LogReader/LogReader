@@ -182,6 +182,12 @@ public class LogicEvaluator {
 	{
 		if(keyWords != null){
 			firstKeyword = keyWords.get(0);
+			
+			if(keyWords.contains("DEADLOCK") && firstKeyword != "DEADLOCK")
+			{
+				keyWords.set(keyWords.indexOf("DEADLOCK"), keyWords.get(0));
+				keyWords.set(0,  "DEADLOCK");
+			}
 			if(!operands.contains("OR")) {
 				ORwords.add(keyWords.get(0));
 				keyWords.remove(0);
