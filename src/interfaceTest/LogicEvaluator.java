@@ -16,9 +16,12 @@ public class LogicEvaluator {
 	private ArrayList<String> operands = new ArrayList<String>();
 	private int errorCount;
 	private int noArrow;
+	private boolean AND_NOT_DEADLOCK;
+	private boolean DEADLOCK_occurence;
 	
 	LogicEvaluator(LogParser logParse){
 		this.logParse = logParse;
+		AND_NOT_DEADLOCK = false;
 	}
 	
 	void setkeyWords(ArrayList <String> keyWords){
@@ -71,7 +74,7 @@ public class LogicEvaluator {
 					else if(uCodeFound && timeStampFound) {
 						if(validLines.get(i).contains("DEADLOCK")) {
 							//System.out.println("I found a deadlock");
-							if(testWord.equals("DEADLOCK")){
+							if(testWord.equals("DEADLOCK")) {
 								hitDeadLock = true;
 								continue;
 							}
@@ -98,43 +101,42 @@ public class LogicEvaluator {
 				logParse.errorData.add(entry);
 			}
 		}
-			
 	}
 	
-	
 	//There will be special cases if there is a deadlock or a ==> or a timecritical
-	void addLines(String line, BufferedReader br) throws IOException
-	{
-		if(line.contains("DEADLOCK") && (keyWords.contains("DEADLOCK"))
-				&& hasNot.get(keyWords.indexOf("DEADLOCK")) != true)
+	void addLines(String line, BufferedReader br) throws IOException {
+		if(AND_NOT_DEADLOCK) {
+			if(line.contains("DEADLOCK")) 
+				progressDeadlockBr(br, line);
+			for(int i = 0; i < ORwords.size(); i++) {
+				 if(line.contains(ORwords.get(i))) {
+					validLines.add(line);
+					return;
+				}
+			}
+		}
+		else if (ORwords.contains("DEADLOCK") && line.contains("DEADLOCK"))
+			validLines.add(makeDeadlockLine(br, line)); 
+		
+		else if (ORwords.contains("===>") && line.contains("===>"))
 		{
-			if((firstKeyword.equals("===>")) && 
-			  (operands.get(keyWords.indexOf("DEADLOCK")).equals("AND"))
-			  && (!makeDeadlockLine(br, line).contains("===>")))
+			if(makeArrowLine(br, line, line.split(" ")) == null)
 			{
-				noArrow++;
+				System.out.println("NULL FUCKERS");
 				return;
 			}
 			else
-				validLines.add(makeDeadlockLine(br, line));
-		}
-		else if(ORwords.contains("DEADLOCK") && line.contains("DEADLOCK"))
-			validLines.add(makeDeadlockLine(br, line));
-		else if (ORwords.contains("===>") && line.contains("===>"))
-		{
-			//if(makeArrowLine(br, line, line.split(" ")) == null)
-				//return;
-		//else
-			//validLines.add(makeArrowLine(br, line, line.split(" ")));
-		}
-		//If the line contains one of the OR keywords, we count it as valid
-		else
-		{
-			for(int i = 0; i < ORwords.size(); i++)
 			{
-				 if(line.contains(ORwords.get(i)))
-				{
-						validLines.add(line);
+				//System.out.println("Jk we did stuff");
+				validLines.add(makeArrowLine(br, line, line.split(" ")));
+			}
+		}
+		
+		//If the line contains one of the OR keywords, we count it as valid
+		else {
+			for(int i = 0; i < ORwords.size(); i++) {
+				 if(line.contains(ORwords.get(i))) {
+					validLines.add(line);
 					return;
 				}
 			}
@@ -142,31 +144,26 @@ public class LogicEvaluator {
 	}
 	
 	//Add something here for "if not == true" to make things
-	void parseLines()
-	{
+	void parseLines() {
 		//If keywords is empty, we don't have any AND operands so we 
 		//will leave this function and make entries
 		System.out.println(noArrow);
 		if(keyWords.isEmpty() || keyWords == null)
 			return;
-		for(int i = validLines.size() - 1; i >= 0; i--)
-		{
+		for(int i = validLines.size() - 1; i >= 0; i--) {
 			boolean isValid = true;
 			//If the line doesn't contain all of the words
 			//then it is invalid
-			for(int j = 0; j < keyWords.size(); j++)
-			{
+			for(int j = 0; j < keyWords.size(); j++) {
 				//If the line contains a word we DON'T want, it is invalid
 				if(hasNot.get(j)) {
-					if(validLines.get(i).contains(keyWords.get(j)))
-					{
+					if(validLines.get(i).contains(keyWords.get(j))) {
 						isValid = false;
 						break;
 					}
 				}
 				else {
-					if(!validLines.get(i).contains(keyWords.get(j)))
-					{
+					if(!validLines.get(i).contains(keyWords.get(j))) {
 						isValid = false;
 						break;
 					}
@@ -182,28 +179,81 @@ public class LogicEvaluator {
 	{
 		if(keyWords != null){
 			firstKeyword = keyWords.get(0);
-			
-			if(keyWords.contains("DEADLOCK") && firstKeyword != "DEADLOCK")
-			{
-				keyWords.set(keyWords.indexOf("DEADLOCK"), keyWords.get(0));
-				keyWords.set(0,  "DEADLOCK");
+			if(keyWords.contains("DEADLOCK") && firstKeyword != "DEADLOCK") {
+				if	(hasNot.get(keyWords.indexOf("DEADLOCK")) != true) {
+					keyWords.set(keyWords.indexOf("DEADLOCK"), keyWords.get(0));
+					keyWords.set(0, "DEADLOCK");
+					ORwords.add(keyWords.get(0));
+					keyWords.remove(0); 
+					hasNot.remove(0);
+					DEADLOCK_occurence = true;
+				}
+				else
+					AND_NOT_DEADLOCK = true;
 			}
-			if(!operands.contains("OR")) {
-				ORwords.add(keyWords.get(0));
-				keyWords.remove(0);
-				hasNot.remove(0);
-			}
-			else {
+			if(operands.contains("OR")) {
 				while(operands.contains("OR")) {
 					int index = operands.indexOf("OR");
+					operands.remove(index);
+					if(!DEADLOCK_occurence)
+						index++;
 					ORwords.add(keyWords.get(index));
-					keyWords.remove(index + 1);
-					hasNot.remove(index + 1);
+					keyWords.remove(index);
+					hasNot.remove(index);
 				}
+			}
+			else if((!keyWords.contains("DEADLOCK") ||
+					AND_NOT_DEADLOCK)) {
+				ORwords.add(keyWords.get(0));
+				keyWords.remove(0); 
+				hasNot.remove(0);
 			}
 		}
 	}
 
+	void progressDeadlockBr(BufferedReader br, String line) throws IOException
+	{
+		boolean timeStampFound = false;
+		String timeStamp = "";
+		String[] temp = line.split(" ");
+		String words [];
+	    for(String word : temp) {
+	        if(word.length() == 19) {
+	               timeStamp = word;
+	               break;
+	        }
+	    }
+		String logLine = br.readLine();
+		br.mark(1500);
+		while (logLine != null) {
+			logParse.updateProgress();
+			words = logLine.split(" ");
+			for(String testWord : words) {
+				//If true, we've found the timestamp on the test line
+				if(testWord.length() == 19 && !timeStampFound) {
+					timeStampFound = true;
+					if(logParse.timeStampDifference(testWord, timeStamp)) {
+						//if single, we reset the buffered reader
+						br.reset();
+						return;
+					}
+				}
+					//We test the timestamps to see if this is a single deadlock
+				else if(timeStampFound) {
+						//If we've found a matching deadlock, 
+						//we advance the reader and return
+						if(logLine.contains("DEADLOCK")) {
+							br.readLine();
+							return;
+						}
+						continue;
+				}
+			}
+			logLine = br.readLine();
+		}
+		
+	}
+	
 	String makeDeadlockLine(BufferedReader logbr, String line) throws IOException
 	{
         ArrayList <String> errorLines = new ArrayList<String>();
@@ -232,7 +282,6 @@ public class LogicEvaluator {
                             timeStampFound = true;
                             //If our timestamps are not equal, we 
                             //don't have a matching deadlock
-                            //Make a new if statement here
                             if(logParse.timeStampDifference(testWord, timeStamp)){
                                    return errorLines.get(0);
                             }
