@@ -81,7 +81,7 @@ public class AdminView extends JFrame {
 	//Used as a current index marker for the function createDataTable
 	private int dataIndex;
 	//Headers for the JTable
-	private String[] columnHeaders = {"Folder", "Keyword", "Log Error Description",
+	private final String[] columnHeaders = {"Folder", "Keyword", "Log Error Description",
 									"Suggested Solution"};
 	//Solution field when the user wants to add an entry
 	private JTextField solutionText;
@@ -110,8 +110,7 @@ public class AdminView extends JFrame {
 	 * @throws IOException 
 	 */
 	public AdminView(UserView view) throws ClassNotFoundException, SQLException {
-		
-		
+			
 		try {
 		     ClassLoader cl = this.getClass().getClassLoader();
 		     ImageIcon programIcon = new ImageIcon(cl.getResource("res/logo.png"));
@@ -131,6 +130,7 @@ public class AdminView extends JFrame {
 		
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(200, 200, 1000, 300);
+		setMinimumSize(new Dimension(750, 300));
 		setLocationRelativeTo(null);
 		getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
 		
@@ -172,12 +172,11 @@ public class AdminView extends JFrame {
 		
 		JPanel tab1_buttonPanel = new JPanel();
 		tab1.add(tab1_buttonPanel);
-		tab1_buttonPanel.setLayout(new BoxLayout(tab1_buttonPanel, BoxLayout.Y_AXIS));
-		tab1_buttonPanel.add(Box.createVerticalGlue());
+		tab1_buttonPanel.setLayout(new FlowLayout());
 		
-		JPanel topButtonPanel = new JPanel();
-		tab1_buttonPanel.add(topButtonPanel);
-		topButtonPanel.setLayout(new BoxLayout(topButtonPanel, BoxLayout.X_AXIS));
+		JPanel leftButtonPanel = new JPanel();
+		tab1_buttonPanel.add(leftButtonPanel);
+		leftButtonPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
 		
 		JButton addButton = new JButton("Add Entry");
 		addButton.addActionListener(e -> {
@@ -185,8 +184,7 @@ public class AdminView extends JFrame {
 			add.setVisible(true);
 		});
 		
-		topButtonPanel.add(addButton);
-		topButtonPanel.add(Box.createRigidArea(new Dimension(5, 10)));
+		leftButtonPanel.add(addButton);
 		
 		JButton modifyButton = new JButton("Modify Entry");
 		modifyButton.setHorizontalAlignment(SwingConstants.RIGHT);
@@ -202,8 +200,7 @@ public class AdminView extends JFrame {
 			}
 			else JOptionPane.showMessageDialog(null, "Please select an entry");	
 		});
-		topButtonPanel.add(modifyButton);
-		topButtonPanel.add(Box.createRigidArea(new Dimension(5, 10)));
+		leftButtonPanel.add(modifyButton);
 		
 		JButton deleteButton = new JButton("Delete Entry");
 		deleteButton.addActionListener(e -> {
@@ -225,12 +222,12 @@ public class AdminView extends JFrame {
 				}
 			} 
 		});
-		topButtonPanel.add(deleteButton);
-		tab1_buttonPanel.add(Box.createRigidArea(new Dimension(5, 10)));
+		leftButtonPanel.add(deleteButton);
 		
-		JPanel bottomButtonPanel = new JPanel();
-		tab1_buttonPanel.add(bottomButtonPanel);
-		bottomButtonPanel.setLayout(new BoxLayout(bottomButtonPanel, BoxLayout.X_AXIS));
+		
+		JPanel rightButtonPanel = new JPanel();
+		tab1_buttonPanel.add(rightButtonPanel);
+		rightButtonPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
 		
 		JButton saveButton = new JButton("Save to Default");
 		saveButton.addActionListener(e -> {
@@ -241,11 +238,12 @@ public class AdminView extends JFrame {
 				e1.printStackTrace();
 			}
 		});
-		bottomButtonPanel.add(saveButton);
-		bottomButtonPanel.add(Box.createRigidArea(new Dimension(5, 10)));
+		saveButton.setAlignmentX(Component.RIGHT_ALIGNMENT);
+		rightButtonPanel.add(saveButton);
 		
 		JButton defaultButton = new JButton("Revert to Default");
-		bottomButtonPanel.add(defaultButton);
+		defaultButton.setAlignmentX(Component.RIGHT_ALIGNMENT);
+		rightButtonPanel.add(defaultButton);
 		defaultButton.addActionListener(e -> {
 			dc.getList().clear();
 			for(int i = 0; i < dc.getDefaultList().size(); i++)
@@ -255,8 +253,7 @@ public class AdminView extends JFrame {
 			dc.transferData("DEFAULT");
 			resetData();
 		});
-		tab1_buttonPanel.add(Box.createRigidArea(new Dimension(5, 10)));
-		tab1_buttonPanel.add(Box.createVerticalGlue());
+	
 		
 		JPanel tab2 = new JPanel();
 		tab2.setLayout(new BoxLayout(tab2, BoxLayout.Y_AXIS));
@@ -290,7 +287,6 @@ public class AdminView extends JFrame {
 			}
 		});
 		tab2_buttonPanel.add(deleteGroup);
-		
 		tab2.add(Box.createVerticalGlue());
 		
 		tabbedPane.add("Edit Entries", tab1);

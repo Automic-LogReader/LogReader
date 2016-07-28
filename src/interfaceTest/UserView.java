@@ -409,6 +409,7 @@ public class UserView extends JFrame{
 		
 		JButton adminButton = new JButton("Admin Features");
 		adminButton.setPreferredSize(new Dimension(130, 30));
+		adminButton.setToolTipText("Modify entries, folders, solutions");
 		adminButton.addActionListener(e -> {
 			try {
 				admin = new AdminView(this);
