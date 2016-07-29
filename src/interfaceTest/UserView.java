@@ -148,8 +148,8 @@ public class UserView extends JFrame{
 	 */
 	public UserView(MainMenu menu, boolean isAdmin) throws ClassNotFoundException, SQLException {
 		hasCopiedOriginalKeyWords = false;
-		data = new Object[20][];
-		for(int i = 0; i < 20; i ++){
+		data = new Object[40][];
+		for(int i = 0; i < 40; i ++){
 			Object[] temp = new Object[5];
 			for(int j = 0; j < 5; j++){
 				temp[j] = "";
@@ -306,6 +306,7 @@ public class UserView extends JFrame{
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 1500, 400);
 		setLocationRelativeTo(null);
+		setMinimumSize(new Dimension(1000, 300));
 		
 		try {
 		     ClassLoader cl = this.getClass().getClassLoader();
@@ -442,9 +443,10 @@ public class UserView extends JFrame{
 		bottomPanel.add(horizontalStrut_3);
 		
 		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		tabbedPane.setPreferredSize(new Dimension(600, 280));
 		
 		JPanel mainPanel = new JPanel();
-		mainPanel.setMaximumSize(new Dimension(300, 280));
+		mainPanel.setMaximumSize(new Dimension(600, 280));
 		contentPane.add(mainPanel, BorderLayout.CENTER);
 		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.X_AXIS));
 			
@@ -475,7 +477,7 @@ public class UserView extends JFrame{
 		
 		/*** AND OR NOT PANEL ***/
 		JPanel andOrNotPanel = new JPanel();
-		andOrNotPanel.setMaximumSize(new Dimension(300, 280));
+		andOrNotPanel.setMaximumSize(new Dimension(600, 280));
 		andOrNotPanel.setOpaque(true);
 		andOrNotPanel.setBackground(Color.WHITE);
 		andOrNotPanel.setLayout(new BoxLayout(andOrNotPanel, BoxLayout.Y_AXIS));
@@ -541,7 +543,7 @@ public class UserView extends JFrame{
 		/*** GROUP PANEL ***/
 		JPanel groupPanel = new JPanel();
 		groupPanel.setLayout(new BoxLayout(groupPanel, BoxLayout.Y_AXIS));
-		groupPanel.setMaximumSize(new Dimension(300, 280));
+		groupPanel.setMaximumSize(new Dimension(600, 280));
 		model = new DefaultListModel<CheckBoxListItem>();
 		createGroupDisplay();
 		groupList = new JList<CheckBoxListItem>(model);
@@ -591,6 +593,7 @@ public class UserView extends JFrame{
 		errorTable.addMouseListener(new TableMouseListener(errorTable));
 		
 		errorScrollPane = new JScrollPane(errorTable, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		errorScrollPane.setPreferredSize(new Dimension(700, 280));
 		mainPanel.add(errorScrollPane);
 		
 		setVisible(true);

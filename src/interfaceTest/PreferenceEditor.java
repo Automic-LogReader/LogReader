@@ -13,6 +13,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;                                                                                                                                                                             
 import javax.swing.JList;
@@ -28,7 +29,7 @@ import interfaceTest.CheckBoxList.CheckBoxListItem;
 import interfaceTest.CheckBoxList.CheckBoxListRenderer;
 
 @SuppressWarnings("serial")
-public class PreferenceEditor extends JFrame {
+public class PreferenceEditor extends JDialog {
 	private JTextField lowerBound;
 	private JTextField upperBound;
 	protected CheckBoxListItem[] listOfKeyWords;
@@ -46,9 +47,9 @@ public class PreferenceEditor extends JFrame {
 	void prepareGUI(UserView view){
 		setTitle("Preference Editor");
 		setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-		setBounds(100, 100, 600, 240);
+		setBounds(100, 100, 400, 240);
 		setLocationRelativeTo(null);
-		
+		setResizable(false);
 		try {
 		     ClassLoader cl = this.getClass().getClassLoader();
 		     ImageIcon programIcon = new ImageIcon(cl.getResource("res/logo.png"));
