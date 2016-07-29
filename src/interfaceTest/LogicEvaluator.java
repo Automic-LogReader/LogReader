@@ -10,22 +10,29 @@ public class LogicEvaluator {
 	private LogParser logParse;
 	private String firstKeyword;
 	private ArrayList<Boolean> hasNot = new ArrayList<Boolean>();
-	private ArrayList<String> ORwords = new ArrayList<String>();
+	private ArrayList <String> deadlockOrLines = new ArrayList<String>();
 	private ArrayList<String> validLines = new ArrayList<String>();
-	private ArrayList<String> keyWords = new ArrayList<String>();
+	private ArrayList<String> andWords = new ArrayList<String>();
 	private ArrayList<String> operands = new ArrayList<String>();
 	private int errorCount;
 	private int noArrow;
+	private String orWord;
+	private boolean OR_FLAG;
+	private boolean OR_DEADLOCK;
 	private boolean AND_NOT_DEADLOCK;
-	private boolean DEADLOCK_occurence;
+	private boolean AND_DEADLOCK;
 	
 	LogicEvaluator(LogParser logParse){
 		this.logParse = logParse;
+		orWord = "";
+		OR_FLAG = false;
+		OR_DEADLOCK = false;
 		AND_NOT_DEADLOCK = false;
+		AND_DEADLOCK = false;
 	}
 	
 	void setkeyWords(ArrayList <String> keyWords){
-		this.keyWords = keyWords;
+		this.andWords = keyWords;
 	}
 	
 	void setOperands(ArrayList <String> operands){
@@ -43,8 +50,9 @@ public class LogicEvaluator {
 	
 	//Entry titles will be based off of the first keyword selected
 	void makeEntries() {
-		if(validLines == null)
+		if(validLines.isEmpty()){
 			return;
+		}
 		else {
 			errorCount = 0;
 			for(int i = 0; i < validLines.size(); i++) {
@@ -108,112 +116,71 @@ public class LogicEvaluator {
 	
 	//There will be special cases if there is a deadlock or a ==> or a timecritical
 	void addLines(String line, BufferedReader br) throws IOException {
-		String newLine;
+		String testLine = line;
+		//If they don't want deadlock lines, then we skip over them
 		if(AND_NOT_DEADLOCK) {
 			if(line.contains("DEADLOCK")) 
-				newLine = progressDeadlockBr(br, line);
-			else 
-				newLine = line;
-			for(int i = 0; i < ORwords.size(); i++) {
-				 if(newLine.contains(ORwords.get(i))) {
-					validLines.add(newLine);
-					return;
-				}
-			}
+				//The line returned is the line after the matching (or single) deadlock
+				testLine = progressDeadlockBr(br, line);
 		}
-		else if (ORwords.contains("DEADLOCK") && line.contains("DEADLOCK"))
-			validLines.add(makeDeadlockLine(br, line)); 
-		else if (ORwords.contains("===>") && line.contains("===>"))
-		{
-			if(makeArrowLine(br, line, line.split(" ")) == null)
-			{
-				return;
+		//If orWord = "", then no OR operand was set. Otherwise
+		//if the line contains the orWord, it is valid
+		if(testLine.contains(orWord) && (orWord != "")) {
+			if(OR_DEADLOCK) {
+				//This is the arraylist that has the deadlock lines (check duplicates on)
+				deadlockOrLines.add(makeDeadlockLine(br, testLine));
 			}
 			else
-			{
-				validLines.add(makeArrowLine(br, line, line.split(" ")));
-			}
-		}
-		
-		//If the line contains one of the OR keywords, we count it as valid
+				validLines.add(testLine);
+		}	
 		else {
-			for(int i = 0; i < ORwords.size(); i++) {
-				 if(line.contains(ORwords.get(i))) {
-					validLines.add(line);
-					return;
-				}
+			String parseLine;
+			if(AND_DEADLOCK && testLine.contains("DEADLOCK"))
+			{
+				parseLine = makeDeadlockLine(br, testLine);
 			}
-		}
-	}
-	
-	//Add something here for "if not == true" to make things
-	void parseLines() {
-		//If keywords is empty, we don't have any AND operands so we 
-		//will leave this function and make entries
-		System.out.println(noArrow);
-		if(keyWords.isEmpty() || keyWords == null)
-			return;
-		for(int i = validLines.size() - 1; i >= 0; i--) {
-			boolean isValid = true;
-			//If the line doesn't contain all of the words
-			//then it is invalid
-			for(int j = 0; j < keyWords.size(); j++) {
+			else{
+				parseLine = testLine;
+			}
+			for(int j = 0; j < andWords.size(); j++) {
 				//If the line contains a word we DON'T want, it is invalid
 				if(hasNot.get(j)) {
-					if(validLines.get(i).contains(keyWords.get(j))) {
-						isValid = false;
-						break;
+					if(parseLine.contains(andWords.get(j)))  {
+						return;
 					}
 				}
 				else {
-					if(!validLines.get(i).contains(keyWords.get(j))) {
-						isValid = false;
-						break;
+					//If the line doesn't contain a word we do want, it is invalid
+					if(!parseLine.contains(andWords.get(j))) {
+						return;
 					}
 				}
 			}
-			if(!isValid)
-				validLines.remove(i);
+			//If we make it here the line is added
+			validLines.add(parseLine);
 		}
 
+			
 	}
-	
+		
 	void addORs()
 	{
-		if(keyWords != null){
-			firstKeyword = keyWords.get(0);
-			System.out.println(firstKeyword);
-			if(keyWords.contains("DEADLOCK") && (firstKeyword != "DEADLOCK")) {
-				System.out.println("Except I'm here");
-				if	(hasNot.get(keyWords.indexOf("DEADLOCK")) != true) {
-					keyWords.set(keyWords.indexOf("DEADLOCK"), keyWords.get(0));
-					keyWords.set(0, "DEADLOCK");
-					ORwords.add(keyWords.get(0));
-					keyWords.remove(0); 
-					hasNot.remove(0);
-					DEADLOCK_occurence = true;
-					System.out.println("what the fuck");
+		if(andWords != null){
+			firstKeyword = andWords.get(0);
+			if(operands.contains("OR")){
+				OR_FLAG = true;
+				orWord = andWords.get(2);
+				andWords.remove(2);
+				if(orWord.equals("DEADLOCK"))
+					OR_DEADLOCK = true;
+				
+			}
+			if(andWords.contains("DEADLOCK") && (orWord != "DEADLOCK")) {
+				if	(hasNot.get(andWords.indexOf("DEADLOCK")) != true) {
+					AND_DEADLOCK = true;
 				}
 				else
 					AND_NOT_DEADLOCK = true;
-			}
-			if(operands.contains("OR")) {
-				while(operands.contains("OR")) {
-					int index = operands.indexOf("OR");
-					operands.remove(index);
-					if(!DEADLOCK_occurence)
-						index++;
-					ORwords.add(keyWords.get(index));
-					keyWords.remove(index);
-					hasNot.remove(index);
-					System.out.println("I am here");
-				}
-			}
-			else if((!DEADLOCK_occurence || AND_NOT_DEADLOCK)) {
-				System.out.println("Am I here?");
-				ORwords.add(keyWords.get(0));
-				keyWords.remove(0); 
-				hasNot.remove(0);
 			}
 		}
 	}
@@ -392,19 +359,6 @@ public class LogicEvaluator {
 		if (outsideTimeStampBounds){
 			return null;
 		}
-        
-		System.out.println("HERE");
-		System.out.println(errorMsg.toString());
 		return errorMsg.toString();
-	
-	}
-	
+	}	
 }
-
-
-
-
-
-
-
-	
