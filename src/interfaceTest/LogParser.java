@@ -157,7 +157,6 @@ public class LogParser {
 			}
 			logLine = logbr.readLine();
 		}
-		logicEvaluator.parseLines();
 		logicEvaluator.makeEntries();
 		//Logs execution time to the console
 		long endTime = System.nanoTime();
