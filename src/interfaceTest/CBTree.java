@@ -70,7 +70,7 @@ class CheckBoxTreeNodeRenderer implements TreeCellRenderer {
       textBackground = UIManager.getColor("Tree.textBackground");
    }
  
-   protected TreeNodeCheckBox getCheckBoxRenderer() {
+   public TreeNodeCheckBox getCheckBoxRenderer() {
       return checkBoxRenderer;
    }
  
@@ -117,6 +117,7 @@ class CheckBoxTreeNodeEditor extends AbstractCellEditor implements TreeCellEdito
    public Object getCellEditorValue() {
       TreeNodeCheckBox checkBox = renderer.getCheckBoxRenderer();
       TreeNodeCheckBox checkBoxNode = new TreeNodeCheckBox(checkBox.getText(), checkBox.isSelected());
+      System.out.println(checkBoxNode.isSelected() + " " + checkBoxNode.getText());
       return checkBoxNode;
    }
  

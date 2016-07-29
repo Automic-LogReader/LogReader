@@ -179,7 +179,6 @@ public class UserView extends JFrame{
 			folderSet.add(rs.getString("Folder"));
 		}
 		//Fills the treeMap
-		System.out.println(folderSet.size());
 		for (String folderName : folderSet){
 			ArrayList<String> tempList = new ArrayList<String>();
 			for (Map.Entry<String, String> entry : folderMap.entrySet()){
@@ -189,7 +188,6 @@ public class UserView extends JFrame{
 			}	
 			treeMap.put(folderName, tempList);
 		}
-		System.out.println("size of treemap: " + treeMap.size());
 		
 		comboBoxKeyWords.clear();
 		for (String s : keyWords){
@@ -455,21 +453,10 @@ public class UserView extends JFrame{
 			Enumeration g = ((DefaultMutableTreeNode) cbTree.getModel().getRoot()).preorderEnumeration();
 			while (g.hasMoreElements()){
 				DefaultMutableTreeNode node = (DefaultMutableTreeNode) g.nextElement();
-				//System.out.println(node.toString());
 				Object obj = node.getUserObject();  
 				if (obj instanceof TreeNodeCheckBox){
 					TreeNodeCheckBox cb = (TreeNodeCheckBox) obj;
 					cb.setSelected(!cb.isSelected());
-				}
-				
-				else if (obj instanceof String){
-					if (cbTree.getModel().getChildCount(node) == 0){
-						System.out.println(obj);
-						System.out.println(node.getClass().toGenericString());
-					}
-				}
-				else {
-					System.out.println("asdf");
 				}
 			}
     		treePanel.repaint();
@@ -650,7 +637,7 @@ public class UserView extends JFrame{
 			DefaultMutableTreeNode node = new DefaultMutableTreeNode(entry.getKey());
 			rt.add(node);
 			for (int j = 0; j < entry.getValue().size(); j++){
-				node.add(new DefaultMutableTreeNode(entry.getValue().get(j)));
+				node.add(new DefaultMutableTreeNode(new TreeNodeCheckBox(entry.getValue().get(j), false)));
 			}
 		}
 		for (Enumeration<?> e = rt.depthFirstEnumeration(); e.hasMoreElements(); ){
@@ -663,8 +650,6 @@ public class UserView extends JFrame{
 		}
 		cbTree.expandRow(0);
 		cbTree.setRootVisible(false);
-		System.out.println(((CheckBoxTreeNodeRenderer) cbTree.getCellRenderer()).getCheckBoxRenderer().isSelected());
-		
 	}
 	
 	boolean createGroupDisplay(){
