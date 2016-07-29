@@ -11,6 +11,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -28,6 +29,7 @@ import java.util.Stack;
 import java.util.Vector;
 
 import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
@@ -48,6 +50,7 @@ import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.ListSelectionModel;
 import javax.swing.MutableComboBoxModel;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
@@ -138,6 +141,7 @@ public class UserView extends JFrame{
 	protected JScrollPane treeScrollPane;
 	private JMenuItem menuItemCopy;
 	protected JPopupMenu popupMenu;
+	private JPanel treePanel;
 	/**
 	 * Create the frame.
 	 * @throws IOException 
@@ -444,8 +448,7 @@ public class UserView extends JFrame{
 		contentPane.add(mainPanel, BorderLayout.CENTER);
 		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.X_AXIS));
 			
-		/*** TREE PANEL ***/
-		JPanel treePanel = new JPanel();
+		treePanel = new JPanel();
 		treePanel.setLayout(new BoxLayout(treePanel, BoxLayout.Y_AXIS));
 		createTreeView();
 		
@@ -644,6 +647,50 @@ public class UserView extends JFrame{
 	
 	void createTreeView(){
 		cbTree = new CBTree();
+		cbTree.addMouseListener(new MouseAdapter(){
+			public void mousePressed (MouseEvent e){
+	            if ( SwingUtilities.isRightMouseButton(e)){
+	                TreePath path = cbTree.getPathForLocation ( e.getX (), e.getY () );
+	                DefaultMutableTreeNode node = (DefaultMutableTreeNode)path.getLastPathComponent();
+                    Object obj = node.getUserObject();
+                    if (obj instanceof String){
+                    	System.out.println(obj);
+                    	 Rectangle pathBounds = cbTree.getUI ().getPathBounds (cbTree, path);
+                    	if ( pathBounds != null && pathBounds.contains (e.getX (), e.getY())){
+    	                    JPopupMenu menu = new JPopupMenu();
+    	                    JMenuItem menuItemSelectAll = new JMenuItem("Select All");
+    	                    menuItemSelectAll.addActionListener(actionEvent -> {
+    	                    	for (int i=0; i<node.getChildCount(); i++){
+    	                    		DefaultMutableTreeNode child = (DefaultMutableTreeNode) node.getChildAt(i);
+    	                    		Object childObject = child.getUserObject();
+    	                    		if (childObject instanceof TreeNodeCheckBox){
+    	                    			((TreeNodeCheckBox) childObject).setSelected(true);
+    	                    		}
+    	                    	}
+    	                    	treePanel.repaint();
+    	                    });
+    	                    JMenuItem menuItemDeselectAll = new JMenuItem("Deslect All");
+    	                    menuItemDeselectAll.addActionListener(actionEvent -> {
+    	                    	for (int i=0; i<node.getChildCount(); i++){
+    	                    		DefaultMutableTreeNode child = (DefaultMutableTreeNode) node.getChildAt(i);
+    	                    		Object childObject = child.getUserObject();
+    	                    		if (childObject instanceof TreeNodeCheckBox){
+    	                    			((TreeNodeCheckBox) childObject).setSelected(false);
+    	                    		}
+    	                    	}
+    	                    	treePanel.repaint();
+    	                    });
+    	                    menu.add(menuItemSelectAll);
+    	                    menu.add(menuItemDeselectAll);
+    	                    menu.show(cbTree, pathBounds.x, pathBounds.y + pathBounds.height); 
+    	                }
+                    }
+                    else {
+                    	return;
+                    }
+	            }
+	        }
+		});
 		rt = new DefaultMutableTreeNode("Root");
 		treeModel = new DefaultTreeModel(rt);
 		cbTree.setModel(treeModel);
@@ -654,13 +701,7 @@ public class UserView extends JFrame{
 				node.add(new DefaultMutableTreeNode(new TreeNodeCheckBox(entry.getValue().get(j), false)));
 			}
 		}
-		for (Enumeration<?> e = rt.depthFirstEnumeration(); e.hasMoreElements(); ){
-			DefaultMutableTreeNode node = (DefaultMutableTreeNode) e.nextElement();
-			Object obj = node.getUserObject();  
-			if (obj instanceof TreeNodeCheckBox){
-				System.out.println("instance of cb");
-			}
-		}
+
 		cbTree.expandRow(0);
 		cbTree.setRootVisible(false);
 	}

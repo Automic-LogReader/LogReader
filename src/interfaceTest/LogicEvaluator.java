@@ -108,19 +108,21 @@ public class LogicEvaluator {
 	
 	//There will be special cases if there is a deadlock or a ==> or a timecritical
 	void addLines(String line, BufferedReader br) throws IOException {
+		String newLine;
 		if(AND_NOT_DEADLOCK) {
 			if(line.contains("DEADLOCK")) 
-				progressDeadlockBr(br, line);
+				newLine = progressDeadlockBr(br, line);
+			else 
+				newLine = line;
 			for(int i = 0; i < ORwords.size(); i++) {
-				 if(line.contains(ORwords.get(i))) {
-					validLines.add(line);
+				 if(newLine.contains(ORwords.get(i))) {
+					validLines.add(newLine);
 					return;
 				}
 			}
 		}
 		else if (ORwords.contains("DEADLOCK") && line.contains("DEADLOCK"))
 			validLines.add(makeDeadlockLine(br, line)); 
-		
 		else if (ORwords.contains("===>") && line.contains("===>"))
 		{
 			if(makeArrowLine(br, line, line.split(" ")) == null)
@@ -180,7 +182,7 @@ public class LogicEvaluator {
 	{
 		if(keyWords != null){
 			firstKeyword = keyWords.get(0);
-			System.out.println(keyWords.get(0));
+			System.out.println(firstKeyword);
 			if(keyWords.contains("DEADLOCK") && (firstKeyword != "DEADLOCK")) {
 				System.out.println("Except I'm here");
 				if	(hasNot.get(keyWords.indexOf("DEADLOCK")) != true) {
@@ -216,7 +218,7 @@ public class LogicEvaluator {
 		}
 	}
 
-	void progressDeadlockBr(BufferedReader br, String line) throws IOException
+	String progressDeadlockBr(BufferedReader br, String line) throws IOException
 	{
 		boolean timeStampFound = false;
 		String timeStamp = "";
@@ -240,7 +242,7 @@ public class LogicEvaluator {
 					if(logParse.timeStampDifference(testWord, timeStamp)) {
 						//if single, we reset the buffered reader
 						br.reset();
-						return;
+						return br.readLine();
 					}
 				}
 					//We test the timestamps to see if this is a single deadlock
@@ -248,15 +250,15 @@ public class LogicEvaluator {
 						//If we've found a matching deadlock, 
 						//we advance the reader and return
 						if(logLine.contains("DEADLOCK")) {
-							br.readLine();
-							return;
+							return br.readLine();
+						
 						}
 						continue;
 				}
 			}
-			logLine = br.readLine();
+			return br.readLine();
 		}
-		
+		return br.readLine();
 	}
 	
 	String makeDeadlockLine(BufferedReader logbr, String line) throws IOException
