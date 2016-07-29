@@ -650,45 +650,52 @@ public class UserView extends JFrame{
 		cbTree.addMouseListener(new MouseAdapter(){
 			public void mousePressed (MouseEvent e){
 	            if ( SwingUtilities.isRightMouseButton(e)){
-	                TreePath path = cbTree.getPathForLocation ( e.getX (), e.getY () );
-	                DefaultMutableTreeNode node = (DefaultMutableTreeNode)path.getLastPathComponent();
-                    Object obj = node.getUserObject();
-                    if (obj instanceof String){
-                    	System.out.println(obj);
-                    	 Rectangle pathBounds = cbTree.getUI ().getPathBounds (cbTree, path);
-                    	if ( pathBounds != null && pathBounds.contains (e.getX (), e.getY())){
-    	                    JPopupMenu menu = new JPopupMenu();
-    	                    JMenuItem menuItemSelectAll = new JMenuItem("Select All");
-    	                    menuItemSelectAll.addActionListener(actionEvent -> {
-    	                    	for (int i=0; i<node.getChildCount(); i++){
-    	                    		DefaultMutableTreeNode child = (DefaultMutableTreeNode) node.getChildAt(i);
-    	                    		Object childObject = child.getUserObject();
-    	                    		if (childObject instanceof TreeNodeCheckBox){
-    	                    			((TreeNodeCheckBox) childObject).setSelected(true);
-    	                    		}
-    	                    	}
-    	                    	treePanel.repaint();
-    	                    });
-    	                    JMenuItem menuItemDeselectAll = new JMenuItem("Deslect All");
-    	                    menuItemDeselectAll.addActionListener(actionEvent -> {
-    	                    	for (int i=0; i<node.getChildCount(); i++){
-    	                    		DefaultMutableTreeNode child = (DefaultMutableTreeNode) node.getChildAt(i);
-    	                    		Object childObject = child.getUserObject();
-    	                    		if (childObject instanceof TreeNodeCheckBox){
-    	                    			((TreeNodeCheckBox) childObject).setSelected(false);
-    	                    		}
-    	                    	}
-    	                    	treePanel.repaint();
-    	                    });
-    	                    menu.add(menuItemSelectAll);
-    	                    menu.add(menuItemDeselectAll);
-    	                    menu.show(cbTree, pathBounds.x, pathBounds.y + pathBounds.height); 
-    	                }
-                    }
-                    else {
+	            	try {
+		                TreePath path = cbTree.getPathForLocation ( e.getX (), e.getY () );
+		                DefaultMutableTreeNode node = (DefaultMutableTreeNode)path.getLastPathComponent();
+	                    Object obj = node.getUserObject();
+	                    if (obj instanceof String){
+	                    	//System.out.println(obj);
+	                    	Rectangle pathBounds = cbTree.getUI ().getPathBounds (cbTree, path);
+	                    	if ( pathBounds != null && pathBounds.contains (e.getX (), e.getY())){
+	    	                    JPopupMenu menu = new JPopupMenu();
+	    	                    JMenuItem menuItemSelectAll = new JMenuItem("Select All");
+	    	                    menuItemSelectAll.addActionListener(actionEvent -> {
+	    	                    	for (int i=0; i<node.getChildCount(); i++){
+	    	                    		DefaultMutableTreeNode child = (DefaultMutableTreeNode) node.getChildAt(i);
+	    	                    		Object childObject = child.getUserObject();
+	    	                    		if (childObject instanceof TreeNodeCheckBox){
+	    	                    			((TreeNodeCheckBox) childObject).setSelected(true);
+	    	                    		}
+	    	                    	}
+	    	                    	treePanel.repaint();
+	    	                    	cbTree.expandPath(path);
+	    	                    });
+	    	                    JMenuItem menuItemDeselectAll = new JMenuItem("Deslect All");
+	    	                    menuItemDeselectAll.addActionListener(actionEvent -> {
+	    	                    	for (int i=0; i<node.getChildCount(); i++){
+	    	                    		DefaultMutableTreeNode child = (DefaultMutableTreeNode) node.getChildAt(i);
+	    	                    		Object childObject = child.getUserObject();
+	    	                    		if (childObject instanceof TreeNodeCheckBox){
+	    	                    			((TreeNodeCheckBox) childObject).setSelected(false);
+	    	                    		}
+	    	                    	}
+	    	                    	treePanel.repaint();
+	    	                    	cbTree.expandPath(path);
+	    	                    });
+	    	                    menu.add(menuItemSelectAll);
+	    	                    menu.add(menuItemDeselectAll);
+	    	                    menu.show(cbTree, pathBounds.x, pathBounds.y + pathBounds.height); 
+	    	                }
+	                    } 
+                    } catch (NullPointerException nullPtrException){
                     	return;
                     }
 	            }
+                else {
+                	return;
+                }
+	            
 	        }
 		});
 		rt = new DefaultMutableTreeNode("Root");
