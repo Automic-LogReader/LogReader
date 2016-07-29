@@ -30,9 +30,9 @@ public final class Utility {
 		if (tree == null){
 			return true;
 		}
-		Enumeration g = ((DefaultMutableTreeNode) tree.getModel().getRoot()).preorderEnumeration();
-		while (g.hasMoreElements()){
-			DefaultMutableTreeNode node = (DefaultMutableTreeNode) g.nextElement();
+		Enumeration<?> e = ((DefaultMutableTreeNode) tree.getModel().getRoot()).preorderEnumeration();
+		while (e.hasMoreElements()){
+			DefaultMutableTreeNode node = (DefaultMutableTreeNode) e.nextElement();
 			Object obj = node.getUserObject();  
 			if (obj instanceof TreeNodeCheckBox){
 				TreeNodeCheckBox cb = (TreeNodeCheckBox) obj;

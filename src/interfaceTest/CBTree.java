@@ -2,8 +2,6 @@ package interfaceTest;
 import javax.swing.AbstractCellEditor;
 import javax.swing.Icon;
 import javax.swing.JCheckBox;
-import javax.swing.JFrame;
-import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.UIManager;
 import javax.swing.border.LineBorder;
@@ -11,8 +9,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeCellEditor;
 import javax.swing.tree.TreeCellRenderer;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
@@ -24,15 +22,31 @@ import java.util.Enumeration;
 import java.util.EventObject;
 
 
+@SuppressWarnings("serial")
 class CBTree extends JTree {
-	   public CBTree() {
+	   
+	public CBTree() {
 	      setCellRenderer(new CheckBoxTreeNodeRenderer());
 	      setCellEditor(new CheckBoxTreeNodeEditor(this));
 	      setEditable(true);
-	   }
+	}
+	
+	public void expandAll(TreePath parent) {
+	    TreeNode node = (TreeNode) parent.getLastPathComponent();
+	    if (node.getChildCount() >= 0) {
+	      for (Enumeration<?> e = node.children(); e.hasMoreElements();) {
+	        TreeNode n = (TreeNode) e.nextElement();
+	        TreePath path = parent.pathByAddingChild(n);
+	        expandAll(path);
+	      }
+	    }
+	    this.expandPath(parent);
+	}
+	   
 }
 	
 	 
+@SuppressWarnings("serial")
 class TreeNodeCheckBox extends JCheckBox {
  
    public TreeNodeCheckBox() {
@@ -106,6 +120,7 @@ class CheckBoxTreeNodeRenderer implements TreeCellRenderer {
    }
 }
  
+@SuppressWarnings("serial")
 class CheckBoxTreeNodeEditor extends AbstractCellEditor implements TreeCellEditor {
    CheckBoxTreeNodeRenderer renderer = new CheckBoxTreeNodeRenderer();
    JTree tree;

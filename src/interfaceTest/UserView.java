@@ -457,8 +457,8 @@ public class UserView extends JFrame{
 		
 		JButton toggleAllButton = new JButton("Toggle All");
 		toggleAllButton.addActionListener(e -> {
-			expandAll(cbTree, new TreePath(cbTree.getModel().getRoot()));
-			Enumeration g = ((DefaultMutableTreeNode) cbTree.getModel().getRoot()).preorderEnumeration();
+			cbTree.expandAll(new TreePath(cbTree.getModel().getRoot()));
+			Enumeration<?> g = ((DefaultMutableTreeNode) cbTree.getModel().getRoot()).preorderEnumeration();
 			while (g.hasMoreElements()){
 				DefaultMutableTreeNode node = (DefaultMutableTreeNode) g.nextElement();
 				Object obj = node.getUserObject();  
@@ -488,7 +488,6 @@ public class UserView extends JFrame{
 		key1 = logicalComboBox(2);
 		key1.addActionListener(e -> {
 			if (key1.getSelectedIndex() != -1 && logic1.getSelectedIndex() != -1 && key2.getSelectedIndex() != -1){
-				System.out.println("enabled new fields");
 				logic2.setEnabled(true);
 				key3.setEnabled(true);
 			}
@@ -496,7 +495,6 @@ public class UserView extends JFrame{
 		logic1 = logicalComboBox(3);
 		logic1.addActionListener(e -> {
 			if (key1.getSelectedIndex() != -1 && logic1.getSelectedIndex() != -1 && key2.getSelectedIndex() != -1){
-				System.out.println("enabled new fields");
 				logic2.setEnabled(true);
 				key3.setEnabled(true);
 			}
@@ -504,7 +502,6 @@ public class UserView extends JFrame{
 		key2 = logicalComboBox(2);
 		key2.addActionListener(e -> {
 			if (key1.getSelectedIndex() != -1 && logic1.getSelectedIndex() != -1 && key2.getSelectedIndex() != -1){
-				System.out.println("enabled new fields");
 				logic2.setEnabled(true);
 				key3.setEnabled(true);
 			}
@@ -635,19 +632,7 @@ public class UserView extends JFrame{
 
 		return cb;
 	}
-	
-	private void expandAll(JTree tree, TreePath parent) {
-		    TreeNode node = (TreeNode) parent.getLastPathComponent();
-		    if (node.getChildCount() >= 0) {
-		      for (Enumeration e = node.children(); e.hasMoreElements();) {
-		        TreeNode n = (TreeNode) e.nextElement();
-		        TreePath path = parent.pathByAddingChild(n);
-		        expandAll(tree, path);
-		      }
-		    }
-		    tree.expandPath(parent);
-	}
-	
+
 	void createTreeView(){
 		cbTree = new CBTree();
 		cbTree.addMouseListener(new MouseAdapter(){

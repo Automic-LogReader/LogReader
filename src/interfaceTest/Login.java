@@ -17,9 +17,11 @@ import javax.swing.JOptionPane;
 
 import java.sql.*;
 import java.util.HashMap;
+import java.awt.AWTKeyStroke;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import javax.swing.JTextField;
 import javax.swing.AbstractAction;
@@ -155,6 +157,7 @@ public class Login extends JFrame {
 		panel_3.setLayout(new BorderLayout(0, 0));
 		
 		userNameText = new JTextField();
+		
 		panel_3.add(userNameText, BorderLayout.NORTH);
 		userNameText.setColumns(10);
 		
