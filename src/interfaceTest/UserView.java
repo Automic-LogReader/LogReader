@@ -37,8 +37,10 @@ import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JList;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
@@ -437,7 +439,7 @@ public class UserView extends JFrame{
 		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		
 		JPanel mainPanel = new JPanel();
-		mainPanel.setMaximumSize(new Dimension(400, 280));
+		mainPanel.setMaximumSize(new Dimension(300, 280));
 		contentPane.add(mainPanel, BorderLayout.CENTER);
 		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.X_AXIS));
 			
@@ -469,7 +471,7 @@ public class UserView extends JFrame{
 		
 		/*** AND OR NOT PANEL ***/
 		JPanel andOrNotPanel = new JPanel();
-		andOrNotPanel.setMaximumSize(new Dimension(400, 280));
+		andOrNotPanel.setMaximumSize(new Dimension(300, 280));
 		andOrNotPanel.setOpaque(true);
 		andOrNotPanel.setBackground(Color.WHITE);
 		andOrNotPanel.setLayout(new BoxLayout(andOrNotPanel, BoxLayout.Y_AXIS));
@@ -535,7 +537,7 @@ public class UserView extends JFrame{
 		/*** GROUP PANEL ***/
 		JPanel groupPanel = new JPanel();
 		groupPanel.setLayout(new BoxLayout(groupPanel, BoxLayout.Y_AXIS));
-		
+		groupPanel.setMaximumSize(new Dimension(300, 280));
 		model = new DefaultListModel<CheckBoxListItem>();
 		createGroupDisplay();
 		groupList = new JList<CheckBoxListItem>(model);
@@ -573,6 +575,29 @@ public class UserView extends JFrame{
 		    }
 		}; 
 		errorTable = new JTable(tableModel);
+		errorTable.addMouseListener(new MouseAdapter() {
+		    @Override
+		    public void mouseReleased(MouseEvent e) {
+		        int r = errorTable.rowAtPoint(e.getPoint());
+		        if (r >= 0 && r < errorTable.getRowCount()) {
+		            errorTable.setRowSelectionInterval(r, r);
+		        } else {
+		            errorTable.clearSelection();
+		        }
+
+		        int rowindex = errorTable.getSelectedRow();
+		        if (rowindex < 0)
+		            return;
+		        if (e.isPopupTrigger() && e.getComponent() instanceof JTable ) {
+		            JPopupMenu popup = new JPopupMenu();
+		            popup.add(new JMenuItem("Copy Timestamp"));
+		
+		            popup.add(new JMenuItem("Copy Error Message"));
+		            
+		            popup.show(e.getComponent(), e.getX(), e.getY());
+		        }
+		    }
+		});
 		errorScrollPane = new JScrollPane(errorTable, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		mainPanel.add(errorScrollPane);
 		

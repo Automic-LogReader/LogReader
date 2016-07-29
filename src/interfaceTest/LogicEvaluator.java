@@ -56,6 +56,9 @@ public class LogicEvaluator {
 				boolean hitArrow = false;
 				StringBuilder errorMsg = new StringBuilder();
 				String[] logWords = validLines.get(i).split(" ");
+				//*************************
+				//SOURCE OF THE PROBLEM HERE (not finding timestamp in ===>?)
+				//*************************
 				//System.out.println(validLines.get(i));
 				for (String testWord : logWords){
 					if (testWord.length() == 19 && !timeStampFound){
@@ -122,12 +125,10 @@ public class LogicEvaluator {
 		{
 			if(makeArrowLine(br, line, line.split(" ")) == null)
 			{
-				System.out.println("NULL FUCKERS");
 				return;
 			}
 			else
 			{
-				//System.out.println("Jk we did stuff");
 				validLines.add(makeArrowLine(br, line, line.split(" ")));
 			}
 		}
@@ -179,7 +180,9 @@ public class LogicEvaluator {
 	{
 		if(keyWords != null){
 			firstKeyword = keyWords.get(0);
-			if(keyWords.contains("DEADLOCK") && firstKeyword != "DEADLOCK") {
+			System.out.println(keyWords.get(0));
+			if(keyWords.contains("DEADLOCK") && (firstKeyword != "DEADLOCK")) {
+				System.out.println("Except I'm here");
 				if	(hasNot.get(keyWords.indexOf("DEADLOCK")) != true) {
 					keyWords.set(keyWords.indexOf("DEADLOCK"), keyWords.get(0));
 					keyWords.set(0, "DEADLOCK");
@@ -187,6 +190,7 @@ public class LogicEvaluator {
 					keyWords.remove(0); 
 					hasNot.remove(0);
 					DEADLOCK_occurence = true;
+					System.out.println("what the fuck");
 				}
 				else
 					AND_NOT_DEADLOCK = true;
@@ -200,10 +204,11 @@ public class LogicEvaluator {
 					ORwords.add(keyWords.get(index));
 					keyWords.remove(index);
 					hasNot.remove(index);
+					System.out.println("I am here");
 				}
 			}
-			else if((!keyWords.contains("DEADLOCK") ||
-					AND_NOT_DEADLOCK)) {
+			else if((!DEADLOCK_occurence || AND_NOT_DEADLOCK)) {
+				System.out.println("Am I here?");
 				ORwords.add(keyWords.get(0));
 				keyWords.remove(0); 
 				hasNot.remove(0);
@@ -324,20 +329,17 @@ public class LogicEvaluator {
         boolean closingArrowTagFound = false;
         boolean outsideTimeStampBounds = false;
         StringBuilder errorMsg = new StringBuilder();
-        
+        System.out.println(logLine);
         //if (!logParse.compareTimeStamp(currArray)){
 			//outsideTimeStampBounds = true;
         //}
 		for (int i=0; i<currArray.length; i++){
 			if (currArray[i].equals("===>")){
 				arrowindex = i-1;
-				for (int j=(i+1); j<currArray.length; j++){
-					errorMsg.append(currArray[j] + " ");
-				}
-				break;
 			}
 		}
 		String firstLineOfError = errorMsg.toString();
+		errorMsg.append(logLine);
 		
 		logLine = logbr.readLine();
 		while (!closingArrowTagFound && logLine != null){
@@ -389,6 +391,8 @@ public class LogicEvaluator {
 			return null;
 		}
         
+		System.out.println("HERE");
+		System.out.println(errorMsg.toString());
 		return errorMsg.toString();
 	
 	}
