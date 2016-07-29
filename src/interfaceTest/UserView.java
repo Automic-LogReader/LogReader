@@ -136,6 +136,8 @@ public class UserView extends JFrame{
 	protected DefaultTreeModel treeModel;
 	public HashMap<String, TreeNodeCheckBox> checkBoxMap = new HashMap<String, TreeNodeCheckBox>();
 	protected JScrollPane treeScrollPane;
+	private JMenuItem menuItemCopy;
+	protected JPopupMenu popupMenu;
 	/**
 	 * Create the frame.
 	 * @throws IOException 
@@ -327,8 +329,7 @@ public class UserView extends JFrame{
 		
 		preferenceButton = new JButton("Preferences");
 		preferenceButton.addActionListener(e -> {
-			@SuppressWarnings("unused")
-			PreferenceEditor preferenceEditor = new PreferenceEditor(this, isAdmin);
+			new PreferenceEditor(this, isAdmin);
 		});
 		preferenceButton.setToolTipText("Groupings, Time Critical DB Call Intervals ...");
 		bottomPanel.add(preferenceButton);
@@ -574,30 +575,18 @@ public class UserView extends JFrame{
 		       return false;
 		    }
 		}; 
+		popupMenu = new JPopupMenu();
+        menuItemCopy = new JMenuItem("Copy");
+        menuItemCopy.addActionListener(e -> {
+        	TableMouseListener.copyCellValueToClipBoard();
+        });
+        popupMenu.add(menuItemCopy);
+        
 		errorTable = new JTable(tableModel);
-		errorTable.addMouseListener(new MouseAdapter() {
-		    @Override
-		    public void mouseReleased(MouseEvent e) {
-		        int r = errorTable.rowAtPoint(e.getPoint());
-		        if (r >= 0 && r < errorTable.getRowCount()) {
-		            errorTable.setRowSelectionInterval(r, r);
-		        } else {
-		            errorTable.clearSelection();
-		        }
-
-		        int rowindex = errorTable.getSelectedRow();
-		        if (rowindex < 0)
-		            return;
-		        if (e.isPopupTrigger() && e.getComponent() instanceof JTable ) {
-		            JPopupMenu popup = new JPopupMenu();
-		            popup.add(new JMenuItem("Copy Timestamp"));
+		errorTable.setCellSelectionEnabled(true);
+		errorTable.setComponentPopupMenu(popupMenu);
+		errorTable.addMouseListener(new TableMouseListener(errorTable));
 		
-		            popup.add(new JMenuItem("Copy Error Message"));
-		            
-		            popup.show(e.getComponent(), e.getX(), e.getY());
-		        }
-		    }
-		});
 		errorScrollPane = new JScrollPane(errorTable, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		mainPanel.add(errorScrollPane);
 		
@@ -669,7 +658,6 @@ public class UserView extends JFrame{
 			DefaultMutableTreeNode node = (DefaultMutableTreeNode) e.nextElement();
 			Object obj = node.getUserObject();  
 			if (obj instanceof TreeNodeCheckBox){
-				TreeNodeCheckBox cb = (TreeNodeCheckBox) obj;
 				System.out.println("instance of cb");
 			}
 		}

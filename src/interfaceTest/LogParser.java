@@ -351,6 +351,9 @@ public class LogParser {
 		
 		view.errorTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		view.errorScrollPane.setViewportView(view.errorTable);
+		view.errorTable.setCellSelectionEnabled(true);
+		view.errorTable.addMouseListener(new TableMouseListener(view.errorTable));
+		view.errorTable.setComponentPopupMenu(view.popupMenu);
 	}
 	
 	boolean timeStampDifference(String testStamp, String timeStamp){
