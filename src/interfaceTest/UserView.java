@@ -66,7 +66,7 @@ public class UserView extends JFrame{
 	protected HashMap<String, String> GroupInfo = new HashMap<String, String>();
 	protected final String [] headers = {"Error #", "Timestamp",
 								"Keywords", "Error Message", "Suggested Solution"};
-	protected List<Object[]> errorData = new ArrayList<Object[]>();
+	
 	private Object [][] data;
 	protected ProgressDialog dialog;
 	private Thread t;
@@ -79,7 +79,7 @@ public class UserView extends JFrame{
 	//Holds a line from the error suggestions csv file
 	protected String errorLine;
 	//Holds the individual cell entries from errorLine
-	protected String [] errorWords;
+
 	protected HashMap<String, String> solutions = new HashMap<String, String>();
 	protected HashMap<String, String> folderMap = new HashMap<String, String>();
 	protected HashSet<String> folderSet = new HashSet<String>();
@@ -88,20 +88,18 @@ public class UserView extends JFrame{
 	protected HashSet<String> originalKeyWords;
 	private boolean hasCopiedOriginalKeyWords;
 	
-	//Holds the size of the file in bytes
+	//Progress bar
 	private long fileSize;
-	//Divided by 100 to update the progress bar efficiently
 	protected long fileSizeDivHundred;
 	
 	protected JTable errorTable;
-	private JPanel contentPane;
+	private JPanel pnlMain;
 	private JTextField filePath;
 	//User clicks after selecting directory for log file
 	protected JButton submitButton;
 	//Returns the User back to the Main Menu
-	protected JButton backButton;
-	private JButton chooseFile;
-	private JButton preferenceButton;
+	//protected JButton backButton;
+	
 	protected JScrollPane errorScrollPane;
 	private AdminView admin;
 	
@@ -128,21 +126,21 @@ public class UserView extends JFrame{
 	protected ArrayList<Boolean> notArrayList = new ArrayList<Boolean>();
 	protected Vector<String> comboBoxKeyWords = new Vector<String>();
 	private Stack<JComboBox<String>> mostRecentCB = new Stack<JComboBox<String>>();
-	private JComboBox<String> key1;
-	private JComboBox<String> logic1;
-	private JComboBox<String> key2;
-	private JComboBox<String> logic2;
-	private JComboBox<String> key3;
+	private JComboBox<String> cbKey1;
+	private JComboBox<String> cbLogic1;
+	private JComboBox<String> cbKey2;
+	private JComboBox<String> cbLogic2;
+	private JComboBox<String> cbKey3;
 	
 	//For the CheckBoxTree view
 	protected CBTree cbTree;
-	protected DefaultMutableTreeNode rt;
+	protected DefaultMutableTreeNode rootNode;
 	protected DefaultTreeModel treeModel;
 	public HashMap<String, TreeNodeCheckBox> checkBoxMap = new HashMap<String, TreeNodeCheckBox>();
 	protected JScrollPane treeScrollPane;
 	private JMenuItem menuItemCopy;
 	protected JPopupMenu popupMenu;
-	private JPanel treePanel;
+	private JPanel pnlTreeView;
 	/**
 	 * Create the frame.
 	 * @throws IOException 
@@ -179,8 +177,13 @@ public class UserView extends JFrame{
 		prepareGUI(menu, isAdmin);
 	}
 	
-	void fillKeywords(Statement stmt) throws SQLException
-	{
+	/**
+	 * Creates DB connection and then fills the data structures
+	 * mapping the keywords to their respective folders
+	 * @param stmt: SQL Statement
+	 * @throws SQLException
+	 */
+	void fillKeywords(Statement stmt) throws SQLException{
 		String query = "select Keyword, Folder from logerrors";
 		ResultSet rs = stmt.executeQuery(query);
 		while(rs.next())
@@ -221,19 +224,16 @@ public class UserView extends JFrame{
 		}
 		try {
 			if (tabbedPane.getSelectedIndex() == 0){
-				System.out.println("tab 1");
 				if (Utility.noCheckBoxSelected(cbTree)) {
 					return;
 				}
 			}
 			else if (tabbedPane.getSelectedIndex() == 1){
-				System.out.println("tab 2");
 				if (!saveAndOrNot()){
 					return;
 				}
 			}
 			else if (tabbedPane.getSelectedIndex() == 2){
-				System.out.println("tab 3");
 				if (Utility.noCheckBoxSelected(listOfGroups)){
 					return;
 				}
@@ -254,7 +254,6 @@ public class UserView extends JFrame{
 						submitButton.setEnabled(false);
 						logParser.parseErrors(file, dialog);
 						} catch (IOException e) {
-						// TODO Auto-generated catch block
 							e.printStackTrace();
 							}
 						}			
@@ -319,32 +318,32 @@ public class UserView extends JFrame{
 		     System.out.println("Could not load program icon.");
 		  }
 	
-		contentPane = new JPanel();
-		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-		setContentPane(contentPane);
-		contentPane.setLayout(new BorderLayout(0, 0));
+		pnlMain = new JPanel();
+		pnlMain.setBorder(new EmptyBorder(5, 5, 5, 5));
+		setContentPane(pnlMain);
+		pnlMain.setLayout(new BorderLayout(0, 0));
 		
-		JPanel bottomPanel = new JPanel();
-		contentPane.add(bottomPanel, BorderLayout.SOUTH);
+		JPanel pnlBottom = new JPanel();
+		pnlMain.add(pnlBottom, BorderLayout.SOUTH);
 		
-		bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.X_AXIS));
+		pnlBottom.setLayout(new BoxLayout(pnlBottom, BoxLayout.X_AXIS));
 		
 		Component horizontalStrut_2 = Box.createHorizontalStrut(20);
-		bottomPanel.add(horizontalStrut_2);
+		pnlBottom.add(horizontalStrut_2);
 		
 		Component horizontalStrut_4 = Box.createHorizontalStrut(20);
-		bottomPanel.add(horizontalStrut_4);
+		pnlBottom.add(horizontalStrut_4);
 		
-		preferenceButton = new JButton("Preferences");
-		preferenceButton.addActionListener(e -> {
+		JButton btnPreference = new JButton("Preferences");
+		btnPreference.addActionListener(e -> {
 			new PreferenceEditor(this, isAdmin);
 		});
-		preferenceButton.setToolTipText("Groupings, Time Critical DB Call Intervals ...");
-		bottomPanel.add(preferenceButton);
+		btnPreference.setToolTipText("Groupings, Time Critical DB Call Intervals ...");
+		pnlBottom.add(btnPreference);
 		
-		bottomPanel.add(Box.createRigidArea(new Dimension(10,0)));
+		pnlBottom.add(Box.createRigidArea(new Dimension(10,0)));
 		
-		chooseFile = new JButton("Choose File");
+		JButton chooseFile = new JButton("Choose File");
 		chooseFile.addActionListener(e -> {
 		    JFileChooser chooser = new JFileChooser();
 		    //chooser.showOpenDialog(getRootPane());
@@ -357,17 +356,17 @@ public class UserView extends JFrame{
 		    	 filePath.setText(chooser.getSelectedFile().getAbsolutePath());
 		    }
 		});
-		bottomPanel.add(chooseFile);
+		pnlBottom.add(chooseFile);
 		
 		Component horizontalStrut = Box.createHorizontalStrut(20);
-		bottomPanel.add(horizontalStrut);
+		pnlBottom.add(horizontalStrut);
 		
 		filePath = new JTextField();
-		bottomPanel.add(filePath);
+		pnlBottom.add(filePath);
 		filePath.setColumns(10);
 		
 		Component horizontalStrut_1 = Box.createHorizontalStrut(20);
-		bottomPanel.add(horizontalStrut_1);
+		pnlBottom.add(horizontalStrut_1);
 		
 		submitButton = new JButton("Submit");
 		submitButton.setBackground(new Color(0, 209, 54));
@@ -401,25 +400,25 @@ public class UserView extends JFrame{
 							}
 					}
 				});
-		bottomPanel.add(submitButton);
+		pnlBottom.add(submitButton);
 		
-		bottomPanel.add(Box.createRigidArea(new Dimension(10,0)));
+		pnlBottom.add(Box.createRigidArea(new Dimension(10,0)));
 		
-		backButton = new JButton("Back");
-		backButton.setPreferredSize(new Dimension(80, 30));
-		backButton.addActionListener(e ->{
+		JButton btnBack = new JButton("Back");
+		btnBack.setPreferredSize(new Dimension(80, 30));
+		btnBack.addActionListener(e ->{
 			menu.setVisible(true);
 			this.setVisible(false);
 		});
-		bottomPanel.add(backButton);
+		pnlBottom.add(btnBack);
 		
-		bottomPanel.add(Box.createRigidArea(new Dimension(10,0)));
+		pnlBottom.add(Box.createRigidArea(new Dimension(10,0)));
 		
 		
-		JButton adminButton = new JButton("Admin Features");
-		adminButton.setPreferredSize(new Dimension(130, 30));
-		adminButton.setToolTipText("Modify entries, folders, solutions");
-		adminButton.addActionListener(e -> {
+		JButton btnAdmin = new JButton("Admin Features");
+		btnAdmin.setPreferredSize(new Dimension(130, 30));
+		btnAdmin.setToolTipText("Modify entries, folders, solutions");
+		btnAdmin.addActionListener(e -> {
 			try {
 				admin = new AdminView(this);
 				admin.setVisible(true);
@@ -429,37 +428,34 @@ public class UserView extends JFrame{
 			}
 			
 		});
-		bottomPanel.add(adminButton);
+		pnlBottom.add(btnAdmin);
 		
 		if(isAdmin){
-			adminButton.setVisible(true);
+			btnAdmin.setVisible(true);
 			setTitle("Administrator View");
 		} else {
-			adminButton.setVisible(false);
+			btnAdmin.setVisible(false);
 			setTitle("User View");
 		}
 		
-		Component horizontalStrut_5 = Box.createHorizontalStrut(20);
-		bottomPanel.add(horizontalStrut_5);
-		
-		Component horizontalStrut_3 = Box.createHorizontalStrut(20);
-		bottomPanel.add(horizontalStrut_3);
+		pnlBottom.add(Box.createHorizontalStrut(20));
+		pnlBottom.add(Box.createHorizontalStrut(20));
 		
 		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		tabbedPane.setPreferredSize(new Dimension(600, 280));
 		
 		JPanel mainPanel = new JPanel();
 		mainPanel.setMaximumSize(new Dimension(600, 280));
-		contentPane.add(mainPanel, BorderLayout.CENTER);
+		pnlMain.add(mainPanel, BorderLayout.CENTER);
 		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.X_AXIS));
 			
-		treePanel = new JPanel();
-		treePanel.setLayout(new BoxLayout(treePanel, BoxLayout.Y_AXIS));
+		pnlTreeView = new JPanel();
+		pnlTreeView.setLayout(new BoxLayout(pnlTreeView, BoxLayout.Y_AXIS));
 		createTreeView();
 		
 		
-		JButton toggleAllButton = new JButton("Toggle All");
-		toggleAllButton.addActionListener(e -> {
+		JButton btnToggleAll = new JButton("Toggle All");
+		btnToggleAll.addActionListener(e -> {
 			cbTree.expandAll(new TreePath(cbTree.getModel().getRoot()));
 			Enumeration<?> g = ((DefaultMutableTreeNode) cbTree.getModel().getRoot()).preorderEnumeration();
 			while (g.hasMoreElements()){
@@ -470,80 +466,80 @@ public class UserView extends JFrame{
 					cb.setSelected(!cb.isSelected());
 				}
 			}
-    		treePanel.repaint();
+    		pnlTreeView.repaint();
 		});
-		toggleAllButton.setAlignmentX( Component.CENTER_ALIGNMENT);
+		btnToggleAll.setAlignmentX( Component.CENTER_ALIGNMENT);
 		
 		treeScrollPane = new JScrollPane(cbTree);
-		treePanel.add(treeScrollPane);
-		treePanel.add(toggleAllButton);
+		pnlTreeView.add(treeScrollPane);
+		pnlTreeView.add(btnToggleAll);
 		
 		/*** AND OR NOT PANEL ***/
-		JPanel andOrNotPanel = new JPanel();
-		andOrNotPanel.setMaximumSize(new Dimension(600, 280));
-		andOrNotPanel.setOpaque(true);
-		andOrNotPanel.setBackground(Color.WHITE);
-		andOrNotPanel.setLayout(new BoxLayout(andOrNotPanel, BoxLayout.Y_AXIS));
+		JPanel pnlAndOrNot = new JPanel();
+		pnlAndOrNot.setMaximumSize(new Dimension(600, 280));
+		pnlAndOrNot.setOpaque(true);
+		pnlAndOrNot.setBackground(Color.WHITE);
+		pnlAndOrNot.setLayout(new BoxLayout(pnlAndOrNot, BoxLayout.Y_AXIS));
 		
-		JPanel comboBoxPanel = new JPanel(new FlowLayout());
-		comboBoxPanel.setOpaque(true);
-		comboBoxPanel.setBackground(Color.WHITE);
-		key1 = logicalComboBox(2);
-		key1.addActionListener(e -> {
-			if (key1.getSelectedIndex() != -1 && logic1.getSelectedIndex() != -1 && key2.getSelectedIndex() != -1){
-				logic2.setEnabled(true);
-				key3.setEnabled(true);
+		JPanel pnlComboBox = new JPanel(new FlowLayout());
+		pnlComboBox.setOpaque(true);
+		pnlComboBox.setBackground(Color.WHITE);
+		cbKey1 = logicalComboBox(2);
+		cbKey1.addActionListener(e -> {
+			if (cbKey1.getSelectedIndex() != -1 && cbLogic1.getSelectedIndex() != -1 && cbKey2.getSelectedIndex() != -1){
+				cbLogic2.setEnabled(true);
+				cbKey3.setEnabled(true);
 			}
 		});
-		logic1 = logicalComboBox(3);
-		logic1.addActionListener(e -> {
-			if (key1.getSelectedIndex() != -1 && logic1.getSelectedIndex() != -1 && key2.getSelectedIndex() != -1){
-				logic2.setEnabled(true);
-				key3.setEnabled(true);
+		cbLogic1 = logicalComboBox(3);
+		cbLogic1.addActionListener(e -> {
+			if (cbKey1.getSelectedIndex() != -1 && cbLogic1.getSelectedIndex() != -1 && cbKey2.getSelectedIndex() != -1){
+				cbLogic2.setEnabled(true);
+				cbKey3.setEnabled(true);
 			}
 		});
-		key2 = logicalComboBox(2);
-		key2.addActionListener(e -> {
-			if (key1.getSelectedIndex() != -1 && logic1.getSelectedIndex() != -1 && key2.getSelectedIndex() != -1){
-				logic2.setEnabled(true);
-				key3.setEnabled(true);
+		cbKey2 = logicalComboBox(2);
+		cbKey2.addActionListener(e -> {
+			if (cbKey1.getSelectedIndex() != -1 && cbLogic1.getSelectedIndex() != -1 && cbKey2.getSelectedIndex() != -1){
+				cbLogic2.setEnabled(true);
+				cbKey3.setEnabled(true);
 			}
 		});
-		logic2 = logicalComboBox(1);
-		logic2.setEnabled(false);
-		key3 = logicalComboBox(2);
-		key3.setEnabled(false);
+		cbLogic2 = logicalComboBox(1);
+		cbLogic2.setEnabled(false);
+		cbKey3 = logicalComboBox(2);
+		cbKey3.setEnabled(false);
 		
-		comboBoxPanel.add(key1);
-		comboBoxPanel.add(logic1);
-		comboBoxPanel.add(key2);
-		comboBoxPanel.add(logic2);
-		comboBoxPanel.add(key3);
+		pnlComboBox.add(cbKey1);
+		pnlComboBox.add(cbLogic1);
+		pnlComboBox.add(cbKey2);
+		pnlComboBox.add(cbLogic2);
+		pnlComboBox.add(cbKey3);
 
-		JButton undoButton = new JButton("Undo");
-		undoButton.setAlignmentX(CENTER_ALIGNMENT);
-		undoButton.addActionListener(e -> {
+		JButton btnUndo = new JButton("Undo");
+		btnUndo.setAlignmentX(CENTER_ALIGNMENT);
+		btnUndo.addActionListener(e -> {
 			if (!mostRecentCB.isEmpty()){
 				mostRecentCB.pop().setSelectedIndex(-1);
 			}
-			if (logic1.getSelectedIndex() == -1 || key1.getSelectedIndex() == -1 || key2.getSelectedIndex() == -1){
-				if (logic2.isEnabled() && key3.isEnabled()){
-					logic2.setEnabled(false);
-					key3.setEnabled(false);
+			if (cbLogic1.getSelectedIndex() == -1 || cbKey1.getSelectedIndex() == -1 || cbKey2.getSelectedIndex() == -1){
+				if (cbLogic2.isEnabled() && cbKey3.isEnabled()){
+					cbLogic2.setEnabled(false);
+					cbKey3.setEnabled(false);
 				}
 			}
 		});
 		
-		andOrNotPanel.add(Box.createVerticalGlue());
-		andOrNotPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-		andOrNotPanel.add(comboBoxPanel);
-		andOrNotPanel.add(undoButton);
-		andOrNotPanel.add(Box.createVerticalGlue());
+		pnlAndOrNot.add(Box.createVerticalGlue());
+		pnlAndOrNot.add(Box.createRigidArea(new Dimension(0, 10)));
+		pnlAndOrNot.add(pnlComboBox);
+		pnlAndOrNot.add(btnUndo);
+		pnlAndOrNot.add(Box.createVerticalGlue());
 		
 		/*** GROUP PANEL ***/
-		JPanel groupPanel = new JPanel();
-		groupPanel.setLayout(new BoxLayout(groupPanel, BoxLayout.Y_AXIS));
-		groupPanel.setMaximumSize(new Dimension(600, 280));
+		JPanel pnlGroupView = new JPanel();
+		pnlGroupView.setLayout(new BoxLayout(pnlGroupView, BoxLayout.Y_AXIS));
+		pnlGroupView.setMaximumSize(new Dimension(600, 280));
 		model = new DefaultListModel<CheckBoxListItem>();
 		createGroupDisplay();
 		groupList = new JList<CheckBoxListItem>(model);
@@ -563,13 +559,13 @@ public class UserView extends JFrame{
 		});
 		groupScrollPane = new JScrollPane(groupList);
 		
-		groupPanel.add(groupScrollPane);
+		pnlGroupView.add(groupScrollPane);
 		
-		tabbedPane.addTab("Tree View", treePanel);
+		tabbedPane.addTab("Tree View", pnlTreeView);
 		tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
-		tabbedPane.addTab("AND/OR/NOT View", andOrNotPanel);
+		tabbedPane.addTab("AND/OR/NOT View", pnlAndOrNot);
 		tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
-		tabbedPane.addTab("Group View", groupPanel);
+		tabbedPane.addTab("Group View", pnlGroupView);
 		tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
 		
 		mainPanel.add(tabbedPane);
@@ -663,7 +659,7 @@ public class UserView extends JFrame{
 	    	                    			((TreeNodeCheckBox) childObject).setSelected(true);
 	    	                    		}
 	    	                    	}
-	    	                    	treePanel.repaint();
+	    	                    	pnlTreeView.repaint();
 	    	                    	cbTree.expandPath(path);
 	    	                    });
 	    	                    JMenuItem menuItemDeselectAll = new JMenuItem("Deslect All");
@@ -675,7 +671,7 @@ public class UserView extends JFrame{
 	    	                    			((TreeNodeCheckBox) childObject).setSelected(false);
 	    	                    		}
 	    	                    	}
-	    	                    	treePanel.repaint();
+	    	                    	pnlTreeView.repaint();
 	    	                    	cbTree.expandPath(path);
 	    	                    });
 	    	                    menu.add(menuItemSelectAll);
@@ -693,12 +689,12 @@ public class UserView extends JFrame{
 	            
 	        }
 		});
-		rt = new DefaultMutableTreeNode("Root");
-		treeModel = new DefaultTreeModel(rt);
+		rootNode = new DefaultMutableTreeNode("Root");
+		treeModel = new DefaultTreeModel(rootNode);
 		cbTree.setModel(treeModel);
 		for (Map.Entry<String, ArrayList<String>> entry : treeMap.entrySet()){
 			DefaultMutableTreeNode node = new DefaultMutableTreeNode(entry.getKey());
-			rt.add(node);
+			rootNode.add(node);
 			for (int j = 0; j < entry.getValue().size(); j++){
 				node.add(new DefaultMutableTreeNode(new TreeNodeCheckBox(entry.getValue().get(j), false)));
 			}
@@ -728,40 +724,40 @@ public class UserView extends JFrame{
 		keyWordArrayList.clear();
 		operandArrayList.clear();
 		notArrayList.clear();
-		if (key1.getSelectedIndex() == -1 || key2.getSelectedIndex() == -1 || logic1.getSelectedIndex() == -1){
+		if (cbKey1.getSelectedIndex() == -1 || cbKey2.getSelectedIndex() == -1 || cbLogic1.getSelectedIndex() == -1){
 			JOptionPane.showMessageDialog(null, "Please enter a valid logical statement with at least one operator and two operands");
 			return false;
 		}
-		if (key1.getSelectedIndex() != -1){
-			keyWordArrayList.add(key1.getSelectedItem().toString());
+		if (cbKey1.getSelectedIndex() != -1){
+			keyWordArrayList.add(cbKey1.getSelectedItem().toString());
 			notArrayList.add(false); //Needed so the arraylists are the same size
 		}
-		if (key2.getSelectedIndex() != -1){
-			keyWordArrayList.add(key2.getSelectedItem().toString());
+		if (cbKey2.getSelectedIndex() != -1){
+			keyWordArrayList.add(cbKey2.getSelectedItem().toString());
 		}
-		if (key3.getSelectedIndex() != -1){
-			keyWordArrayList.add(key3.getSelectedItem().toString());
+		if (cbKey3.getSelectedIndex() != -1){
+			keyWordArrayList.add(cbKey3.getSelectedItem().toString());
 		}
 
-		if (logic1.getSelectedIndex() != -1){
+		if (cbLogic1.getSelectedIndex() != -1){
 			operandArrayList.add("AND");
-			if (logic1.getSelectedItem().toString().equals("AND NOT")){
+			if (cbLogic1.getSelectedItem().toString().equals("AND NOT")){
 				notArrayList.add(true);
 			}
 			else {
 				notArrayList.add(false);
 			}
 		}
-		if (logic2.getSelectedIndex() != -1){
-			if (logic2.getSelectedItem().toString().equals("AND")){
+		if (cbLogic2.getSelectedIndex() != -1){
+			if (cbLogic2.getSelectedItem().toString().equals("AND")){
 				operandArrayList.add("AND");
 				notArrayList.add(false);
 			}
-			else if (logic2.getSelectedItem().toString().equals("AND NOT")){
+			else if (cbLogic2.getSelectedItem().toString().equals("AND NOT")){
 				operandArrayList.add("AND");
 				notArrayList.add(true);
 			}
-			else if (logic2.getSelectedItem().toString().equals("OR")){
+			else if (cbLogic2.getSelectedItem().toString().equals("OR")){
 				operandArrayList.add("OR");
 				notArrayList.add(false);
 			}
