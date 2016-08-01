@@ -29,7 +29,6 @@ import java.util.Stack;
 import java.util.Vector;
 
 import javax.swing.AbstractAction;
-import javax.swing.AbstractButton;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
@@ -47,7 +46,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.JTree;
 import javax.swing.ListSelectionModel;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.SwingUtilities;
@@ -57,7 +55,6 @@ import javax.swing.table.DefaultTableModel;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import interfaceTest.CheckBoxList.CheckBoxListItem;
@@ -109,9 +106,12 @@ public class UserView extends JFrame{
 	private AdminView admin;
 	
 	protected LogParser logParser;
-	//Bounds for time-critical DB Calls
+	
+	//For the PreferenceEditor
 	protected Double lowerBound;
 	protected Double upperBound;
+	protected Integer numLinesBefore;
+	protected Integer numLinesAfter;
 	
 	protected JList<CheckBoxListItem> list;
 	
@@ -121,6 +121,7 @@ public class UserView extends JFrame{
 	
 	protected JList<CheckBoxListItem> groupList;
 	protected CheckBoxListItem[] listOfGroups;
+	
 	//For the and/or/not logic
 	protected ArrayList<String> keyWordArrayList = new ArrayList<String>();
 	protected ArrayList<String> operandArrayList = new ArrayList<String>();

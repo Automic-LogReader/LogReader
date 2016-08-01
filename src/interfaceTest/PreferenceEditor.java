@@ -32,6 +32,8 @@ import interfaceTest.CheckBoxList.CheckBoxListRenderer;
 public class PreferenceEditor extends JDialog {
 	private JTextField lowerBound;
 	private JTextField upperBound;
+	private JTextField tfNumLinesBefore;
+	private JTextField tfNumLinesAfter;
 	protected CheckBoxListItem[] listOfKeyWords;
 	protected JPanel listPanel;
 	protected DefaultListModel<String> model;
@@ -139,23 +141,92 @@ public class PreferenceEditor extends JDialog {
 		
 		mainPanel.add(submitPane);
 		
+		JPanel tab2 = new JPanel(false);
+		tab2.setLayout(new BoxLayout(tab2, BoxLayout.Y_AXIS));
+		tab2.add(Box.createVerticalGlue());
+		
+		JPanel tab2_upperPanel = new JPanel();
+		tab2_upperPanel.setLayout(new FlowLayout());
+		JLabel label2 = new JLabel("How many lines to display before and after the error message (0-10)", SwingConstants.CENTER);
+		tab2_upperPanel.add(label2);
+		
+		tab2.add(tab2_upperPanel);
+		
+		JPanel tab2_lowerPanel = new JPanel();
+		tab2_lowerPanel.setLayout(new FlowLayout());
+		
+		JLabel lblNumLinesBefore = new JLabel("Before");
+		tab2_lowerPanel.add(lblNumLinesBefore);
+		//if (view.numLinesBefore.equals("0"dd))
+		tfNumLinesBefore = new JTextField("0");
+		tfNumLinesBefore.setPreferredSize(new Dimension(100, 20));
+		tfNumLinesBefore.setHorizontalAlignment(JTextField.CENTER);
+		tab2_lowerPanel.add(tfNumLinesBefore);
+		
+		JLabel lblNumLinesAfter = new JLabel("After");
+		tab2_lowerPanel.add(lblNumLinesBefore);
+		
+		tfNumLinesAfter = new JTextField("0");
+		tfNumLinesAfter.setPreferredSize(new Dimension(100, 20));
+		tfNumLinesAfter.setHorizontalAlignment(JTextField.CENTER);
+		tab2_lowerPanel.add(tfNumLinesAfter);
+		
+		tab2.add(tab2_lowerPanel);
+		tab2.add(Box.createVerticalGlue());
+		
+		tabbedPane.addTab("Lines before/after error messages", tab2);
+		tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
+		
 		getRootPane().setDefaultButton(submitButton);
 		getContentPane().add(mainPanel, BorderLayout.CENTER);
 		setVisible(true);
 	}
 	
-	void save(UserView view, int index){
+	private void save(UserView view, int index){
 		switch (index){
 		case 0:
 			saveTimeBounds(view);
-			System.out.println("zero");
+			System.out.println("tab index zero");
 			return;
 		case 1:
+			saveNumLines(view);
+			System.out.println(view.numLinesBefore + " " + view.numLinesAfter);
 			return;
 		}
 	}
 	
-	void saveTimeBounds(UserView view){
+	private void saveNumLines(UserView view){
+		int before = 0, after = 0;
+		try {
+			before = Integer.parseInt(tfNumLinesBefore.getText());
+			if (before < 0){
+				JOptionPane.showMessageDialog(this, "Value must not be negative");
+				return;
+			}
+			else if (before > 10){
+				JOptionPane.showMessageDialog(this, "Value must not exceed 10");
+				return;
+			}
+		} catch (NumberFormatException e){
+				JOptionPane.showMessageDialog(this, "Please enter a valid lower bound");
+		}
+		try {
+			after = Integer.parseInt(tfNumLinesAfter.getText());
+			if (after < 0){
+				JOptionPane.showMessageDialog(this, "Value must not be negative");
+				return;
+			}
+			else if (after > 10){
+				JOptionPane.showMessageDialog(this, "Value must not exceed 10");
+				return;
+			}
+		} catch (NumberFormatException e){
+				JOptionPane.showMessageDialog(this, "Please enter a valid lower bound");
+		}
+		view.numLinesBefore = before;
+		view.numLinesAfter = after;
+	}
+	private void saveTimeBounds(UserView view){
 		double low, high;
 		try {
 			low = Double.parseDouble(lowerBound.getText());
@@ -194,33 +265,6 @@ public class PreferenceEditor extends JDialog {
 		view.lowerBound = low;
 	}
 	
-	JScrollPane createListDisplay(UserView view){
-		listOfKeyWords = new CheckBoxListItem[view.keyWords.size()];
-		int index = 0;
-		for (String s : view.keyWords){
-			listOfKeyWords[index] = new CheckBoxListItem(s);
-			++index;
-		}
-		JList<CheckBoxListItem> list = new JList<CheckBoxListItem>(listOfKeyWords);
-		list.setCellRenderer(new CheckBoxListRenderer());
-		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		list.addMouseListener(new MouseAdapter(){
-			 public void mouseClicked(MouseEvent event) {
-		            @SuppressWarnings("unchecked")
-					JList<CheckBoxListItem> list =
-		               (JList<CheckBoxListItem>) event.getSource();
-		            // Get index of item clicked
-		            int index = list.locationToIndex(event.getPoint());
-		            CheckBoxListItem item = (CheckBoxListItem) list.getModel()
-		                  .getElementAt(index);
-		            // Toggle selected state
-		            item.setSelected(!item.isSelected());
-		            // Repaint cell
-		            list.repaint(list.getCellBounds(index, index));
-		         }
-		});
-		return new JScrollPane(list);
-	}
 	
 	void populateComboBox(UserView view){
 		for (String s : view.originalKeyWords){

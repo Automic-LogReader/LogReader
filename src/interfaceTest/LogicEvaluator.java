@@ -50,10 +50,20 @@ public class LogicEvaluator {
 	
 	//Entry titles will be based off of the first keyword selected
 	void makeEntries() {
+		/*
+		if (!deadlockOrLines.isEmpty()){
+			System.out.println("filled");
+			removeDeadlockDuplicates();
+		}
+		else if (deadlockOrLines.isEmpty()){
+			System.out.println("not filled");
+		}*/
 		if(validLines.isEmpty()){
+			System.out.println("empty");
 			return;
 		}
 		else {
+			
 			errorCount = 0;
 			for(int i = 0; i < validLines.size(); i++) {
 				errorCount++;
@@ -114,6 +124,25 @@ public class LogicEvaluator {
 		}
 	}
 	
+	private void removeDeadlockDuplicates() {
+		ArrayList<String> temp = new ArrayList<String>();
+		for (String deadlockOrLine : deadlockOrLines){
+			//System.out.println(deadlockOrLine);
+			for (String validLine : validLines){
+				if (deadlockOrLine.contains(validLine)){
+					System.out.println("removed");
+					validLines.remove(validLine);
+				}
+				temp.add(deadlockOrLine);
+			}
+		}
+		for (String validLine : validLines){
+			temp.add(validLine);
+		}
+		validLines.clear();
+		validLines.addAll(temp);
+	}
+
 	//There will be special cases if there is a deadlock or a ==> or a timecritical
 	void addLines(String line, BufferedReader br) throws IOException {
 		String testLine = line;
