@@ -60,6 +60,7 @@ import javax.swing.tree.TreePath;
 import interfaceTest.CheckBoxList.CheckBoxListItem;
 import interfaceTest.CheckBoxList.CheckBoxListRenderer;
 
+
 @SuppressWarnings("serial")
 
 public class UserView extends JFrame{
@@ -96,7 +97,6 @@ public class UserView extends JFrame{
 	
 	protected JScrollPane errorScrollPane;
 	private AdminView admin;
-	
 	protected LogParser logParser;
 	
 	//For the PreferenceEditor
@@ -131,9 +131,9 @@ public class UserView extends JFrame{
 	protected DefaultTreeModel treeModel;
 	public HashMap<String, TreeNodeCheckBox> checkBoxMap = new HashMap<String, TreeNodeCheckBox>();
 	protected JScrollPane treeScrollPane;
-	private JMenuItem menuItemCopy;
 	protected JPopupMenu popupMenu;
 	private JPanel pnlTreeView;
+	
 	/**
 	 * Create the frame.
 	 * @throws IOException 
@@ -212,8 +212,13 @@ public class UserView extends JFrame{
 		}
 	}
 	
-	void findLogErrors(String path) throws IOException
-	{
+	/**
+	 * Starts the thread to start parsing the log file. Returns if
+	 * the path parameter given was not valid.
+	 * @param path
+	 * @throws IOException
+	 */
+	void findLogErrors(String path) throws IOException{
 		logFile = path;
 		File file = new File(path);
 		if (!file.exists()){
@@ -242,13 +247,11 @@ public class UserView extends JFrame{
 			} catch (Exception e) {
 				e.printStackTrace();
 			};	
-			t = new Thread(new Runnable()
-			{
+			t = new Thread(new Runnable(){
 				public void run() {
 					try {
 						fileSize = file.length();
 						fileSizeDivHundred = fileSize/100;
-						
 						btnSubmit.setEnabled(false);
 						logParser.parseErrors(file, dialog);
 						} catch (IOException e) {
@@ -260,7 +263,11 @@ public class UserView extends JFrame{
 		t.start();
 	}
 	
-	//Called in LogParser.java
+	/**
+	 * Helper function called before LogParse. Fills the keyWords set with 
+	 * the set of keywords that the parser needs to look for.
+	 * @param selectedTab
+	 */
 	void updateKeyWords(int selectedTab){
 		keyWords.clear();
 		if (selectedTab == 0){
@@ -292,7 +299,11 @@ public class UserView extends JFrame{
 		}
 	}
 		
-	//Maps the key words to solution messages
+	/**
+	 * Maps the keyywords to the solution messages in a HashMap
+	 * @param stmt
+	 * @throws SQLException
+	 */
 	void createErrorDictionary(Statement stmt) throws SQLException{
 		String query = "select Keyword, Suggested_Solution from logerrors";
 		ResultSet rs = stmt.executeQuery(query);
@@ -302,6 +313,12 @@ public class UserView extends JFrame{
 		}
 	}
 	
+	/**
+	 * Prepares the GUI for UserView. Since the Admin has all of the user functionality,
+	 * the boolean isAdmin determines if the "Admin Settings" button is enabled
+	 * @param menu
+	 * @param isAdmin
+	 */
 	void prepareGUI(MainMenu menu, boolean isAdmin){
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 1500, 400);
@@ -575,7 +592,7 @@ public class UserView extends JFrame{
 		    }
 		}; 
 		popupMenu = new JPopupMenu();
-        menuItemCopy = new JMenuItem("Copy");
+        JMenuItem menuItemCopy = new JMenuItem("Copy");
         menuItemCopy.addActionListener(e -> {
         	TableMouseListener.copyCellValueToClipBoard();
         });
@@ -634,6 +651,9 @@ public class UserView extends JFrame{
 		return cb;
 	}
 
+	/**
+	 * Helper function to generate the checkbox tree view
+	 */
 	void createTreeView(){
 		cbTree = new CBTree();
 		cbTree.addMouseListener(new MouseAdapter(){
@@ -690,8 +710,12 @@ public class UserView extends JFrame{
 		updateTreeView();
 	}
 	
+	/**
+	 * Used as a helper function for the createTreeView() function
+	 * and also updates the checkbox tree dynamically as the 
+	 * administrator makes changes to the database. 
+	 */
 	protected void updateTreeView(){
-		//System.out.println(treeMap.size());
 		rootNode = new DefaultMutableTreeNode("Root");
 		treeModel = new DefaultTreeModel(rootNode);
 		cbTree.setModel(treeModel);
@@ -723,6 +747,12 @@ public class UserView extends JFrame{
 		return true;
 	}
 	
+	/**
+	 * Saves the user's selections in the AND/OR/NOT view to arraylists 
+	 * that will be passed to the LogicEvaluator file. Returns true if 
+	 * save was successful, false otherwise.
+	 * @return
+	 */
 	private boolean saveAndOrNot(){
 		keyWordArrayList.clear();
 		operandArrayList.clear();
@@ -774,6 +804,11 @@ public class UserView extends JFrame{
 		return true;
 	}
 	
+	/**
+	 * Loads the group info into a HashMap
+	 * @param stmt
+	 * @throws SQLException
+	 */
 	protected void loadGroupInfo(Statement stmt) throws SQLException{
 		GroupInfo.clear();
 		String query = "select GroupName, GroupKeywords from Groups";
@@ -784,6 +819,9 @@ public class UserView extends JFrame{
 		}
 	}
 	
+	/**
+	 * Helper function that intializes the preferences for the preference editor
+	 */
 	private void initPreferenceEditorValues(){
 		lowerBound = (double) 0;
 		upperBound = Double.MAX_VALUE;
