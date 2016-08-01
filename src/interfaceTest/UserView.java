@@ -157,8 +157,7 @@ public class UserView extends JFrame{
 			}
 			data[i] = temp;
 		}
-		lowerBound = (double) 0;
-		upperBound = Double.MAX_VALUE;
+		initPreferenceEditorValues();
 
 		mostRecentCB.clear();
 		String driver = "net.sourceforge.jtds.jdbc.Driver";
@@ -455,7 +454,6 @@ public class UserView extends JFrame{
 		treePanel.setLayout(new BoxLayout(treePanel, BoxLayout.Y_AXIS));
 		createTreeView();
 		
-		
 		JButton toggleAllButton = new JButton("Toggle All");
 		toggleAllButton.addActionListener(e -> {
 			cbTree.expandAll(new TreePath(cbTree.getModel().getRoot()));
@@ -597,7 +595,7 @@ public class UserView extends JFrame{
 		setVisible(true);
 	}
 	
-	JComboBox<String> logicalComboBox(int option){
+	private JComboBox<String> logicalComboBox(int option){
 		JComboBox<String> cb = new JComboBox<String>();
 		MutableComboBoxModel<String> model = (MutableComboBoxModel<String>)cb.getModel();
 		cb.setOpaque(true);
@@ -634,7 +632,7 @@ public class UserView extends JFrame{
 		return cb;
 	}
 
-	void createTreeView(){
+	private void createTreeView(){
 		cbTree = new CBTree();
 		cbTree.addMouseListener(new MouseAdapter(){
 			public void mousePressed (MouseEvent e){
@@ -702,7 +700,7 @@ public class UserView extends JFrame{
 		cbTree.setRootVisible(false);
 	}
 	
-	boolean createGroupDisplay(){
+	protected boolean createGroupDisplay(){
 		model.clear();
 		if (GroupInfo.isEmpty()){
 			return false;
@@ -718,7 +716,7 @@ public class UserView extends JFrame{
 		return true;
 	}
 	
-	boolean saveAndOrNot(){
+	private boolean saveAndOrNot(){
 		keyWordArrayList.clear();
 		operandArrayList.clear();
 		notArrayList.clear();
@@ -769,7 +767,7 @@ public class UserView extends JFrame{
 		return true;
 	}
 	
-	void loadGroupInfo(Statement stmt) throws SQLException
+	protected void loadGroupInfo(Statement stmt) throws SQLException
 	{
 		GroupInfo.clear();
 		String query = "select GroupName, GroupKeywords from Groups";
@@ -778,6 +776,13 @@ public class UserView extends JFrame{
 		{
 			GroupInfo.put(rs.getString("GroupName"), rs.getString("GroupKeywords"));
 		}
+	}
+	
+	private void initPreferenceEditorValues(){
+		lowerBound = (double) 0;
+		upperBound = Double.MAX_VALUE;
+		numLinesBefore = 0;
+		numLinesAfter = 0;
 	}
 }
 

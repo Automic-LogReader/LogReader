@@ -94,7 +94,7 @@ public class AdminView extends JFrame {
 	//Field for when the user wants to modify an entry
 	private JTextField modifyText;
 	
-	protected JPanel listPanel;
+	protected JPanel pnlGroups;
 	protected JList<String> groupList;
 	protected DefaultListModel<String> model;
 	
@@ -102,13 +102,6 @@ public class AdminView extends JFrame {
 	private DefaultTableModel tableModel;
 	DataController dc;
 	
-	/**
-	 * @param data - An array of object arrays that contains data from the error csv file. 
-	 * 				 The data in here is filled into the JTable.
-	 * @throws SQLException 
-	 * @throws ClassNotFoundException 
-	 * @throws IOException 
-	 */
 	public AdminView(UserView view) throws ClassNotFoundException, SQLException {
 			
 		try {
@@ -118,9 +111,6 @@ public class AdminView extends JFrame {
 		  } catch (Exception e) {
 		     System.out.println("Could not load program icon.");
 		  }
-		
-		JComponent contentPane = new JPanel();
-		setContentPane(contentPane);
 			
 		createDataTable();
 		dc = new DataController(this);
@@ -129,66 +119,45 @@ public class AdminView extends JFrame {
 		dc.transferData("CHANGE");
 		
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setTitle("Admin Features");
 		setBounds(200, 200, 1000, 300);
 		setMinimumSize(new Dimension(750, 300));
 		setLocationRelativeTo(null);
-		getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
+		
+		
+		JPanel pnlMain = new JPanel();
+		pnlMain.setLayout(new BoxLayout(pnlMain, BoxLayout.Y_AXIS));
+		add(pnlMain);
 		
 		JTabbedPane tabbedPane = new JTabbedPane();
-		getContentPane().add(tabbedPane);
+		pnlMain.add(tabbedPane);
 		
-		JPanel tab1 = new JPanel();
-		tab1.setLayout(new BoxLayout(tab1, BoxLayout.Y_AXIS));
+		JPanel pnlTabOne = new JPanel();
+		pnlTabOne.setLayout(new BoxLayout(pnlTabOne, BoxLayout.Y_AXIS));
 		
 		JScrollPane scrollPane = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		tab1.add(scrollPane);
+		pnlTabOne.add(scrollPane);
 		
-		tableModel = new DefaultTableModel(dc.getData(), columnHeaders) {
-		    @Override
-		    public boolean isCellEditable(int row, int column) {
-		       //all cells false
-		       return false;
-		    }     
-		};
-		table = new JTable(tableModel){
-			//Renders each columnn to fit the data
-			public Component prepareRenderer(TableCellRenderer renderer, int row, int column) 
-			{
-				Component component = super.prepareRenderer(renderer, row, column);
-				int rendererWidth = component.getPreferredSize().width;
-	           TableColumn tableColumn = getColumnModel().getColumn(column);
-	           tableColumn.setPreferredWidth(Math.max(rendererWidth + getIntercellSpacing().width, tableColumn.getPreferredWidth()));
-	           return component;
-			}
-
-		};
+		initTable();
 		
-		resizeColumnWidth(table);	
-		
-		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		scrollPane.setViewportView(table);
 		
-		tab1.add(Box.createRigidArea(new Dimension(0, 5)));
+		pnlTabOne.add(Box.createRigidArea(new Dimension(0, 5)));
 		
-		JPanel tab1_buttonPanel = new JPanel();
-		tab1.add(tab1_buttonPanel);
-		tab1_buttonPanel.setLayout(new FlowLayout());
+		JPanel pnlTabOneButtons = new JPanel();
+		pnlTabOne.add(pnlTabOneButtons);
+		pnlTabOneButtons.setLayout(new FlowLayout());
 		
-		JPanel leftButtonPanel = new JPanel();
-		tab1_buttonPanel.add(leftButtonPanel);
-		leftButtonPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
-		
-		JButton addButton = new JButton("Add Entry");
-		addButton.addActionListener(e -> {
+		JButton btnAddEntry = new JButton("Add Entry");
+		btnAddEntry.addActionListener(e -> {
 			AddDialog add = new AddDialog(dc);
 			add.setVisible(true);
 		});
+		pnlTabOneButtons.add(btnAddEntry);
 		
-		leftButtonPanel.add(addButton);
-		
-		JButton modifyButton = new JButton("Modify Entry");
-		modifyButton.setHorizontalAlignment(SwingConstants.RIGHT);
-		modifyButton.addActionListener(e -> {
+		JButton btnModifyEntry = new JButton("Modify Entry");
+		btnModifyEntry.setHorizontalAlignment(SwingConstants.RIGHT);
+		btnModifyEntry.addActionListener(e -> {
 			if(table.getSelectedRow() != -1){
 				int rowSelect = table.getSelectedRow();
 				ModifyDialog modify = new ModifyDialog((String)table.getValueAt(rowSelect, 0),
@@ -200,10 +169,10 @@ public class AdminView extends JFrame {
 			}
 			else JOptionPane.showMessageDialog(null, "Please select an entry");	
 		});
-		leftButtonPanel.add(modifyButton);
+		pnlTabOneButtons.add(btnModifyEntry);
 		
-		JButton deleteButton = new JButton("Delete Entry");
-		deleteButton.addActionListener(e -> {
+		JButton btnDeleteEntry = new JButton("Delete Entry");
+		btnDeleteEntry.addActionListener(e -> {
 			int viewIndex = table.getSelectedRow();
 			if(viewIndex != -1) {
 				//Ensures user wants to delete selected entry
@@ -222,15 +191,10 @@ public class AdminView extends JFrame {
 				}
 			} 
 		});
-		leftButtonPanel.add(deleteButton);
+		pnlTabOneButtons.add(btnDeleteEntry);
 		
-		
-		JPanel rightButtonPanel = new JPanel();
-		tab1_buttonPanel.add(rightButtonPanel);
-		rightButtonPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
-		
-		JButton saveButton = new JButton("Save to Default");
-		saveButton.addActionListener(e -> {
+		JButton btnSaveToDefault = new JButton("Save to Default");
+		btnSaveToDefault.addActionListener(e -> {
 			try {
 				dc.saveDefault();
 			} catch (Exception e1) {
@@ -238,13 +202,13 @@ public class AdminView extends JFrame {
 				e1.printStackTrace();
 			}
 		});
-		saveButton.setAlignmentX(Component.RIGHT_ALIGNMENT);
-		rightButtonPanel.add(saveButton);
+		btnSaveToDefault.setAlignmentX(Component.RIGHT_ALIGNMENT);
+		pnlTabOneButtons.add(btnSaveToDefault);
 		
-		JButton defaultButton = new JButton("Revert to Default");
-		defaultButton.setAlignmentX(Component.RIGHT_ALIGNMENT);
-		rightButtonPanel.add(defaultButton);
-		defaultButton.addActionListener(e -> {
+		JButton btnRevertToDefault = new JButton("Revert to Default");
+		btnRevertToDefault.setAlignmentX(Component.RIGHT_ALIGNMENT);
+		pnlTabOneButtons.add(btnRevertToDefault);
+		btnRevertToDefault.addActionListener(e -> {
 			dc.getList().clear();
 			for(int i = 0; i < dc.getDefaultList().size(); i++)
 			{
@@ -253,32 +217,31 @@ public class AdminView extends JFrame {
 			dc.transferData("DEFAULT");
 			resetData();
 		});
-	
 		
-		JPanel tab2 = new JPanel();
-		tab2.setLayout(new BoxLayout(tab2, BoxLayout.Y_AXIS));
-		tab2.add(Box.createVerticalGlue());
+		JPanel pnlTabTwo = new JPanel();
+		pnlTabTwo.setLayout(new BoxLayout(pnlTabTwo, BoxLayout.Y_AXIS));
+		pnlTabTwo.add(Box.createVerticalGlue());
 		
-		listPanel = displayGroups(view);
-		listPanel.setBorder(new EmptyBorder(10,5,0,5));
-		tab2.add(listPanel);
+		pnlGroups = createGroupDisplay (view);
+		pnlGroups.setBorder(new EmptyBorder(10,5,0,5));
+		pnlTabTwo.add(pnlGroups);
 		
-		JPanel tab2_buttonPanel = new JPanel();
-		tab2_buttonPanel.setLayout(new FlowLayout());
-		tab2.add(tab2_buttonPanel);
+		JPanel pnlTabTwoButtons = new JPanel();
+		pnlTabTwoButtons.setLayout(new FlowLayout());
+		pnlTabTwo.add(pnlTabTwoButtons);
 		
-		JButton createGroup = new JButton("Create Group");
-		createGroup.setPreferredSize(new Dimension(125, 20));
-		createGroup.setAlignmentX(CENTER_ALIGNMENT);
-		createGroup.addActionListener(e -> {
+		JButton btnCreateGroup = new JButton("Create Group");
+		btnCreateGroup.setPreferredSize(new Dimension(125, 20));
+		btnCreateGroup.setAlignmentX(CENTER_ALIGNMENT);
+		btnCreateGroup.addActionListener(e -> {
 			CreateGroup groupView = new CreateGroup(this, view);
 		});
-		tab2_buttonPanel.add(createGroup);
+		pnlTabTwoButtons.add(btnCreateGroup);
 		
-		JButton deleteGroup = new JButton("Delete Group");
-		deleteGroup.setPreferredSize(new Dimension(125, 20));
-		deleteGroup.setAlignmentX(CENTER_ALIGNMENT);
-		deleteGroup.addActionListener(e -> {
+		JButton btnDeleteGroup = new JButton("Delete Group");
+		btnDeleteGroup.setPreferredSize(new Dimension(125, 20));
+		btnDeleteGroup.setAlignmentX(CENTER_ALIGNMENT);
+		btnDeleteGroup.addActionListener(e -> {
 			try {
 				removeGroup(view);
 			} catch (Exception e1) {
@@ -286,18 +249,18 @@ public class AdminView extends JFrame {
 				e1.printStackTrace();
 			}
 		});
-		tab2_buttonPanel.add(deleteGroup);
-		tab2.add(Box.createVerticalGlue());
+		pnlTabTwoButtons.add(btnDeleteGroup);
+		pnlTabTwo.add(Box.createVerticalGlue());
 		
-		tabbedPane.add("Edit Entries", tab1);
+		tabbedPane.add("Edit Entries", pnlTabOne);
 		tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
-		tabbedPane.add("Create Groups", tab2);
+		tabbedPane.add("Create Groups", pnlTabTwo);
 		tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
 	}
 	
 	/**
 	 * This function fills myData with arrays. Each array represents a line from
-	 * LogErrors_Suggestions.csv, the array itself being the return value
+	 * the database, the array itself being the return value
 	 * from calling split function on the line.
 	 * @throws SQLException 
 	 * @throws ClassNotFoundException 
@@ -328,7 +291,7 @@ public class AdminView extends JFrame {
 		stmt.close();
 	}
 	
-	JPanel displayGroups(UserView view){
+	JPanel createGroupDisplay (UserView view){
 		JPanel panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
 		panel.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
@@ -341,7 +304,8 @@ public class AdminView extends JFrame {
 	    panel.add(scrollPane);
 	    return panel;
 	}
-	void updateGroups(UserView view){
+	
+	protected void updateGroups(UserView view){
 		model.clear();
 		for (Map.Entry<String, String> entry : view.GroupInfo.entrySet()){
 			String keyWords = entry.getValue();
@@ -366,17 +330,45 @@ public class AdminView extends JFrame {
 
 		System.out.println(groupToRemove);
 		StringBuilder query = new StringBuilder();
-
 		
 		updateGroups(view);
 		view.createGroupDisplay();
 	}
+	
 	void resetData()
 	{
 		DefaultTableModel model = new DefaultTableModel(dc.getData(), columnHeaders); 
 		table.setModel(model);
 		resizeColumnWidth(table);
 		model.fireTableDataChanged();
+	}
+	
+	
+	/**
+	 * Initializes the table of errors, suggested solutions, folders, etc
+	 * that can be modified by the administrator
+	 */
+	private void initTable(){
+		tableModel = new DefaultTableModel(dc.getData(), columnHeaders) {
+		    @Override
+		    public boolean isCellEditable(int row, int column) {
+		       //all cells false
+		       return false;
+		    }     
+		};
+		table = new JTable(tableModel){
+			//Renders each columnn to fit the data
+			public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+				Component component = super.prepareRenderer(renderer, row, column);
+				int rendererWidth = component.getPreferredSize().width;
+	            TableColumn tableColumn = getColumnModel().getColumn(column);
+	            tableColumn.setPreferredWidth(Math.max(rendererWidth + getIntercellSpacing().width, tableColumn.getPreferredWidth()));
+	            return component;
+			}
+
+		};
+		resizeColumnWidth(table);	
+		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 	}
 	
 	public void resizeColumnWidth(JTable table) {
