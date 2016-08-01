@@ -15,9 +15,12 @@ public class DataController {
 	private List <String[]> defaultList = new ArrayList<String[]>();
 	private List <String[]> list = new ArrayList<String[]>();
 	private List <String[]> tempList = new ArrayList<String[]>();
+	//Queries to be made to the databas
 	private List <String> queries = new ArrayList<String>();
-	private Object [][] defaultData;
+	//private Object [][] defaultData;
+	//Entries to be into the JTable in adminview
 	private Object [][] data;
+	
 	private boolean keywordChanged;
 	private boolean errorMessageChanged;
 	private boolean suggestedSolutionChanged;
@@ -27,60 +30,51 @@ public class DataController {
 	//Holds the line from the csv file (each part of the array is a cell from csv)
 	protected String [] errorWords;
 	private AdminView admin;
-	
-	DataController(AdminView admin)
-	{
+
+	DataController(AdminView admin){
 		this.admin = admin;
 		keywordChanged = false;
 		errorMessageChanged = false;
 		suggestedSolutionChanged = false;
 		folderChanged = false;
 	}
-	
-	AdminView getAdmin()
-	{
+
+	AdminView getAdmin(){
 		return admin;
 	}
-	
-	void setKeywordChanged(boolean change)
-	{
+
+	void setKeywordChanged(boolean change){
 		keywordChanged = change;
 	}
-	
-	void setErrorMessageChanged(boolean change)
-	{
+
+	void setErrorMessageChanged(boolean change){
 		errorMessageChanged = change;
 	}
-	
-	void setSuggestedSolutionChanged(boolean change)
-	{
+
+	void setSuggestedSolutionChanged(boolean change){
 		suggestedSolutionChanged = change;
 	}
-	
-	void setFolderChanged(boolean change)
-	{
+
+	void setFolderChanged(boolean change){
 		folderChanged = true;
 	}
-	
-	void setList(List <String[]> list)
-	{
+
+	void setList(List <String[]> list){
 		this.list = list;
 	}
-	
-	void setDefaultList(List <String[]> defaultList)
-	{
+
+	void setDefaultList(List <String[]> defaultList){
 		this.defaultList = defaultList;
 	}
-	
+
 	List<String[]> getList(){
 		return list;
 	}
-	
-	List<String[]> getDefaultList()
-	{
+
+	List<String[]> getDefaultList(){
 		return defaultList;
 	}
-	
+
 	/**
 	 * When the user chooses to modify the data, this function changes the output on the 
 	 * screen and within the LogError_Suggestions.csv file to the input given by the user. 
@@ -89,58 +83,55 @@ public class DataController {
 	 * @param col - the column in which the data will be modified
 	 * @throws IOException 
 	 */
-	
-	
+
+
 	//****************************
 	//Note that we will HAVE to go about doing modify a different way
-	
-	void modifyData(String folder, String keyWord, String message, String solution, String choice, int row) throws IOException
-	{
+
+	protected void modifyData(String folder, String keyWord, String message, String solution, String choice, int row) throws IOException {
 		String [] tempArray = new String[4];
 		tempArray[0] = folder;
 		tempArray[1] = keyWord;
 		tempArray[2] = message;
 		tempArray[3] = solution;
-		if(choice.equals("MODIFY"))
-		{
+		if(choice.equals("MODIFY")) {
 			if(folderChanged)
 				queries.add("update logerrors set Folder = \'" + 
-					addSingleQuote(folder) + "\' where Keyword = \'" + addSingleQuote(list.get(row)[1]) + "\'");
+						addSingleQuote(folder) + "\' where Keyword = \'" + addSingleQuote(list.get(row)[1]) + "\'");
 			if(errorMessageChanged)
 				queries.add("update logerrors set Log_Error_Description = \'" +
-					 addSingleQuote(message) + "\' where Keyword = \'" + addSingleQuote(list.get(row)[1]) + "\'");
+						addSingleQuote(message) + "\' where Keyword = \'" + addSingleQuote(list.get(row)[1]) + "\'");
 			if(suggestedSolutionChanged)
 				queries.add("update logerrors set Suggested_Solution = \'" +
-					 addSingleQuote(solution) + "\' where Keyword = \'" + addSingleQuote(list.get(row)[1]) + "\'");
+						addSingleQuote(solution) + "\' where Keyword = \'" + addSingleQuote(list.get(row)[1]) + "\'");
 			if(keywordChanged)
 				queries.add("update logerrors set Keyword = \'" +
-					addSingleQuote(keyWord) + "\' where Keyword = \'" + addSingleQuote(list.get(row)[1]) + "\'");
+						addSingleQuote(keyWord) + "\' where Keyword = \'" + addSingleQuote(list.get(row)[1]) + "\'");
 			admin.savedWords.remove(list.get(row)[1]);
 			admin.savedWords.add(keyWord);
 			list.set(row, tempArray);
 
 		}
-		else
-		{
+		else {
 			queries.add("insert into logerrors values (\'" + addSingleQuote(keyWord) + "\',\'"
 					+ addSingleQuote(message) + "\',\'" + addSingleQuote(solution) + "\',\'" +
 					addSingleQuote(folder) + "\')");
 			list.add(tempArray);
 			admin.savedWords.add(keyWord);
 		}
-		
+
 		transferData("CHANGE");
 		folderChanged = false;
 		keywordChanged = false;
 		errorMessageChanged = false;
 		suggestedSolutionChanged = false;
-		
+
 		admin.resetData();
 
 	}
-	
-	
-	String addSingleQuote(String oldWord)
+
+
+	private String addSingleQuote(String oldWord)
 	{
 		StringBuilder newWord = new StringBuilder();
 		for(int i = 0; i < oldWord.length(); i++)
@@ -161,7 +152,7 @@ public class DataController {
 	 * @param row - the row in which the data will be deleted
 	 * @throws IOException 
 	 */
-	void deleteData(int row) throws IOException
+	protected void deleteData(int row) throws IOException
 	{
 		queries.add("delete from logerrors where Keyword = \'" + addSingleQuote(list.get(row)[1]) + "\'");
 		list.remove(row);
@@ -170,10 +161,8 @@ public class DataController {
 		admin.savedWords.remove(list.get(row)[1]);
 	}
 
-	void transferData(String choice)
-	{
-		if(choice.equals("DEFAULT"))
-		{
+	protected void transferData(String choice){
+		if(choice.equals("DEFAULT")){
 			tempList = defaultList;
 			queries.clear();
 			admin.savedWords = admin.keyWords;
@@ -182,54 +171,47 @@ public class DataController {
 			tempList = list;
 		}
 		Object[][] myData = new Object[tempList.size()][];
-		for(int i = 0; i < tempList.size(); i++)
-		{
+		for(int i = 0; i < tempList.size(); i++){
 			myData[i] = tempList.get(i);
 		}
 		data = myData;
-		
+
 	}
-	
-	Object[][] getData()
-	{
+
+	protected Object[][] getData(){
 		return data;
 	}
-	
-	void saveDefault() throws IOException, ClassNotFoundException, SQLException
-	{
+
+	protected void saveDefault() throws IOException, ClassNotFoundException, SQLException{
 		defaultList.clear();
 		admin.keyWords.clear();
-		for(int x = 0; x < admin.savedWords.size(); x++)
-		{
+		for(int x = 0; x < admin.savedWords.size(); x++){
 			admin.keyWords.add(admin.savedWords.get(x));
 		}
 
-		for(int i = 0; i < list.size(); i++)
-		{
+		for(int i = 0; i < list.size(); i++){
 			defaultList.add(list.get(i));
 		}
-		
-		for (int j = 0; j < queries.size(); j++)
-		{
+
+		for (int j = 0; j < queries.size(); j++){
 			System.out.println(queries.get(j));
 		}
-		
+
 		String driver = "net.sourceforge.jtds.jdbc.Driver";
 		Class.forName(driver);
 		Connection conn = DriverManager.getConnection("jdbc:jtds:sqlserver://vwaswp02:1433/coeus", "coeus", "C0eus");
 
 		Statement stmt = conn.createStatement();
-		for(int j = 0; j < queries.size(); j++)
-		{
-			int x = stmt.executeUpdate(queries.get(j));
+		for(int j = 0; j < queries.size(); j++){
+			stmt.executeUpdate(queries.get(j));
 		}
-		
+
 		stmt.close();
-		
+
 		queries.clear();
 	}
-	
+
 }
 
-	
+
 

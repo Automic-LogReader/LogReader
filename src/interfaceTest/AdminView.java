@@ -70,10 +70,7 @@ public class AdminView extends JFrame {
 	List <String> savedWords = new ArrayList<String>();
 	List <String[]> defaultList = new ArrayList<String[]>();
 	List <String[]> list = new ArrayList<String[]>();
-	//Holds a line from the csv file
-	protected String errorLine;
-	//Holds the line from the csv file (each part of the array is a cell from csv)
-	protected String [] errorWords;
+
 	//ArrayList that holds all the UCodes from the csv file
 	protected List<String> keyWords = new ArrayList<String>();
 	//Brings up the frame for an admin user
@@ -84,19 +81,13 @@ public class AdminView extends JFrame {
 	private final String[] columnHeaders = {"Folder", "Keyword", "Log Error Description",
 									"Suggested Solution"};
 	//Solution field when the user wants to add an entry
-	private JTextField solutionText;
-	//Error field when the user wants to add an entry
-	private JTextField errorText;
-	//UCode field when the user wants to add an entry
-	private JTextField uText;
-	//Displays the data within LogErrors_Suggestions.csv, updates with user action
-	private JTable table;
+
+	private JTable tblEntries;
 	//Field for when the user wants to modify an entry
-	private JTextField modifyText;
 	
 	protected JPanel pnlGroups;
 	protected JList<String> groupList;
-	protected DefaultListModel<String> model;
+	protected DefaultListModel<String> defaultListModel;
 	
 	Object[] options = {"Yes", "Cancel"};
 	private DefaultTableModel tableModel;
@@ -124,7 +115,6 @@ public class AdminView extends JFrame {
 		setMinimumSize(new Dimension(750, 300));
 		setLocationRelativeTo(null);
 		
-		
 		JPanel pnlMain = new JPanel();
 		pnlMain.setLayout(new BoxLayout(pnlMain, BoxLayout.Y_AXIS));
 		add(pnlMain);
@@ -135,12 +125,12 @@ public class AdminView extends JFrame {
 		JPanel pnlTabOne = new JPanel();
 		pnlTabOne.setLayout(new BoxLayout(pnlTabOne, BoxLayout.Y_AXIS));
 		
-		JScrollPane scrollPane = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		JScrollPane scrollPane = new JScrollPane(tblEntries, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		pnlTabOne.add(scrollPane);
 		
 		initTable();
 		
-		scrollPane.setViewportView(table);
+		scrollPane.setViewportView(tblEntries);
 		
 		pnlTabOne.add(Box.createRigidArea(new Dimension(0, 5)));
 		
@@ -149,6 +139,7 @@ public class AdminView extends JFrame {
 		pnlTabOneButtons.setLayout(new FlowLayout());
 		
 		JButton btnAddEntry = new JButton("Add Entry");
+		btnAddEntry.setToolTipText("Changes will be made locally");
 		btnAddEntry.addActionListener(e -> {
 			AddDialog add = new AddDialog(dc);
 			add.setVisible(true);
@@ -156,14 +147,15 @@ public class AdminView extends JFrame {
 		pnlTabOneButtons.add(btnAddEntry);
 		
 		JButton btnModifyEntry = new JButton("Modify Entry");
+		btnModifyEntry.setToolTipText("Changes will be made locally");
 		btnModifyEntry.setHorizontalAlignment(SwingConstants.RIGHT);
 		btnModifyEntry.addActionListener(e -> {
-			if(table.getSelectedRow() != -1){
-				int rowSelect = table.getSelectedRow();
-				ModifyDialog modify = new ModifyDialog((String)table.getValueAt(rowSelect, 0),
-													 (String)table.getValueAt(rowSelect, 1),
-													 (String)table.getValueAt(rowSelect, 2),
-													 (String)table.getValueAt(rowSelect, 3),
+			if(tblEntries.getSelectedRow() != -1){
+				int rowSelect = tblEntries.getSelectedRow();
+				ModifyDialog modify = new ModifyDialog((String)tblEntries.getValueAt(rowSelect, 0),
+													 (String)tblEntries.getValueAt(rowSelect, 1),
+													 (String)tblEntries.getValueAt(rowSelect, 2),
+													 (String)tblEntries.getValueAt(rowSelect, 3),
 													 dc, rowSelect);
 				modify.setVisible(true);
 			}
@@ -173,7 +165,7 @@ public class AdminView extends JFrame {
 		
 		JButton btnDeleteEntry = new JButton("Delete Entry");
 		btnDeleteEntry.addActionListener(e -> {
-			int viewIndex = table.getSelectedRow();
+			int viewIndex = tblEntries.getSelectedRow();
 			if(viewIndex != -1) {
 				//Ensures user wants to delete selected entry
 				int confirmation = JOptionPane.showOptionDialog(this,
@@ -182,7 +174,7 @@ public class AdminView extends JFrame {
 				    null, options, options[1]);
 				//If yes, then we continue delete process
 				if (confirmation == JOptionPane.YES_OPTION){
-					int modelIndex = table.convertRowIndexToModel(viewIndex); 
+					int modelIndex = tblEntries.convertRowIndexToModel(viewIndex); 
 					try {
 						dc.deleteData(viewIndex);
 					} catch (Exception e1) {
@@ -193,8 +185,9 @@ public class AdminView extends JFrame {
 		});
 		pnlTabOneButtons.add(btnDeleteEntry);
 		
-		JButton btnSaveToDefault = new JButton("Save to Default");
-		btnSaveToDefault.addActionListener(e -> {
+		JButton btnSaveToDatabase = new JButton("Save to Database");
+		btnSaveToDatabase.setToolTipText("Local changes will be saved");
+		btnSaveToDatabase.addActionListener(e -> {
 			try {
 				dc.saveDefault();
 			} catch (Exception e1) {
@@ -202,13 +195,13 @@ public class AdminView extends JFrame {
 				e1.printStackTrace();
 			}
 		});
-		btnSaveToDefault.setAlignmentX(Component.RIGHT_ALIGNMENT);
-		pnlTabOneButtons.add(btnSaveToDefault);
+		btnSaveToDatabase.setAlignmentX(Component.RIGHT_ALIGNMENT);
+		pnlTabOneButtons.add(btnSaveToDatabase);
 		
-		JButton btnRevertToDefault = new JButton("Revert to Default");
-		btnRevertToDefault.setAlignmentX(Component.RIGHT_ALIGNMENT);
-		pnlTabOneButtons.add(btnRevertToDefault);
-		btnRevertToDefault.addActionListener(e -> {
+		JButton btnRevertLocalChanges = new JButton("Revert local changes");
+		btnRevertLocalChanges.setAlignmentX(Component.RIGHT_ALIGNMENT);
+		pnlTabOneButtons.add(btnRevertLocalChanges);
+		btnRevertLocalChanges.addActionListener(e -> {
 			dc.getList().clear();
 			for(int i = 0; i < dc.getDefaultList().size(); i++)
 			{
@@ -266,8 +259,7 @@ public class AdminView extends JFrame {
 	 * @throws ClassNotFoundException 
 	 * @throws IOException
 	 */
-	void createDataTable() throws SQLException, ClassNotFoundException 
-	{		
+	void createDataTable() throws SQLException, ClassNotFoundException {		
 		String driver = "net.sourceforge.jtds.jdbc.Driver";
 		Class.forName(driver);
 		Connection conn = DriverManager.getConnection("jdbc:jtds:sqlserver://vwaswp02:1433/coeus", "coeus", "C0eus");
@@ -292,28 +284,28 @@ public class AdminView extends JFrame {
 	}
 	
 	JPanel createGroupDisplay (UserView view){
-		JPanel panel = new JPanel();
-		panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
-		panel.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
-	    panel.add(Box.createHorizontalGlue());
+		JPanel pnlGroup = new JPanel();
+		pnlGroup.setLayout(new BoxLayout(pnlGroup, BoxLayout.PAGE_AXIS));
+		pnlGroup.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
+	    pnlGroup.add(Box.createHorizontalGlue());
 
-	    model = new DefaultListModel<String>();
+	    defaultListModel = new DefaultListModel<String>();
 	    updateGroups(view);
-	    groupList = new JList<String>(model);
+	    groupList = new JList<String>(defaultListModel);
 	    JScrollPane scrollPane = new JScrollPane(groupList);
-	    panel.add(scrollPane);
-	    return panel;
+	    pnlGroup.add(scrollPane);
+	    return pnlGroup;
 	}
 	
 	protected void updateGroups(UserView view){
-		model.clear();
+		defaultListModel.clear();
 		for (Map.Entry<String, String> entry : view.GroupInfo.entrySet()){
 			String keyWords = entry.getValue();
-	    	model.addElement(keyWords);
+	    	defaultListModel.addElement(keyWords);
 		}
 	}
 	
-	void removeGroup(UserView view) throws ClassNotFoundException, SQLException{
+	private void removeGroup(UserView view) throws ClassNotFoundException, SQLException{
 		String groupToRemove = groupList.getSelectedValue();
 		if (groupToRemove == null){
 			JOptionPane.showMessageDialog(this, "No group selected");
@@ -335,11 +327,14 @@ public class AdminView extends JFrame {
 		view.createGroupDisplay();
 	}
 	
-	void resetData()
-	{
+	/**
+	 * Updates the default table model by quering the DataController.
+	 * This happens when a new entry is made, edited, or deleted. 
+	 */
+	protected void resetData(){
 		DefaultTableModel model = new DefaultTableModel(dc.getData(), columnHeaders); 
-		table.setModel(model);
-		resizeColumnWidth(table);
+		tblEntries.setModel(model);
+		resizeColumnWidth(tblEntries);
 		model.fireTableDataChanged();
 	}
 	
@@ -356,7 +351,7 @@ public class AdminView extends JFrame {
 		       return false;
 		    }     
 		};
-		table = new JTable(tableModel){
+		tblEntries = new JTable(tableModel){
 			//Renders each columnn to fit the data
 			public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
 				Component component = super.prepareRenderer(renderer, row, column);
@@ -367,8 +362,8 @@ public class AdminView extends JFrame {
 			}
 
 		};
-		resizeColumnWidth(table);	
-		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		resizeColumnWidth(tblEntries);	
+		tblEntries.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 	}
 	
 	public void resizeColumnWidth(JTable table) {

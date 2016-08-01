@@ -64,7 +64,7 @@ import interfaceTest.CheckBoxList.CheckBoxListRenderer;
 
 public class UserView extends JFrame{
 	protected HashMap<String, String> GroupInfo = new HashMap<String, String>();
-	protected String [] headers = {"Error #", "Timestamp",
+	protected final String [] headers = {"Error #", "Timestamp",
 								"Keywords", "Error Message", "Suggested Solution"};
 	protected List<Object[]> errorData = new ArrayList<Object[]>();
 	private Object [][] data;
@@ -149,6 +149,7 @@ public class UserView extends JFrame{
 	 */
 	public UserView(MainMenu menu, boolean isAdmin) throws ClassNotFoundException, SQLException {
 		hasCopiedOriginalKeyWords = false;
+		//Initializes the blank table
 		data = new Object[40][];
 		for(int i = 0; i < 40; i ++){
 			Object[] temp = new Object[5];
@@ -157,9 +158,11 @@ public class UserView extends JFrame{
 			}
 			data[i] = temp;
 		}
+		
 		initPreferenceEditorValues();
 
 		mostRecentCB.clear();
+		
 		String driver = "net.sourceforge.jtds.jdbc.Driver";
 		Class.forName(driver);
 		Connection conn = DriverManager.getConnection("jdbc:jtds:sqlserver://vwaswp02:1433/coeus", "coeus", "C0eus");
@@ -454,6 +457,7 @@ public class UserView extends JFrame{
 		treePanel.setLayout(new BoxLayout(treePanel, BoxLayout.Y_AXIS));
 		createTreeView();
 		
+		
 		JButton toggleAllButton = new JButton("Toggle All");
 		toggleAllButton.addActionListener(e -> {
 			cbTree.expandAll(new TreePath(cbTree.getModel().getRoot()));
@@ -595,6 +599,10 @@ public class UserView extends JFrame{
 		setVisible(true);
 	}
 	
+	/**
+	 * @param option: Determines whether the JComboBox is an operand or an operator
+	 * @return Returns the JComboBox based off of the option (operand, operator)
+	 */
 	private JComboBox<String> logicalComboBox(int option){
 		JComboBox<String> cb = new JComboBox<String>();
 		MutableComboBoxModel<String> model = (MutableComboBoxModel<String>)cb.getModel();
@@ -632,7 +640,7 @@ public class UserView extends JFrame{
 		return cb;
 	}
 
-	private void createTreeView(){
+	void createTreeView(){
 		cbTree = new CBTree();
 		cbTree.addMouseListener(new MouseAdapter(){
 			public void mousePressed (MouseEvent e){
@@ -767,8 +775,7 @@ public class UserView extends JFrame{
 		return true;
 	}
 	
-	protected void loadGroupInfo(Statement stmt) throws SQLException
-	{
+	protected void loadGroupInfo(Statement stmt) throws SQLException{
 		GroupInfo.clear();
 		String query = "select GroupName, GroupKeywords from Groups";
 		ResultSet rs = stmt.executeQuery(query);
