@@ -155,7 +155,7 @@ public class CreateGroup extends JDialog{
 								"\',\'" + query.toString() + "\')");
 			view.loadGroupInfo(stmt);
 			stmt.close();
-			view.createGroupDisplay();
+			view.createGroupView();
 			admin.updateGroups(view);
 		}
 	}

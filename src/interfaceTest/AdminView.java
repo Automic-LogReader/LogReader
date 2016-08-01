@@ -190,6 +190,14 @@ public class AdminView extends JFrame {
 		btnSaveToDatabase.addActionListener(e -> {
 			try {
 				dc.saveDefault();
+				String driver = "net.sourceforge.jtds.jdbc.Driver";
+				Class.forName(driver);
+				Connection conn = DriverManager.getConnection("jdbc:jtds:sqlserver://vwaswp02:1433/coeus", "coeus", "C0eus");
+				Statement stmt = conn.createStatement();
+
+				view.fillKeywords(stmt);
+				view.createErrorDictionary(stmt);
+				view.updateTreeView();
 			} catch (Exception e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -324,7 +332,7 @@ public class AdminView extends JFrame {
 		StringBuilder query = new StringBuilder();
 		
 		updateGroups(view);
-		view.createGroupDisplay();
+		view.createGroupView();
 	}
 	
 	/**

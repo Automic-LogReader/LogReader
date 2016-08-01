@@ -75,10 +75,6 @@ public class UserView extends JFrame{
 	//Holds a line when the logfile is read
 	protected String logLine;
 	//Holds the individual entries from logLine, split by " "
-	protected String[] logWords;
-	//Holds a line from the error suggestions csv file
-	protected String errorLine;
-	//Holds the individual cell entries from errorLine
 
 	protected HashMap<String, String> solutions = new HashMap<String, String>();
 	protected HashMap<String, String> folderMap = new HashMap<String, String>();
@@ -93,12 +89,10 @@ public class UserView extends JFrame{
 	protected long fileSizeDivHundred;
 	
 	protected JTable errorTable;
-	private JPanel pnlMain;
-	private JTextField filePath;
+	private JTextField tfFilePath;
 	//User clicks after selecting directory for log file
-	protected JButton submitButton;
+	protected JButton btnSubmit;
 	//Returns the User back to the Main Menu
-	//protected JButton backButton;
 	
 	protected JScrollPane errorScrollPane;
 	private AdminView admin;
@@ -112,8 +106,7 @@ public class UserView extends JFrame{
 	protected Integer numLinesAfter;
 	
 	protected JList<CheckBoxListItem> list;
-	
-	protected DefaultListModel<CheckBoxListItem> model;
+	protected DefaultListModel<CheckBoxListItem> listModel;
 	private JTabbedPane tabbedPane;
 	protected JScrollPane groupScrollPane;
 	
@@ -184,6 +177,11 @@ public class UserView extends JFrame{
 	 * @throws SQLException
 	 */
 	void fillKeywords(Statement stmt) throws SQLException{
+		keyWords.clear();
+		folderMap.clear();
+		folderSet.clear();
+		treeMap.clear();
+		
 		String query = "select Keyword, Folder from logerrors";
 		ResultSet rs = stmt.executeQuery(query);
 		while(rs.next())
@@ -251,7 +249,7 @@ public class UserView extends JFrame{
 						fileSize = file.length();
 						fileSizeDivHundred = fileSize/100;
 						
-						submitButton.setEnabled(false);
+						btnSubmit.setEnabled(false);
 						logParser.parseErrors(file, dialog);
 						} catch (IOException e) {
 							e.printStackTrace();
@@ -318,7 +316,7 @@ public class UserView extends JFrame{
 		     System.out.println("Could not load program icon.");
 		  }
 	
-		pnlMain = new JPanel();
+		JPanel pnlMain = new JPanel();
 		pnlMain.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(pnlMain);
 		pnlMain.setLayout(new BorderLayout(0, 0));
@@ -353,7 +351,7 @@ public class UserView extends JFrame{
 		    chooser.setAcceptAllFileFilterUsed(false);
 		    int returnVal = chooser.showOpenDialog(getRootPane());
 		    if(returnVal == JFileChooser.APPROVE_OPTION) {
-		    	 filePath.setText(chooser.getSelectedFile().getAbsolutePath());
+		    	 tfFilePath.setText(chooser.getSelectedFile().getAbsolutePath());
 		    }
 		});
 		pnlBottom.add(chooseFile);
@@ -361,46 +359,46 @@ public class UserView extends JFrame{
 		Component horizontalStrut = Box.createHorizontalStrut(20);
 		pnlBottom.add(horizontalStrut);
 		
-		filePath = new JTextField();
-		pnlBottom.add(filePath);
-		filePath.setColumns(10);
+		tfFilePath = new JTextField();
+		pnlBottom.add(tfFilePath);
+		tfFilePath.setColumns(10);
 		
 		Component horizontalStrut_1 = Box.createHorizontalStrut(20);
 		pnlBottom.add(horizontalStrut_1);
 		
-		submitButton = new JButton("Submit");
-		submitButton.setBackground(new Color(0, 209, 54));
-		submitButton.setPreferredSize(new Dimension(80, 30));
-		submitButton.addActionListener(e -> {
-			String path = filePath.getText();
+		btnSubmit = new JButton("Submit");
+		btnSubmit.setBackground(new Color(0, 209, 54));
+		btnSubmit.setPreferredSize(new Dimension(80, 30));
+		btnSubmit.addActionListener(e -> {
+			String path = tfFilePath.getText();
 			if (path.equals(""))
 				JOptionPane.showMessageDialog(null, "Please enter a path");
 			else
 				try {
-					findLogErrors(filePath.getText());
+					findLogErrors(tfFilePath.getText());
 				} catch (IOException e1) {
 					JOptionPane.showMessageDialog(null, "The file cannot be found");
 					e1.printStackTrace();
 				}
 		});
-		submitButton.getInputMap(javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW).
+		btnSubmit.getInputMap(javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW).
         put(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_ENTER,0), "Enter pressed");
-		submitButton.getActionMap().put("Enter pressed", new AbstractAction()
+		btnSubmit.getActionMap().put("Enter pressed", new AbstractAction()
 				{
 					public void actionPerformed(ActionEvent e)
 					{
-						if (filePath.getText().equals(""))
+						if (tfFilePath.getText().equals(""))
 							JOptionPane.showMessageDialog(null, "Please enter a path");
 						else
 							try {
-								findLogErrors(filePath.getText());
+								findLogErrors(tfFilePath.getText());
 							} catch (IOException e1) {
 								JOptionPane.showMessageDialog(null, "The file cannot be found");
 								e1.printStackTrace();
 							}
 					}
 				});
-		pnlBottom.add(submitButton);
+		pnlBottom.add(btnSubmit);
 		
 		pnlBottom.add(Box.createRigidArea(new Dimension(10,0)));
 		
@@ -540,9 +538,9 @@ public class UserView extends JFrame{
 		JPanel pnlGroupView = new JPanel();
 		pnlGroupView.setLayout(new BoxLayout(pnlGroupView, BoxLayout.Y_AXIS));
 		pnlGroupView.setMaximumSize(new Dimension(600, 280));
-		model = new DefaultListModel<CheckBoxListItem>();
-		createGroupDisplay();
-		groupList = new JList<CheckBoxListItem>(model);
+		listModel = new DefaultListModel<CheckBoxListItem>();
+		createGroupView();
+		groupList = new JList<CheckBoxListItem>(listModel);
 		groupList.setCellRenderer(new CheckBoxListRenderer());
 		groupList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		groupList.addMouseListener(new MouseAdapter(){
@@ -689,6 +687,11 @@ public class UserView extends JFrame{
 	            
 	        }
 		});
+		updateTreeView();
+	}
+	
+	protected void updateTreeView(){
+		//System.out.println(treeMap.size());
 		rootNode = new DefaultMutableTreeNode("Root");
 		treeModel = new DefaultTreeModel(rootNode);
 		cbTree.setModel(treeModel);
@@ -699,13 +702,13 @@ public class UserView extends JFrame{
 				node.add(new DefaultMutableTreeNode(new TreeNodeCheckBox(entry.getValue().get(j), false)));
 			}
 		}
-
 		cbTree.expandRow(0);
 		cbTree.setRootVisible(false);
+		treeModel.reload();
 	}
 	
-	protected boolean createGroupDisplay(){
-		model.clear();
+	protected boolean createGroupView(){
+		listModel.clear();
 		if (GroupInfo.isEmpty()){
 			return false;
 		}
@@ -714,7 +717,7 @@ public class UserView extends JFrame{
 		for (Map.Entry<String, String> entry : GroupInfo.entrySet()){
 			String txt = "(" + entry.getKey() + ")" + " " + entry.getValue();
 	    	listOfGroups[index] = new CheckBoxListItem(txt);
-	    	model.addElement(listOfGroups[index]);
+	    	listModel.addElement(listOfGroups[index]);
 	    	++index;
 		}
 		return true;

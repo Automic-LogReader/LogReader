@@ -82,7 +82,7 @@ public class ProgressDialog extends JDialog {
 		exitButton = new JButton("Close");
 		exitButton.setVisible(false);
 		exitButton.addActionListener(e -> {
-			view.submitButton.setEnabled(true);
+			view.btnSubmit.setEnabled(true);
 			this.setVisible(false);
 		});
 		exitButton.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -141,7 +141,7 @@ public class ProgressDialog extends JDialog {
 		
 		this.addWindowListener(new WindowAdapter(){
 			public void windowClosing(WindowEvent e){
-				view.submitButton.setEnabled(true);
+				view.btnSubmit.setEnabled(true);
 			}
 		});
 	}
