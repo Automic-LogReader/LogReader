@@ -134,9 +134,13 @@ public class UserView extends JFrame{
 	protected JPopupMenu popupMenu;
 	private JPanel pnlTreeView;
 	
+	
 	/**
-	 * Create the frame.
-	 * @throws IOException 
+	 * Creates the UserView frame
+	 * @param menu 		MainMenu window that instantiated the UserView
+	 * @param isAdmin 		Administrator status
+	 * @throws ClassNotFoundException	Class not found
+	 * @throws SQLException	SQL Exception
 	 */
 	public UserView(MainMenu menu, boolean isAdmin) throws ClassNotFoundException, SQLException {
 		hasCopiedOriginalKeyWords = false;
@@ -174,9 +178,9 @@ public class UserView extends JFrame{
 	 * Creates DB connection and then fills the data structures
 	 * mapping the keywords to their respective folders
 	 * @param stmt: SQL Statement
-	 * @throws SQLException
+	 * @throws SQL Exception
 	 */
-	void fillKeywords(Statement stmt) throws SQLException{
+	protected void fillKeywords(Statement stmt) throws SQLException{
 		keyWords.clear();
 		folderMap.clear();
 		folderSet.clear();
@@ -215,10 +219,10 @@ public class UserView extends JFrame{
 	/**
 	 * Starts the thread to start parsing the log file. Returns if
 	 * the path parameter given was not valid.
-	 * @param path
-	 * @throws IOException
+	 * @param path	The path of the log file to be parsed through
+	 * @throws IOException	IO Exception
 	 */
-	void findLogErrors(String path) throws IOException{
+	private void findLogErrors(String path) throws IOException{
 		logFile = path;
 		File file = new File(path);
 		if (!file.exists()){
@@ -266,12 +270,12 @@ public class UserView extends JFrame{
 	/**
 	 * Helper function called before LogParse. Fills the keyWords set with 
 	 * the set of keywords that the parser needs to look for.
-	 * @param selectedTab
+	 * @param selectedTab	The current tab in the treeview
 	 */
 	void updateKeyWords(int selectedTab){
 		keyWords.clear();
 		if (selectedTab == 0){
-			Enumeration g = ((DefaultMutableTreeNode) cbTree.getModel().getRoot()).preorderEnumeration();
+			Enumeration<?> g = ((DefaultMutableTreeNode) cbTree.getModel().getRoot()).preorderEnumeration();
 			while (g.hasMoreElements()){
 				DefaultMutableTreeNode node = (DefaultMutableTreeNode) g.nextElement();
 				Object obj = node.getUserObject();  
@@ -301,10 +305,10 @@ public class UserView extends JFrame{
 		
 	/**
 	 * Maps the keyywords to the solution messages in a HashMap
-	 * @param stmt
-	 * @throws SQLException
+	 * @param stmt	SQL Statement
+	 * @throws SQLException	SQL error
 	 */
-	void createErrorDictionary(Statement stmt) throws SQLException{
+	protected void createErrorDictionary(Statement stmt) throws SQLException{
 		String query = "select Keyword, Suggested_Solution from logerrors";
 		ResultSet rs = stmt.executeQuery(query);
 		while(rs.next())
@@ -316,10 +320,10 @@ public class UserView extends JFrame{
 	/**
 	 * Prepares the GUI for UserView. Since the Admin has all of the user functionality,
 	 * the boolean isAdmin determines if the "Admin Settings" button is enabled
-	 * @param menu
-	 * @param isAdmin
+	 * @param menu MainMenu window that instantiated the UserView
+	 * @param isAdmin Administrator status
 	 */
-	void prepareGUI(MainMenu menu, boolean isAdmin){
+	private void prepareGUI(MainMenu menu, boolean isAdmin){
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 1500, 400);
 		setLocationRelativeTo(null);
@@ -343,11 +347,8 @@ public class UserView extends JFrame{
 		
 		pnlBottom.setLayout(new BoxLayout(pnlBottom, BoxLayout.X_AXIS));
 		
-		Component horizontalStrut_2 = Box.createHorizontalStrut(20);
-		pnlBottom.add(horizontalStrut_2);
-		
-		Component horizontalStrut_4 = Box.createHorizontalStrut(20);
-		pnlBottom.add(horizontalStrut_4);
+		pnlBottom.add(Box.createHorizontalStrut(20));
+		pnlBottom.add(Box.createHorizontalStrut(20));
 		
 		JButton btnPreference = new JButton("Preferences");
 		btnPreference.addActionListener(e -> {
@@ -731,6 +732,10 @@ public class UserView extends JFrame{
 		treeModel.reload();
 	}
 	
+	/**
+	 * Populates the DefaultListModel with the groups to be displayed in the group view
+	 * @return Returns true for succesful creation of group view, false for empty group list
+	 */
 	protected boolean createGroupView(){
 		listModel.clear();
 		if (GroupInfo.isEmpty()){
@@ -749,9 +754,8 @@ public class UserView extends JFrame{
 	
 	/**
 	 * Saves the user's selections in the AND/OR/NOT view to arraylists 
-	 * that will be passed to the LogicEvaluator file. Returns true if 
-	 * save was successful, false otherwise.
-	 * @return
+	 * that will be passed to the LogicEvaluator file. 
+	 * @return Returns true if save was succesful, false otherwise.
 	 */
 	private boolean saveAndOrNot(){
 		keyWordArrayList.clear();
@@ -806,8 +810,8 @@ public class UserView extends JFrame{
 	
 	/**
 	 * Loads the group info into a HashMap
-	 * @param stmt
-	 * @throws SQLException
+	 * @param stmt SQL statement
+	 * @throws SQLException SQL Exception
 	 */
 	protected void loadGroupInfo(Statement stmt) throws SQLException{
 		GroupInfo.clear();

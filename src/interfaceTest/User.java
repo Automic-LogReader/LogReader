@@ -11,8 +11,11 @@ public class User {
 
 	protected UserView myView;
 	
-	public User(MainMenu menu, boolean isAdmin)
-	{
+	/**
+	 * @param menu MainMenu frame that instantiated the User
+	 * @param isAdmin Administrator status
+	 */
+	public User(MainMenu menu, boolean isAdmin){
 		
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {

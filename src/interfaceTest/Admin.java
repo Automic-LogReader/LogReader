@@ -12,8 +12,7 @@ import java.io.IOException;
 
 public class Admin extends User {
 	
-	public Admin(MainMenu menu) throws IOException
-	{
+	public Admin(MainMenu menu) throws IOException{
 		super(menu, true);
 	}
 }

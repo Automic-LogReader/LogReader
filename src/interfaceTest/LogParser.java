@@ -14,9 +14,9 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
-@SuppressWarnings("unused")
+
 public class LogParser {
-	protected String [] headers = {"Error #", "Timestamp",
+	protected final String [] headers = {"Error #", "Timestamp",
 			"Keywords", "Error Message", "Suggested Solution"};
 	protected List<Object[]> errorData = new ArrayList<Object[]>();
 	private Object [][] data;
@@ -39,9 +39,6 @@ public class LogParser {
 	private LogicEvaluator logicEvaluator;
 	
 	protected static UserView view;
-	
-	private int correct = 0;
-	private int incorrect = 0;
 	
 	public LogParser(UserView view, int tab){
 		selectedTab = tab;
@@ -174,7 +171,6 @@ public class LogParser {
 			data[i] = errorData.get(i);
 		}
 		makeTable();
-		System.out.println("Non-matching arrow errors: " + incorrect + " hidden errors: " + correct);
 	}
 	
 	Object[] parseArrowError(BufferedReader logbr, String timeStamp, String[] currArray) throws IOException{
@@ -184,9 +180,7 @@ public class LogParser {
 		tempEntry[0] = errorCount;
 		tempEntry[1] = timeStamp;
 		tempEntry[2] = "===>";
-		int arrowindex = 0;
-		boolean timeStampFound = false;
-        boolean uCodeFound = false;  
+		int arrowindex = 0;  
         boolean closingArrowTagFound = false;
         boolean outsideTimeStampBounds = false;
         StringBuilder errorMsg = new StringBuilder();
@@ -212,14 +206,10 @@ public class LogParser {
 		logLine = logbr.readLine();
 		while (!closingArrowTagFound && logLine != null){
 			updateProgress();
-			timeStampFound = false;
-			uCodeFound = false;
 			words = logLine.split(" ");
 			
 			if (logLine.contains("===>")){
 				if (logLine.contains("Time critical")){
-					//System.out.println(logLine);
-					incorrect++;
 					errorCount++;
 					tempEntry[3] = firstLineOfError;
 					String[] tempArray = logLine.split(" ");

@@ -27,71 +27,69 @@ import javax.swing.Box;
 @SuppressWarnings("serial")
 public class ProgressDialog extends JDialog {
 
-	private final JPanel contentPanel = new JPanel();
+	private final JPanel pnlMain = new JPanel();
 	private JProgressBar progressBar;
-	private JLabel lblNewLabel;
-	private JButton exitButton;
-	private JButton exportButton;
-	private JLabel lblNewLabel_2;
+	private JLabel lblTop;
+	private JButton btnExit;
+	private JButton btnExport;
+	private JLabel lblBottom;
 	
 	public ProgressDialog(File file, UserView view) {
 		prepareGUI(file, view);
 	}
 
 	
-	void updateProgress(int i)
-	{
+	void updateProgress(int i){
 		progressBar.setValue(i);
-		lblNewLabel.setText("Parsing through file..." + i + "% complete");
+		lblTop.setText("Parsing through file..." + i + "% complete");
 	}
 	
-	void doneParse(int numErrors)
-	{
+	void doneParse(int numErrors){
 		progressBar.setValue(100);
-		lblNewLabel.setText("Parsing through file... done!");
-		lblNewLabel_2.setText("Number of errors found: " + numErrors); 
-		exportButton.setVisible(true);
-		exitButton.setVisible(true);
+		lblTop.setText("Parsing through file... done!");
+		lblBottom.setText("Number of errors found: " + numErrors); 
+		btnExport.setVisible(true);
+		btnExit.setVisible(true);
 	}
 	
 	void prepareGUI(File file, UserView view){
 		setBounds(200, 200, 300, 200);
 		setLocationRelativeTo(null);
 	
-		getContentPane().add(contentPanel, BorderLayout.CENTER);
-		contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
-		contentPanel.setBorder(new EmptyBorder(new Insets(10, 10, 10, 10)));
+		getContentPane().add(pnlMain, BorderLayout.CENTER);
+		pnlMain.setLayout(new BoxLayout(pnlMain, BoxLayout.Y_AXIS));
+		pnlMain.setBorder(new EmptyBorder(new Insets(10, 10, 10, 10)));
 		
 		progressBar = new JProgressBar(0, 100);
 		//progressBar = new JProgressBar(0, fileSize);
 		progressBar.setBorder(new EmptyBorder(10, 10, 10, 10));
 		progressBar.setAlignmentX(Component.CENTER_ALIGNMENT);
-		contentPanel.add(progressBar);
+		pnlMain.add(progressBar);
 		
-		lblNewLabel = new JLabel("");
-		lblNewLabel.setBorder(new EmptyBorder(5, 0, 5, 0));
-		lblNewLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-		contentPanel.add(lblNewLabel);
+		lblTop = new JLabel("");
+		lblTop.setBorder(new EmptyBorder(5, 0, 5, 0));
+		lblTop.setAlignmentX(Component.CENTER_ALIGNMENT);
+		pnlMain.add(lblTop);
 		
-		lblNewLabel_2 = new JLabel("");
-		lblNewLabel_2.setBorder(new EmptyBorder(0, 0, 5, 0));
-		lblNewLabel_2.setAlignmentX(Component.CENTER_ALIGNMENT);
-		contentPanel.add(lblNewLabel_2); 
+		lblBottom = new JLabel("");
+		lblBottom.setBorder(new EmptyBorder(0, 0, 5, 0));
+		lblBottom.setAlignmentX(Component.CENTER_ALIGNMENT);
+		pnlMain.add(lblBottom); 
 		
 		
-		exitButton = new JButton("Close");
-		exitButton.setVisible(false);
-		exitButton.addActionListener(e -> {
+		btnExit = new JButton("Close");
+		btnExit.setVisible(false);
+		btnExit.addActionListener(e -> {
 			view.btnSubmit.setEnabled(true);
 			this.setVisible(false);
 		});
-		exitButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-		contentPanel.add(exitButton);
+		btnExit.setAlignmentX(Component.CENTER_ALIGNMENT);
+		pnlMain.add(btnExit);
 		
-		contentPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+		pnlMain.add(Box.createRigidArea(new Dimension(0, 10)));
 		
-		exportButton = new JButton("Export Results");
-		exportButton.addActionListener(e -> {
+		btnExport = new JButton("Export Results");
+		btnExport.addActionListener(e -> {
 			JFileChooser chooser = new JFileChooser(){
 			    @Override
 			    public void approveSelection(){
@@ -135,9 +133,9 @@ public class ProgressDialog extends JDialog {
 				}
 		    }
 		});
-		exportButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-		exportButton.setVisible(false);
-		contentPanel.add(exportButton);
+		btnExport.setAlignmentX(Component.CENTER_ALIGNMENT);
+		btnExport.setVisible(false);
+		pnlMain.add(btnExport);
 		
 		this.addWindowListener(new WindowAdapter(){
 			public void windowClosing(WindowEvent e){

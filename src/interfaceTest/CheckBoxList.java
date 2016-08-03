@@ -12,19 +12,34 @@ public class CheckBoxList {
 		   private String label;
 		   private boolean isSelected = false;
 		 
-		   public CheckBoxListItem(String label) {
+		   /**
+		    * Constructs a CheckBoxListItem given a specific label
+		 * @param label
+		 */
+		public CheckBoxListItem(String label) {
 		      this.label = label;
 		   }
 		 
-		   public boolean isSelected() {
+		   /**
+		    * Returns the boolean isSelected value of the CheckBoxListItem
+		 * @return
+		 */
+		public boolean isSelected() {
 		      return isSelected;
 		   }
 		 
-		   public void setSelected(boolean isSelected) {
+		   /**
+		    * Sets the boolean isSelected value of the CheckBoxListItem
+		 * @param isSelected
+		 */
+		public void setSelected(boolean isSelected) {
 		      this.isSelected = isSelected;
 		   }
 		 
-		   public String toString() {
+		   /* (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
+		public String toString() {
 		      return label;
 		   }
 		}

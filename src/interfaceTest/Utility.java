@@ -13,7 +13,12 @@ public final class Utility {
 		//Do nothing
 	}
 	
-	static boolean noCheckBoxSelected(CheckBoxListItem[] cbList){
+	/**
+	 * Helper function to determine whether elements within a CheckBoxList are selected or not
+	 * @param cbList The CheckBoxListItem array to be evaluated
+	 * @return Returns true if no checkbox was selected, false if at least one was selected.
+	 */
+	public static boolean noCheckBoxSelected(CheckBoxListItem[] cbList){
 		if (cbList == null){
 			return true;
 		}
@@ -26,7 +31,12 @@ public final class Utility {
 		return true;
 	}
 	
-	static boolean noCheckBoxSelected(CBTree tree){
+	/**
+	 * Helper function to determine whether elements within a CheckBoxList are selected or not
+	 * @param tree CheckBox Tree to be evaluated
+	 * @return Returns true if no checkbox was selected, false if at least one was selected.
+	 */
+	public static boolean noCheckBoxSelected(CBTree tree){
 		if (tree == null){
 			return true;
 		}
