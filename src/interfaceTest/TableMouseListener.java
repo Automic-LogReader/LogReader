@@ -1,11 +1,15 @@
 package interfaceTest;
 
+import java.awt.Desktop;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import javax.swing.JTable;
 
@@ -38,5 +42,25 @@ public class TableMouseListener extends MouseAdapter {
         	clpbrd.setContents(stringSelection, null);
     	}
     	else return;
+    }
+    
+    public static void openURI() throws URISyntaxException{
+    	Object valueInCell = table.getValueAt(currentRow, currentColumn);
+    	if (valueInCell instanceof String && currentColumn == 4){
+    		String uriString = (String) valueInCell;
+    		System.out.println(uriString);
+    		URI uri = new URI("http://google.com");
+    		openURIHelper(uri);
+    	}
+    }
+    
+    private static void openURIHelper(URI uri){
+    	if (Desktop.isDesktopSupported()) {
+    		try {
+    			Desktop.getDesktop().browse(uri);
+    		} catch (IOException e){
+    			e.printStackTrace();
+    		}
+    	}
     }
 }

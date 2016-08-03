@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
@@ -175,21 +174,21 @@ public class LogParser {
 	
 	Object[] parseArrowError(BufferedReader logbr, String timeStamp, String[] currArray) throws IOException{
 		
-		Object[] tempEntry = new Object[5];
+		Object[] entry = new Object[5];
 		String[] words;
-		tempEntry[0] = errorCount;
-		tempEntry[1] = timeStamp;
-		tempEntry[2] = "===>";
+		entry[0] = errorCount;
+		entry[1] = timeStamp;
+		entry[2] = "===>";
 		int arrowindex = 0;  
         boolean closingArrowTagFound = false;
         boolean outsideTimeStampBounds = false;
         StringBuilder errorMsg = new StringBuilder();
         
-        if (!compareTimeStamp(currArray)){
+        if (!isTimeBoundValid(currArray)){
 			outsideTimeStampBounds = true;
 		}
-		if (view.solutions.get(tempEntry[2]) != null){
-			tempEntry[4] = view.solutions.get(tempEntry[2]);
+		if (view.solutions.get(entry[2]) != null){
+			entry[4] = view.solutions.get(entry[2]);
 		}
 
 		for (int i=0; i<currArray.length; i++){
@@ -211,7 +210,7 @@ public class LogParser {
 			if (logLine.contains("===>")){
 				if (logLine.contains("Time critical")){
 					errorCount++;
-					tempEntry[3] = firstLineOfError;
+					entry[3] = firstLineOfError;
 					String[] tempArray = logLine.split(" ");
 					String tempTimeStamp = "";
 					for (String s : tempArray){
@@ -221,7 +220,7 @@ public class LogParser {
 						}
 					}
 					errorData.add(parseArrowError(logbr, tempTimeStamp, tempArray));
-					return tempEntry;
+					return entry;
 				}
 				if (arrowindex < words.length){
 					for (int i = arrowindex; i < words.length; i++){
@@ -246,12 +245,12 @@ public class LogParser {
 				logLine = logbr.readLine();
 			}
 		}
-		tempEntry[3] = errorMsg.toString();
+		entry[3] = errorMsg.toString();
 		if (outsideTimeStampBounds){
 			errorCount--;
 			return null;
 		}
-		return tempEntry;
+		return entry;
 	}
 	
 	Object[] parseDeadlockError(BufferedReader logbr, String timeStamp) throws IOException {
@@ -259,6 +258,7 @@ public class LogParser {
            int difference = 20;
            ArrayList <String> errorLines = new ArrayList<String>();
            boolean matchingDeadlock = false;
+           boolean outsideTimeStampBounds = false;
            StringBuilder testLine = new StringBuilder();
            StringBuilder errorMsg = new StringBuilder();
            String[] words;
@@ -272,6 +272,11 @@ public class LogParser {
                   testLine.setLength(0);
                   updateProgress();
                   words = Line.split(" ");
+                  if (Line.contains("===>") && Line.contains("Time critical")){
+                	  if (!isTimeBoundValid(words)){
+              			outsideTimeStampBounds = true;
+              		}
+                  }
                   for(String testWord : words){
                         if(!timeStampFound && testWord.length() == 19){
                                timeStampFound = true;
@@ -280,8 +285,9 @@ public class LogParser {
                                //Make a new if statement here
                                if(timeStampDifference(testWord, timeStamp)){
                                       entry[3] = " ";
-                                      if (view.solutions.get(entry[2]) != null)
+                                      if (view.solutions.get(entry[2]) != null){
                                              entry[4] = view.solutions.get(entry[2]);
+                                      }
                                       return entry;
                                }
                         }
@@ -301,19 +307,28 @@ public class LogParser {
                                              errorMsg.append(errorLines.get(i));
                                       }
                                       entry[3] = errorMsg.toString();
-                                      if (view.solutions.get(entry[2]) != null)
+                                      if (view.solutions.get(entry[2]) != null){
                                              entry[4] = view.solutions.get(entry[2]);
-                                      
+                                      }
+                                      if (outsideTimeStampBounds){
+                                 			errorCount--;
+                                 			return null;
+                                 	  }
                                       return entry;
                                }
-                               else
+                               else {
                                       testLine.append(testWord + " ");  
+                               }
                         }      
                   }
                   //System.out.println("I am adding a line to errormsg");
                   errorLines.add(testLine.toString());
                   Line = logbr.readLine();
            }
+           if (outsideTimeStampBounds){
+   			errorCount--;
+   			return null;
+   			}
            return entry;
     }
 
@@ -328,8 +343,7 @@ public class LogParser {
 		
 		view.errorTable = new JTable(tableModel){
 			//Renders each columnn to fit the data
-			public Component prepareRenderer(TableCellRenderer renderer, int row, int column) 
-			{
+			public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
 				Component component = super.prepareRenderer(renderer, row, column);
 				int rendererWidth = component.getPreferredSize().width;
 	           TableColumn tableColumn = getColumnModel().getColumn(column);
@@ -349,16 +363,20 @@ public class LogParser {
            int i1 = Integer.parseInt(testStamp.substring(16));
            int i2 = Integer.parseInt(timeStamp.substring(16));
            if (i1 > i2){
-                  if((i1 - i2) > 20)
+                  if((i1 - i2) > 20) {
                         return true;
-                  else
+                  }
+                  else {
                         return false;
+                  }
            }
-           else{
-                  if((i2 - i1) > 20)
+           else {
+                  if((i2 - i1) > 20){ 
                         return true;
-                  else 
+                  }
+                  else {
                         return false;
+                  }
            }
     }
     
@@ -372,11 +390,11 @@ public class LogParser {
 		}
 	}
 	
-	boolean compareTimeStamp(String[] line){
+	boolean isTimeBoundValid(String[] line){
 		String time = line[(line.length-1)].replaceAll("[.]", "");
 		time = time.replaceAll("\'", "");
 		time = time.replace(":", ".");
-		//System.out.println(time);
+		System.out.println(time);
 		double t = Double.parseDouble(time);
 		//System.out.println(t + " lower: " + view.lowerBound + " upper: " + view.upperBound + " result: " + Boolean.toString((t >= view.lowerBound) && (t <= view.upperBound)));
 		return ((t >= view.lowerBound) && (t <= view.upperBound));

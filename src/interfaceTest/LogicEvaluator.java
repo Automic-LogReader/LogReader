@@ -508,14 +508,14 @@ public class LogicEvaluator {
 	private String makeArrowLine(BufferedReader logbr, String logLine, String[] currArray) throws IOException {
 		String[] words;
 		int arrowindex = 0;
-		boolean timeStampFound = false;
-        boolean uCodeFound = false;  
         boolean closingArrowTagFound = false;
         boolean outsideTimeStampBounds = false;
         StringBuilder errorMsg = new StringBuilder();
-        //if (!logParse.compareTimeStamp(currArray)) {
-			//outsideTimeStampBounds = true;
-        //}
+        if (logLine.contains("Time critical")){
+	        if (!logParse.isTimeBoundValid(currArray)) {
+				outsideTimeStampBounds = true;
+	        }
+		}
 		for (int i=0; i<currArray.length; i++) {
 			if (currArray[i].equals("===>")) {
 				arrowindex = i-1;
@@ -527,8 +527,6 @@ public class LogicEvaluator {
 		logLine = logbr.readLine();
 		while (!closingArrowTagFound && logLine != null) {
 			logParse.updateProgress();
-			timeStampFound = false;
-			uCodeFound = false;
 			words = logLine.split(" ");
 			
 			if (logLine.contains("===>")) {

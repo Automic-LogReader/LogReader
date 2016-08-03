@@ -595,6 +595,16 @@ public class UserView extends JFrame{
         });
         popupMenu.add(menuItemCopy);
         
+        JMenuItem menuItemUrl = new JMenuItem("See suggested solution online");
+        menuItemUrl.addActionListener(e -> {
+        	try {
+				TableMouseListener.openURI();
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+        });
+        popupMenu.add(menuItemUrl);
+        
 		errorTable = new JTable(tableModel);
 		errorTable.setCellSelectionEnabled(true);
 		errorTable.setComponentPopupMenu(popupMenu);
@@ -646,7 +656,7 @@ public class UserView extends JFrame{
 			}
 		});
 		cb.setSelectedIndex(-1);
-
+		
 		return cb;
 	}
 
