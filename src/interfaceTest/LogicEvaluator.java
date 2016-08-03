@@ -6,40 +6,43 @@ import java.util.ArrayList;
 
 public class LogicEvaluator {
 
-	//LogParser object that sends lines from the buffer to this class
+	/**LogParser object that sends lines from the buffer to this class*/
 	private LogParser logParse;
-	//Holds the firstKeyword that the user chose
+	/**Holds the firstKeyword that the user chose*/
 	private String firstKeyword;
-	//Contains matching booleans for whether a keyword is NOT-ed
+	/**Contains matching booleans for whether a keyword is NOT-ed*/
 	private ArrayList<Boolean> hasNot = new ArrayList<Boolean>();
-	//Contains the lines for deadlock errors which will be parsed upon for duplicates
+	/**Contains the lines for deadlock errors which will be parsed upon for duplicates*/
 	private ArrayList <String> deadlockOrLines = new ArrayList<String>();
-	//Contains the lines for arrow errors which will be parsed upon for duplicates
+	/**Contains the lines for arrow errors which will be parsed upon for duplicates*/
 	private ArrayList <String> arrowOrLines = new ArrayList<String>();
-	//Contains the final valid lines that entries will be made from
+	/**Contains the final valid lines that entries will be made from*/
 	private ArrayList<String> validLines = new ArrayList<String>();
-	//Contains the list of words that are used with the operand "And"
+	/**Contains the list of words that are used with the operand "And"*/
 	private ArrayList<String> andWords = new ArrayList<String>();
-	//Contains the operands that the user has chosen
+	/**Contains the operands that the user has chosen*/
 	private ArrayList<String> operands = new ArrayList<String>();
-	//The total number of errors/entries from the given logic statement
+	/**The total number of errors/entries from the given logic statement*/
 	private int errorCount;
-	//The word that the user has chosen to use the operand OR with
+	/**The word that the user has chosen to use the operand OR with*/
 	private String orWord;
-	//True if the user has used the keyword DEADLOCK with the OR operand
+	/**True if the user has used the keyword DEADLOCK with the OR operand*/
 	private boolean OR_DEADLOCK;
-	//True if the user has used the keyword DEADLOCK with the AND NOT operand
+	/**True if the user has used the keyword DEADLOCK with the AND NOT operand*/
 	private boolean AND_NOT_DEADLOCK;
-	//True if the user has used the keyword DEADLOCK with the AND operand
+	/**True if the user has used the keyword DEADLOCK with the AND operand*/
 	private boolean AND_DEADLOCK;
-	//True if the user has used the keyword ===> with the AND NOT operand
+	/**True if the user has used the arrow keyword with the AND NOT operand*/
 	private boolean AND_NOT_ARROW;
-	//True if the user has used the keyword ===> with the AND operand
+	/**True if the user has used the arrow keyword with the AND operand*/
 	private boolean AND_ARROW;
-	//True if the user has used the keyword ===> with the OR operand
+	/**True if the user has used the arrow keyword with the OR operand*/
 	private boolean OR_ARROW;
 	
-	LogicEvaluator(LogParser logParse) {
+	/** Creates a LogicEvaluator object
+	 * @param logParse The LogParser that instantiates the LogicEvaluator
+	 */
+	public LogicEvaluator(LogParser logParse) {
 		this.logParse = logParse;
 		orWord = "";
 		OR_DEADLOCK = false;
@@ -47,28 +50,45 @@ public class LogicEvaluator {
 		AND_DEADLOCK = false;
 	}
 	
-	void setkeyWords(ArrayList <String> keyWords) {
+	/**
+	 * Sets the Logic Evaluator's keyWords ArrayList
+	 * @param keyWords The ArrayList to copy into the keyWords ArrayList
+	 */
+	protected void setkeyWords(ArrayList <String> keyWords) {
 		this.andWords = keyWords;
 	}
 	
-	void setOperands(ArrayList <String> operands) {
+	/**
+	 * Sets the Logic Evaluator's Operands ArrayList
+	 * @param operands The ArrayList to copy into the operands ArrayList
+	 */
+	protected void setOperands(ArrayList <String> operands) {
 		this.operands = operands;
 	}
 	
-	void setHasNot(ArrayList <Boolean> hasNot) {
+	/**
+	 * Sets the Logic Evaluator's hasNot ArrayList
+	 * @param hasNot The ArrayList to copy into the HasNot ArrayList
+	 */
+	protected void setHasNot(ArrayList <Boolean> hasNot) {
 		this.hasNot = hasNot;
 	}
 	
-	int getErrorCount() {
+	/**
+	 * Gets the number of errors detected by the Logic Evaluator
+	 * @return The amount of errors detected by the Logic Evaluator 
+	 * for the AND OR NOT logic
+	 */
+	public int getErrorCount() {
 		return errorCount;
 	}
 	
 	/**
-	 * This function checks for duplicate errors against DEADLOCK and ===> errors, and 
+	 * This function checks for duplicate errors against DEADLOCK and arrow errors, and 
 	 * then creates entries for the interface table based off of the entries in 
 	 * the arraylist validLines. 
 	 */
-	void makeEntries() {
+	protected void makeEntries() {
 		
 		if (!deadlockOrLines.isEmpty()) {
 			removeDuplicates(deadlockOrLines);
@@ -178,11 +198,11 @@ public class LogicEvaluator {
 	 * depending on the logical statement that the user has inputed. Lines that
 	 * fit the statement will be put into the above arraylists while invalid
 	 * lines will be ignored. 
-	 * @param line
-	 * @param br
-	 * @throws IOException
+	 * @param line is a string containing the first line to be read
+	 * @param br is a BufferedReader that parses through the lines of the log file
+	 * @throws IOException if there is an error with the BufferedReader
 	 */
-	void addLines(String line, BufferedReader br) throws IOException {
+	protected void addLines(String line, BufferedReader br) throws IOException {
 		//If they don't want deadlock lines, then we skip over them
 		if(AND_NOT_DEADLOCK) {
 			if(line.contains("DEADLOCK")) {
@@ -257,10 +277,10 @@ public class LogicEvaluator {
 		
 	/**
 	 * This function looks at the logical statement that the user has given and checks
-	 * for special cases (such as AND NOT DEADLOCK, AND NOT ===> and sees if an OR 
+	 * for special cases (such as AND NOT DEADLOCK, AND NOT ARROW and sees if an OR 
 	 * operand was set. If so, then the variable orWord is set as the corresponding word. 
 	 */
-	void addORs()
+	protected void addORs()
 	{
 		if(andWords != null){
 			firstKeyword = andWords.get(0);
@@ -302,10 +322,9 @@ public class LogicEvaluator {
 	 * @param logbr A buffered reader to advance through the file, same br from LogParser
 	 * @param line The file line where an arrow was found
 	 * @return Returns a string that gives the program a new place to parse through
-	 * @throws IOException
+	 * @throws IOException if there is an error with the BufferedReader
 	 */
-	String progressArrowBr(BufferedReader logbr, String line) throws IOException
-	{
+	private String progressArrowBr(BufferedReader logbr, String line) throws IOException {
         boolean matchingArrow = false;
         String timeStamp = "";
         String[] temp = line.split(" ");
@@ -357,10 +376,9 @@ public class LogicEvaluator {
 	 * @param logbr A buffered reader to advance through the file, same br from LogParser
 	 * @param line The file line where a DEADLOCK was found
 	 * @return Returns a string that gives the program a new place to parse through
-	 * @throws IOException
+	 * @throws IOException if there is an error with the BufferedReader
 	 */
-	String progressDeadlockBr(BufferedReader logbr, String line) throws IOException
-	{
+	private String progressDeadlockBr(BufferedReader logbr, String line) throws IOException {
         boolean matchingDeadlock = false;
         String timeStamp = "";
         String[] temp = line.split(" ");
@@ -409,10 +427,9 @@ public class LogicEvaluator {
 	 * @param logbr Buffered Reader to read through file, same br from LogParser
 	 * @param line The fileline where DEADLOCK first occurred
 	 * @return Returns a string with the full DEADLOCK error
-	 * @throws IOException
+	 * @throws IOException if there is an error with the BufferedReader
 	 */
-	String makeDeadlockLine(BufferedReader logbr, String line) throws IOException
-	{
+	private String makeDeadlockLine(BufferedReader logbr, String line) throws IOException {
         ArrayList <String> errorLines = new ArrayList<String>();
         boolean matchingDeadlock = false;
         StringBuilder testLine = new StringBuilder();
@@ -483,13 +500,12 @@ public class LogicEvaluator {
 	 * the line including the matching arrow. If there is only a single arrow, then only the
 	 * first line is returned.  
 	 * @param logbr Buffered Reader to read through file, same br from LogParser
-	 * @param logLine Fileline where a ===> was first found
+	 * @param logLine Fileline where an arrow error was first found
 	 * @param currArray The same line as above but split into an array using split(" ")
-	 * @return Returns a string with the full ===> error
-	 * @throws IOException
+	 * @return Returns a string with the full arrow error
+	 * @throws IOException If there is a problem reading with the bufferedReader
 	 */
-	String makeArrowLine(BufferedReader logbr, String logLine, String[] currArray) throws IOException
-	{
+	private String makeArrowLine(BufferedReader logbr, String logLine, String[] currArray) throws IOException {
 		String[] words;
 		int arrowindex = 0;
 		boolean timeStampFound = false;

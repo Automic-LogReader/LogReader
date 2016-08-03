@@ -175,10 +175,8 @@ public class UserView extends JFrame{
 	}
 	
 	/**
-	 * Creates DB connection and then fills the data structures
-	 * mapping the keywords to their respective folders
-	 * @param stmt: SQL Statement
-	 * @throws SQL Exception
+	 * @param stmt SQL statement to be executed within the function
+	 * @throws SQLException if there is an error connecting 
 	 */
 	protected void fillKeywords(Statement stmt) throws SQLException{
 		keyWords.clear();
@@ -188,8 +186,7 @@ public class UserView extends JFrame{
 		
 		String query = "select Keyword, Folder from logerrors";
 		ResultSet rs = stmt.executeQuery(query);
-		while(rs.next())
-		{
+		while(rs.next()){
 			keyWords.add(rs.getString("Keyword"));
 			folderMap.put(rs.getString("Keyword"), rs.getString("Folder"));
 			folderSet.add(rs.getString("Folder"));
@@ -269,7 +266,9 @@ public class UserView extends JFrame{
 	
 	/**
 	 * Helper function called before LogParse. Fills the keyWords set with 
-	 * the set of keywords that the parser needs to look for.
+	 * the set of keywords that the parser uses to base its searches off of.
+	 * Function is only called when the user is selecting from the CheckBoxTree
+	 * or from the group view
 	 * @param selectedTab	The current tab in the treeview
 	 */
 	void updateKeyWords(int selectedTab){
@@ -362,7 +361,6 @@ public class UserView extends JFrame{
 		JButton chooseFile = new JButton("Choose File");
 		chooseFile.addActionListener(e -> {
 		    JFileChooser chooser = new JFileChooser();
-		    //chooser.showOpenDialog(getRootPane());
 		    FileNameExtensionFilter filter = new FileNameExtensionFilter(
 		        "Text Files", "txt", "text");
 		    chooser.setFileFilter(filter);
@@ -430,7 +428,6 @@ public class UserView extends JFrame{
 		
 		pnlBottom.add(Box.createRigidArea(new Dimension(10,0)));
 		
-		
 		JButton btnAdmin = new JButton("Admin Features");
 		btnAdmin.setPreferredSize(new Dimension(130, 30));
 		btnAdmin.setToolTipText("Modify entries, folders, solutions");
@@ -439,7 +436,6 @@ public class UserView extends JFrame{
 				admin = new AdminView(this);
 				admin.setVisible(true);
 			} catch (Exception e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 			
@@ -612,6 +608,8 @@ public class UserView extends JFrame{
 	}
 	
 	/**
+	 * This function is a helper function that creates a JComboBox that 
+	 * populates the AND/OR/NOT tab of UserView's tabbedpane. 
 	 * @param option: Determines whether the JComboBox is an operand or an operator
 	 * @return Returns the JComboBox based off of the option (operand, operator)
 	 */
@@ -653,7 +651,11 @@ public class UserView extends JFrame{
 	}
 
 	/**
-	 * Helper function to generate the checkbox tree view
+	 * Helper function that generates the CheckBoxTree view
+	 * and adds a mouselistener to the tree to aid selection.
+	 * At the end of the function, it calls updateTreeView() 
+	 * which fills the DefaultTreeModel with nodes from the 
+	 * treeMap HashMap.
 	 */
 	void createTreeView(){
 		cbTree = new CBTree();

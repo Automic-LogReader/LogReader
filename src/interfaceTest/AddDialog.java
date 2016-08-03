@@ -1,8 +1,18 @@
+/**
+ * @file AddDialog.java
+ * @authors Leah Talkov, Jerry Tsui
+ * @date 8/3/2016
+ * This class brings up a Java Dialog when the user wants to Add an entry
+ * to the database. The dialog has four fields that allow the user to enter
+ * in a keyword, the folder the keyword will belong to, an error message,
+ * and a solution. The new entry info is then given to the AdminView to be
+ * loaded into the table.
+ */
+
 package interfaceTest;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
-
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
@@ -12,17 +22,22 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
-import java.awt.Component;
 import javax.swing.Box;
 import java.awt.Dimension;
 
 @SuppressWarnings("serial")
 public class AddDialog extends JDialog {
 
+	//Main panel for the Dialog
 	private final JPanel pnlMain = new JPanel();
+	//Textfield for the keyword, which cannot be an existing keyword
 	private JTextField tfKeyword;
+	//Textfield for the error message that corresponds to the given keyword
 	private JTextField tfError;
+	//Textfield for the solution that corresponds to the given keyword
 	private JTextField tfSolution;
+	//Textfield for the folder the keyword will be put into, can be a new
+	//or an existing folder
 	private JTextField tfFolder;
 
 
@@ -65,6 +80,7 @@ public class AddDialog extends JDialog {
 		pnlMain.add(pnlKeyword);
 		pnlKeyword.setLayout(new BoxLayout(pnlKeyword, BoxLayout.X_AXIS));
 		
+		//Spaces have been added to the labels so that the text boxes line up
 		JLabel lblKeyword = new JLabel("Keyword:              ");
 		pnlKeyword.add(lblKeyword);
 
@@ -115,22 +131,26 @@ public class AddDialog extends JDialog {
 		pnlButton.setLayout(new FlowLayout());
 		getContentPane().add(pnlButton, BorderLayout.SOUTH);
 		
+		
 		JButton btnAdd = new JButton("Add");
-		btnAdd.addActionListener(e ->{
+		btnAdd.addActionListener(e -> {
+			//When the user presses the admin button, we check if there were any blanks
 			if (tfFolder.getText().equals("") || tfKeyword.getText().equals("") ||
 				tfError.getText().equals("") || tfSolution.getText().equals("")) {
 				JOptionPane.showMessageDialog(null, "All entries must be filled");
 			}
+			//We then check to see if they user has entered a keyword that already exists
 			else if (dc.getAdmin().savedWords.contains(tfKeyword.getText())) {
 				JOptionPane.showMessageDialog(null, "No duplicate keywords allowed");
 			}
+			//Otherwise we call a function from DataController that adds the entry
 			else {
 				try {
 					dc.modifyData(tfFolder.getText(), tfKeyword.getText(), 
 								tfError.getText(), tfSolution.getText(), "ADD", 0);
 				} catch (Exception e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();						}
+					e1.printStackTrace();						
+					}
 					this.setVisible(false);
 			}
 		});

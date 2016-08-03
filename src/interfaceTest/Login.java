@@ -30,36 +30,31 @@ import javax.swing.JButton;
 
 @SuppressWarnings("serial")
 public class Login extends JFrame {
-
-	private JPanel contentPane;
-	private JTextField userNameText;
-	private JPasswordField passwordText;
 	
-	private HashMap<String, String> hm = new HashMap<String, String>();
-	//Holds the text from userNameText
+	/** Main panel in the Login frame */
+	private JPanel pnlMain;
+	/** JTextField holding the UserName */
+	private JTextField tfUserName;
+	/** JTextField holding the PassWord */
+	private JPasswordField tfPassWord;
+	/** HashMap mapping valid usernames to passwords from the database */
+	private HashMap<String, String> loginHashMap = new HashMap<String, String>();
+	/**Holds the text from userNameText */
 	private String inputUsername;
-	//Holds the text from paswordText
+	/**Holds the text from paswordText */
 	private char[] inputPassword;
-	//Instantiated if the info the user entered is valid
-	private JButton submitButton;
-	//Returns user back to the main menu
-	private JButton backButton;
-
-	//Used as a holder for usernames from Usernames_Passwords.csv to 
-	//compare against the inputUsername
-	String userCheck;
-	//Used as a holder for passwords from Usernames_Passwords.csv to
-	//compare against the inputPassword
-	String[] userPwLine;
-	
+	/**Instantiated if the info the user entered is valid */
+	private JButton btnSubmit;
+	/**Returns user back to the main menu */
+	private JButton btnBack;
 	
 	/**
-	 * Create the frame.
-	 * @throws ClassNotFoundException 
-	 * @throws SQLException 
+	 * Creates the Login interface.
+	 * @param menu The MainMenu that generated the frame
+	 * @throws ClassNotFoundException if the classpath is broken
+	 * @throws SQLException if there is an error connecting to the SQL Server
 	 */
 	public Login(MainMenu menu) throws ClassNotFoundException, SQLException {
-		
 		fillHashMap();
 		
 		try {
@@ -76,51 +71,48 @@ public class Login extends JFrame {
 		
 		setTitle("Login");
 		
-		contentPane = new JPanel();
-		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-		setContentPane(contentPane);
-		contentPane.setLayout(new BorderLayout(0, 0));
+		pnlMain = new JPanel();
+		pnlMain.setBorder(new EmptyBorder(5, 5, 5, 5));
+		setContentPane(pnlMain);
+		pnlMain.setLayout(new BorderLayout(0, 0));
 		
-		JPanel panel = new JPanel();
-		contentPane.add(panel, BorderLayout.NORTH);
+		JPanel pnlTop = new JPanel();
+		pnlMain.add(pnlTop, BorderLayout.NORTH);
 		
-		JLabel lblNewLabel = new JLabel("Please enter your Username and Password");
-		panel.add(lblNewLabel);
+		JLabel lblInstruction = new JLabel("Please enter your Username and Password");
+		pnlTop.add(lblInstruction);
 		
-		JPanel panel_1 = new JPanel();
-		contentPane.add(panel_1, BorderLayout.SOUTH);
+		JPanel pnlBottom = new JPanel();
+		pnlMain.add(pnlBottom, BorderLayout.SOUTH);
 		
-		submitButton = new JButton("Submit");
-		submitButton.setPreferredSize(new Dimension(80, 25));
-		submitButton.addActionListener(e -> {
-			inputUsername = userNameText.getText();
-			inputPassword = passwordText.getPassword();
+		btnSubmit = new JButton("Submit");
+		btnSubmit.setPreferredSize(new Dimension(80, 25));
+		btnSubmit.addActionListener(e -> {
+			inputUsername = tfUserName.getText();
+			inputPassword = tfPassWord.getPassword();
 			
 			try {
-				if (checkAdmin(inputUsername, inputPassword))
-				{
+				if (checkAdmin(inputUsername, inputPassword)) {
 					Admin admin = new Admin(menu);
 					this.setVisible(false);
 				}
-				else
+				else {
 					JOptionPane.showMessageDialog(null, "The username or password is incorrect");
+				}
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
 		});
 		
-		submitButton.getInputMap(javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW).
+		btnSubmit.getInputMap(javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW).
         put(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_ENTER,0), "Enter pressed");
-		submitButton.getActionMap().put("Enter pressed", new AbstractAction()
-				{
-					public void actionPerformed(ActionEvent e)
-					{
-						inputUsername = userNameText.getText();
-						inputPassword = passwordText.getPassword();
+		btnSubmit.getActionMap().put("Enter pressed", new AbstractAction() {
+					public void actionPerformed(ActionEvent e) {
+						inputUsername = tfUserName.getText();
+						inputPassword = tfPassWord.getPassword();
 						
 						try {
-							if (checkAdmin(inputUsername, inputPassword))
-							{
+							if (checkAdmin(inputUsername, inputPassword)) {
 								Admin admin = new Admin(menu);
 								makeInvis();
 							}
@@ -132,42 +124,41 @@ public class Login extends JFrame {
 					}
 				});
 		
-		panel_1.add(submitButton);
+		pnlBottom.add(btnSubmit);
 		
-		backButton = new JButton("Back");
-		backButton.setPreferredSize(new Dimension(80, 25));
-		backButton.addActionListener(e ->{
+		btnBack = new JButton("Back");
+		btnBack.setPreferredSize(new Dimension(80, 25));
+		btnBack.addActionListener(e ->{
 			menu.setVisible(true);
 			this.setVisible(false);
 		});
-		panel_1.add(backButton);
+		pnlBottom.add(btnBack);
 		
-		JPanel panel_2 = new JPanel();
-		contentPane.add(panel_2, BorderLayout.WEST);
-		panel_2.setLayout(new BorderLayout(0, 0));
+		JPanel pnlLoginField = new JPanel();
+		pnlMain.add(pnlLoginField, BorderLayout.WEST);
+		pnlLoginField.setLayout(new BorderLayout(0, 0));
 		
-		JLabel lblNewLabel_2 = new JLabel("Password:  ");
-		panel_2.add(lblNewLabel_2, BorderLayout.SOUTH);
+		JLabel lblPassword = new JLabel("Password:  ");
+		pnlLoginField.add(lblPassword, BorderLayout.SOUTH);
 		
-		JLabel lblNewLabel_3 = new JLabel("Username:  ");
-		panel_2.add(lblNewLabel_3, BorderLayout.NORTH);
+		JLabel lblUsername = new JLabel("Username:  ");
+		pnlLoginField.add(lblUsername, BorderLayout.NORTH);
 		
-		JPanel panel_3 = new JPanel();
-		contentPane.add(panel_3, BorderLayout.CENTER);
-		panel_3.setLayout(new BorderLayout(0, 0));
+		JPanel pnlLoginText = new JPanel();
+		pnlMain.add(pnlLoginText, BorderLayout.CENTER);
+		pnlLoginText.setLayout(new BorderLayout(0, 0));
 		
-		userNameText = new JTextField();
+		tfUserName = new JTextField();
 		
-		panel_3.add(userNameText, BorderLayout.NORTH);
-		userNameText.setColumns(10);
+		pnlLoginText.add(tfUserName, BorderLayout.NORTH);
+		tfUserName.setColumns(10);
 		
-		passwordText = new JPasswordField();
-		passwordText.setEchoChar('*');
-		panel_3.add(passwordText, BorderLayout.SOUTH);
-		passwordText.setColumns(10);
+		tfPassWord = new JPasswordField();
+		tfPassWord.setEchoChar('*');
+		pnlLoginText.add(tfPassWord, BorderLayout.SOUTH);
+		tfPassWord.setColumns(10);
 		
 	}
-
 	
 	/**
 	 * This function takes in the credentials given by the user
@@ -176,34 +167,35 @@ public class Login extends JFrame {
 	 * @param passWord - Password given by the user
 	 * @return - returns true if the username and password match an 
 	 * 			 entry in Usernames_Passwords.csv, false otherwise
-	 * @throws IOException
 	 */
-	boolean checkAdmin(String userName, char[] passWord)
-	{
+	boolean checkAdmin(String userName, char[] passWord) {
 		//Blocks against no entries
 		if (userName.equals("") || passWord.equals(""))
 			return false;
 		StringBuilder pw = new StringBuilder();
-		for(int i = 0; i < passWord.length; i++)
-		{
+		for(int i = 0; i < passWord.length; i++) {
 			pw.append(passWord[i]);
 		}
 		
-		if(!hm.containsKey(userName))
-			return false;
-		else if(pw.toString().equals(hm.get(userName)))
-			return true;
-		else
-			return false;
+		if(!loginHashMap.containsKey(userName)) return false;
+		else if(pw.toString().equals(loginHashMap.get(userName))) return true;
+		else return false;
 	}
 	
-	void makeInvis()
-	{
+	/**
+	 * Makes the frame invisible
+	 */
+	private void makeInvis(){
 		this.setVisible(false);
 	}
 	
-	void fillHashMap() throws ClassNotFoundException, SQLException
-	{
+	/**
+	 * Fills loginHashMap with Key-Value pairs from the database.
+	 * This HashMap is necessary for the validation of administrator users.
+	 * @throws ClassNotFoundException if classpath is broken
+	 * @throws SQLException if error with the JDBC connection
+	 */
+	void fillHashMap() throws ClassNotFoundException, SQLException {
 		String driver = "net.sourceforge.jtds.jdbc.Driver";
 		Class.forName(driver);
 		Connection conn = DriverManager.getConnection("jdbc:jtds:sqlserver://vwaswp02:1433/coeus", "coeus", "C0eus");
@@ -211,9 +203,8 @@ public class Login extends JFrame {
 		Statement stmt = conn.createStatement();
 		String query = "select Username, Password from Usernames_Passwords";
 		ResultSet rs = stmt.executeQuery(query);
-		while(rs.next())
-		{
-			hm.put(rs.getString("Username"), rs.getString("Password"));
+		while(rs.next()){
+			loginHashMap.put(rs.getString("Username"), rs.getString("Password"));
 		}
 	}
 	

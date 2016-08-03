@@ -1,11 +1,12 @@
 
  /**
- * file: AdminView.java
+ * @file AdminView.java
+ * @authors Leah Talkov, Jerry Tsui
+ * @date 8/3/2016
  * This class shows the frame for the AdminView. It consists of a JTable that displays
- * the information in LogErrors_Suggestions.csv, and users can delete, add, or modify
- * entries of the data. This class does this by creating a new file, rewriting the
- * data into it from the old file (depending on what action was chosen), deleting
- * the old file, and finally renaming the new file.  
+ * the information from the database table, and users can delete, add, or modify
+ * entries of the data. The modifications are controlled by the functions 
+ * in DataController.  
  */
 
 package interfaceTest;
@@ -67,30 +68,33 @@ import javax.swing.JScrollBar;
 @SuppressWarnings({ "serial", "unused" })
 public class AdminView extends JFrame {
 	
-	List <String> savedWords = new ArrayList<String>();
-	List <String[]> defaultList = new ArrayList<String[]>();
-	List <String[]> list = new ArrayList<String[]>();
-
-	//ArrayList that holds all the UCodes from the csv file
+	//Reflects the keywords that are currently in the database
 	protected List<String> keyWords = new ArrayList<String>();
-	//Brings up the frame for an admin user
-	private AdminView myView;
-	//Used as a current index marker for the function createDataTable
-	private int dataIndex;
+	//Contains the keywords in the database, and serves as a temp list
+	//for modifications done to the table. Its contents are placed into
+	//keywords when the user presses save to default.
+	List <String> savedWords = new ArrayList<String>();
+	//A list that contains the deafault values used to load up the JTable
+	List <String[]> defaultList = new ArrayList<String[]>();
+	//A list that contains the original values, and is serves as a temp list
+	//for modifications done to the table. 
+	List <String[]> list = new ArrayList<String[]>();
 	//Headers for the JTable
 	private final String[] columnHeaders = {"Folder", "Keyword", "Log Error Description",
 									"Suggested Solution"};
-	//Solution field when the user wants to add an entry
-
+	//JTable that displays the database contents and changes accordingly for user changes
 	private JTable tblEntries;
-	//Field for when the user wants to modify an entry
-	
+	//Main panel for the groups tab
 	protected JPanel pnlGroups;
+	//Contains a list of the current groups
 	protected JList<String> groupList;
+	//A model for the list of groups which is refreshed when groups are added or deleted
 	protected DefaultListModel<String> defaultListModel;
-	
+	//A selection of options for when the user wants to delete an entry
 	Object[] options = {"Yes", "Cancel"};
+	//A model for the table which is refreshed when the user adds, deletes, or mods an entry
 	private DefaultTableModel tableModel;
+	//A private dataController that modifies the table content
 	DataController dc;
 	
 	public AdminView(UserView view) throws ClassNotFoundException, SQLException {
@@ -102,7 +106,8 @@ public class AdminView extends JFrame {
 		  } catch (Exception e) {
 		     System.out.println("Could not load program icon.");
 		  }
-			
+		
+		//We create the datatable with the database info, and set the lists within DataController
 		createDataTable();
 		dc = new DataController(this);
 		dc.setList(list);
@@ -150,6 +155,8 @@ public class AdminView extends JFrame {
 		btnModifyEntry.setToolTipText("Changes will be made locally");
 		btnModifyEntry.setHorizontalAlignment(SwingConstants.RIGHT);
 		btnModifyEntry.addActionListener(e -> {
+			//If the admin wants to modify a value we send DataController the current
+			//cell contents of the entry they chose
 			if(tblEntries.getSelectedRow() != -1){
 				int rowSelect = tblEntries.getSelectedRow();
 				ModifyDialog modify = new ModifyDialog((String)tblEntries.getValueAt(rowSelect, 0),
@@ -188,6 +195,12 @@ public class AdminView extends JFrame {
 		JButton btnSaveToDatabase = new JButton("Save to Database");
 		btnSaveToDatabase.setToolTipText("Local changes will be saved");
 		btnSaveToDatabase.addActionListener(e -> {
+			/*
+			If the user wants to save to the database, then we call the function
+			from DataController which will send all the queries to the database
+			to reflect the changes done. The database will then have the same
+			contents as the table the admin sees. 
+			*/
 			try {
 				dc.saveDefault();
 				String driver = "net.sourceforge.jtds.jdbc.Driver";
@@ -199,7 +212,6 @@ public class AdminView extends JFrame {
 				view.createErrorDictionary(stmt);
 				view.updateTreeView();
 			} catch (Exception e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 		});
@@ -210,6 +222,8 @@ public class AdminView extends JFrame {
 		btnRevertLocalChanges.setAlignmentX(Component.RIGHT_ALIGNMENT);
 		pnlTabOneButtons.add(btnRevertLocalChanges);
 		btnRevertLocalChanges.addActionListener(e -> {
+			//The table will revert back to the contents of the database, erasing
+			//all changes the admin has done
 			dc.getList().clear();
 			for(int i = 0; i < dc.getDefaultList().size(); i++)
 			{
@@ -235,6 +249,8 @@ public class AdminView extends JFrame {
 		btnCreateGroup.setPreferredSize(new Dimension(125, 20));
 		btnCreateGroup.setAlignmentX(CENTER_ALIGNMENT);
 		btnCreateGroup.addActionListener(e -> {
+			//Allows the admin to create groups of keywords and 
+			//creates a CreateGroup object
 			CreateGroup groupView = new CreateGroup(this, view);
 		});
 		pnlTabTwoButtons.add(btnCreateGroup);
@@ -243,10 +259,10 @@ public class AdminView extends JFrame {
 		btnDeleteGroup.setPreferredSize(new Dimension(125, 20));
 		btnDeleteGroup.setAlignmentX(CENTER_ALIGNMENT);
 		btnDeleteGroup.addActionListener(e -> {
+			//The admin can delete an existing group
 			try {
 				removeGroup(view);
 			} catch (Exception e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 		});
@@ -260,12 +276,12 @@ public class AdminView extends JFrame {
 	}
 	
 	/**
-	 * This function fills myData with arrays. Each array represents a line from
-	 * the database, the array itself being the return value
-	 * from calling split function on the line.
-	 * @throws SQLException 
-	 * @throws ClassNotFoundException 
-	 * @throws IOException
+	 * This function fills myData with arrays. Each array represents a entry 
+	 * from the database where each entry is loaded into an array index. 
+	 * The resulting array is then used in the JTable to fill its contents with 
+	 * the database entries.
+	 * @throws SQLException thrown if connection to SQL server failed
+	 * @throws ClassNotFoundException thrown is classpath is broken
 	 */
 	void createDataTable() throws SQLException, ClassNotFoundException {		
 		String driver = "net.sourceforge.jtds.jdbc.Driver";
@@ -276,8 +292,7 @@ public class AdminView extends JFrame {
 		String query2 = "select Keyword, Log_Error_Description, "+
 						"Suggested_Solution, Folder from logerrors";
 		ResultSet rs = stmt.executeQuery(query2);
-		while(rs.next())
-		{
+		while(rs.next()) {
 			String[] entry = new String[4];
 			entry[0] = rs.getString("Folder");
 			entry[1] = rs.getString("Keyword");
@@ -291,6 +306,13 @@ public class AdminView extends JFrame {
 		stmt.close();
 	}
 	
+	/**
+	 * Creates a JPanel that shows the groups that are currently
+	 * in the database. The panel is updated as groups are 
+	 * added and deleted. 
+	 * @param view The current JFrame for AdminView
+	 * @return The Panel that displays the groups
+	 */
 	JPanel createGroupDisplay (UserView view){
 		JPanel pnlGroup = new JPanel();
 		pnlGroup.setLayout(new BoxLayout(pnlGroup, BoxLayout.PAGE_AXIS));
@@ -305,6 +327,11 @@ public class AdminView extends JFrame {
 	    return pnlGroup;
 	}
 	
+	/**
+	 * This function updates the defaultListModel depending on the changes
+	 * the admin has done (if they have created or deleted a group)
+	 * @param view The current JFrame for AdminView
+	 */
 	protected void updateGroups(UserView view){
 		defaultListModel.clear();
 		for (Map.Entry<String, String> entry : view.GroupInfo.entrySet()){
@@ -313,6 +340,14 @@ public class AdminView extends JFrame {
 		}
 	}
 	
+	/**
+	 * This function removes a group from the database. It brings
+	 * up a JDialog if the admin presses the delete group button, but has
+	 * not selected a group to delete. 
+	 * @param view The current JFrame used for AdminView
+	 * @throws ClassNotFoundException thrown is classpath is broken
+	 * @throws SQLException thrown if error connection to SQL server
+	 */
 	private void removeGroup(UserView view) throws ClassNotFoundException, SQLException{
 		String groupToRemove = groupList.getSelectedValue();
 		if (groupToRemove == null){
@@ -336,8 +371,9 @@ public class AdminView extends JFrame {
 	}
 	
 	/**
-	 * Updates the default table model by quering the DataController.
-	 * This happens when a new entry is made, edited, or deleted. 
+	 * Updates the default table model, and is called by functions 
+	 * in the DataController. This happens when a new entry is made, edited,
+	 * or deleted, and the table properly reflects the changes made by the user.
 	 */
 	protected void resetData(){
 		DefaultTableModel model = new DefaultTableModel(dc.getData(), columnHeaders); 
@@ -374,6 +410,10 @@ public class AdminView extends JFrame {
 		tblEntries.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 	}
 	
+	/**
+	 * This function resizes the columns to fit the contents of the entries given.
+	 * @param table The JTable that is being displayed to the admin
+	 */
 	public void resizeColumnWidth(JTable table) {
 	    final TableColumnModel columnModel = table.getColumnModel();
 	    for (int column = 0; column < table.getColumnCount(); column++) {

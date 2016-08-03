@@ -34,16 +34,32 @@ import interfaceTest.CheckBoxList.CheckBoxListItem;
 import interfaceTest.CheckBoxList.CheckBoxListRenderer;
 
 
+/**
+ * @author jts
+ * Dialog that allows a user to create and save search groups
+ */
 @SuppressWarnings("serial")
 public class CreateGroup extends JDialog{
 	private JTextField tfGroupName;
 	private CheckBoxListItem[] cbListKeyWords;
 	
+	/**
+	 * Constructor
+	 * @param admin AdminView object passed in so preference values can be saved.
+	 * @param view UserView object passed in so GUI can be updated 
+	 * as the administrator creates groups
+	 */
 	public CreateGroup(AdminView admin, UserView view){
 		prepareGUI(admin, view);
-		addEscapeListener(this);
+		Utility.addEscapeListener(this);
 	};
 	
+	/**
+	 * Creates and displays GUI
+	 * @param admin AdminView object passed in so preference values can be saved
+	 * @param view UserView object passed in so GUI can be updated
+	 * as the administrator creates groups
+	 */
 	private void prepareGUI(AdminView admin, UserView view){
 		try {
 		     ClassLoader cl = this.getClass().getClassLoader();
@@ -105,6 +121,13 @@ public class CreateGroup extends JDialog{
 		setVisible(true);
 	}
 	
+	/**
+	 * Helper function to create a list of checkboxes enumerating the 
+	 * keywords that the user can select from to create a group
+	 * @param view UserView object passed in so the interface can be updated
+	 * as the adminstrator makes changes
+	 * @return JScrollPane to be displayed in the frame
+	 */
 	private JScrollPane createListDisplay(UserView view){
 		cbListKeyWords = new CheckBoxListItem[view.keyWords.size()];
 		int index = 0;
@@ -133,6 +156,14 @@ public class CreateGroup extends JDialog{
 		return new JScrollPane(list);
 	}
 	
+	/**
+	 * Helper function to save the group preferences that the Administrator created
+	 * @param admin AdminView object passed in so preference values can be saved
+	 * @param view UserView object passed in so GUI can be updated
+	 * as the administrator creates groups
+	 * @throws ClassNotFoundException if classpath is broken
+	 * @throws SQLException if there is an error connecting to and querying the SQL server
+	 */
 	private void saveGroups(AdminView admin, UserView view) throws ClassNotFoundException, SQLException{
 		StringBuilder query = new StringBuilder();
 		for (int i=0; i<cbListKeyWords.length; i++){
@@ -160,15 +191,9 @@ public class CreateGroup extends JDialog{
 		}
 	}
 	
-	public static void addEscapeListener(final JDialog dialog) {
-	    ActionListener escListener = new ActionListener() {
-	        @Override
-	        public void actionPerformed(ActionEvent e) {
-	            dialog.setVisible(false);
-	        }
-	    };
-	    dialog.getRootPane().registerKeyboardAction(escListener,
-	            KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
-	            JComponent.WHEN_IN_FOCUSED_WINDOW);
-	}
+	/**
+	 * Utility func
+	 * @param dialog
+	 */
+	
 }

@@ -1,8 +1,8 @@
 /**
- * file: Admin.java
- * This class extends the user class and has functions that determine
- * the length of the LogErrors_Suggestions.csv file (how many rows it
- * contains, not including the header) and fills an Object[][] that 
+ * @file Admin.java
+ * @authors Leah Talkov, Jerry Tsui
+ * @data 8/3/2016
+ * This class extends the user class that fills an Object[][] that 
  * prepares the data for the JTable in AdminView.java.
  */
 

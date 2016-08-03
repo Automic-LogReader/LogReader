@@ -1,4 +1,16 @@
- package interfaceTest;
+/**
+ * @file ModifyDialog.java
+ * @authors Leah Talkov, Jerry Tsui
+ * @data 8/3/2016
+ * This class brings up a JDialog when the user wants to modify an 
+ * entry. There are four textboxes that are initially filled with
+ * the entry's original values. The user can change any of these four
+ * (though the keyWord must be unique) and press the modify button to 
+ * go through with their changes. 
+ */
+
+package interfaceTest;
+
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 
@@ -17,16 +29,20 @@ import java.awt.Dimension;
 @SuppressWarnings("serial")
 public class ModifyDialog extends JDialog {
 
+	//Main panel for the Dialog
 	private final JPanel pnlMain = new JPanel();
+	//Textfield for the keyword, which cannot be an existing keyword
 	private JTextField tfKeyword;
+	//Textfield for the error message that corresponds to the given keyword
 	private JTextField tfError;
+	//Textfield for the solution that corresponds to the given keyword
 	private JTextField tfSolution;
+	//Textfield for the folder the keyword will be put into, can be a new
+	//or an existing folder
 	private JTextField tfFolder;
+	//The row index for the entry the user is modifying
 	private int selectedRow;
 
-	/**
-	 * Create the dialog.
-	 */
 	public ModifyDialog(String folder, String keyWord, String errorMessage,
 						String solutionMessage,  DataController dc, int row) {
 		try {
@@ -35,7 +51,7 @@ public class ModifyDialog extends JDialog {
 		     setIconImage(programIcon.getImage());
 		  } catch (Exception e) {
 		     System.out.println("Could not load program icon.");
-		  }
+		}
 		
 		selectedRow = row;
 		setBounds(200, 200, 450, 250);
@@ -70,6 +86,7 @@ public class ModifyDialog extends JDialog {
 		pnlMain.add(pnlKeyword);
 		pnlKeyword.setLayout(new BoxLayout(pnlKeyword, BoxLayout.X_AXIS));
 		
+		//Spaces are added so that the textboxes line up correctly
 		JLabel lblKeyword = new JLabel("Keyword:              ");
 		pnlKeyword.add(lblKeyword);
 
@@ -117,22 +134,23 @@ public class ModifyDialog extends JDialog {
 		tfSolution.setColumns(10);
 	
 		pnlSolution.add(Box.createRigidArea(new Dimension(20, 20)));
-		
-		
 		JPanel pnlButton = new JPanel();
 		pnlButton.setLayout(new FlowLayout());
 		getContentPane().add(pnlButton, BorderLayout.SOUTH);
-		
 		JButton btnModify = new JButton("Modify");
 		btnModify.addActionListener(e ->{
+			//We check to make sure all the textboxes are filled
 			if (tfKeyword.getText().equals("") || tfError.getText().equals("") || tfSolution.getText().equals("")) {
 				JOptionPane.showMessageDialog(null, "All entries must be filled");
 			}
+			//We then make sure that the keyword is unique
 			else if (dc.getAdmin().savedWords.contains(tfKeyword.getText()) && 
 					!keyWord.equals(tfKeyword.getText())) {
 					JOptionPane.showMessageDialog(null, "No duplicate keywords allowed");
 			}
 			else{
+				//Otherwise we see if the text is the same by checking it against
+				//the original values, and set the booleans accordingly. 
 				try {
 					dc.setFolderChanged(!(tfFolder.getText().equals(folder)));
 					dc.setKeywordChanged(!(tfKeyword.getText().equals(keyWord)));
@@ -141,7 +159,6 @@ public class ModifyDialog extends JDialog {
 					dc.modifyData(tfFolder.getText(), tfKeyword.getText(), tfError.getText(),
 							tfSolution.getText(), "MODIFY", selectedRow);
 				} catch (Exception e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();						
 				}
 				this.setVisible(false);

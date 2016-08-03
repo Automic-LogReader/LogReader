@@ -14,7 +14,7 @@ public class CheckBoxList {
 		 
 		   /**
 		    * Constructs a CheckBoxListItem given a specific label
-		 * @param label
+		 * @param label Text for the checkbox 
 		 */
 		public CheckBoxListItem(String label) {
 		      this.label = label;
@@ -22,7 +22,7 @@ public class CheckBoxList {
 		 
 		   /**
 		    * Returns the boolean isSelected value of the CheckBoxListItem
-		 * @return
+		 * @return boolean isSelected value of the CheckBoxListItem
 		 */
 		public boolean isSelected() {
 		      return isSelected;
@@ -30,7 +30,7 @@ public class CheckBoxList {
 		 
 		   /**
 		    * Sets the boolean isSelected value of the CheckBoxListItem
-		 * @param isSelected
+		 * @param isSelected boolean value to be set for the CheckBoxListItem
 		 */
 		public void setSelected(boolean isSelected) {
 		      this.isSelected = isSelected;

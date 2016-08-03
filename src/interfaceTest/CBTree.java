@@ -22,15 +22,27 @@ import java.util.Enumeration;
 import java.util.EventObject;
 
 
+/**
+ * CheckBox Tree that displays a checkbox with an associated label
+ * in a "tree file explorer" format 
+ *
+ */
 @SuppressWarnings("serial")
 class CBTree extends JTree {
 	   
+	/**
+	 * Creates a CheckBoxTree object
+	 */
 	public CBTree() {
 	      setCellRenderer(new CheckBoxTreeNodeRenderer());
 	      setCellEditor(new CheckBoxTreeNodeEditor(this));
 	      setEditable(true);
 	}
 	
+	/**
+	 * Recursively expands the CheckBoxTree 
+	 * @param parent The TreePath of the root node of the CheckBoxTree
+	 */
 	public void expandAll(TreePath parent) {
 	    TreeNode node = (TreeNode) parent.getLastPathComponent();
 	    if (node.getChildCount() >= 0) {
@@ -46,28 +58,50 @@ class CBTree extends JTree {
 }
 	
 	 
+/**
+ * 
+ * TreeNodeCheckBox object inserted into a CheckBoxTree
+ * You can add TreeNodeCheckBoxes to DefaultTreeModels just like
+ * any other Tree Node. 
+ */
 @SuppressWarnings("serial")
 class TreeNodeCheckBox extends JCheckBox {
  
+   /**
+   * Generates a TreeNodeCheckBox
+   */
    public TreeNodeCheckBox() {
       this("", false);
    }
  
-   public TreeNodeCheckBox(final String text, final boolean selected) {
+   /**
+    *  Generates a TreeNodeCheckBox
+	 * @param text Label associated with the TreeNodeCheckBox
+	 * @param selected boolean value determining whether checkbox is selected or not
+	 */
+	public TreeNodeCheckBox(final String text, final boolean selected) {
       this(text, null, selected);
    }
  
-   public TreeNodeCheckBox(final String text, final Icon icon, final boolean selected) {
+   /**
+    *  Generates a TreeNodeCheckBox
+	 * @param text Label associated with the TreeNodeCheckBox
+	 * @param icon Icon associated with TreeNodeCheckBox
+	 * @param selected boolean value determining whether checkbox is selected or not
+	 */
+	public TreeNodeCheckBox(final String text, final Icon icon, final boolean selected) {
       super(text, icon, selected);
       setMargin(new Insets(1, 1, 1, 1));
    }
 }
  
+/** Renderer for the CheckBoxTree */
 class CheckBoxTreeNodeRenderer implements TreeCellRenderer {
    Color selectionBorderColor, selectionForeground, selectionBackground, textForeground, textBackground;
    private TreeNodeCheckBox checkBoxRenderer = new TreeNodeCheckBox();
    private DefaultTreeCellRenderer defaultRenderer = new DefaultTreeCellRenderer();
  
+   /** Creates a CheckBoxTreeNodeRenderer object */
    public CheckBoxTreeNodeRenderer() {
       Font fontValue;
       fontValue = UIManager.getFont("Tree.font");
@@ -83,12 +117,19 @@ class CheckBoxTreeNodeRenderer implements TreeCellRenderer {
       textForeground = UIManager.getColor("Tree.textForeground");
       textBackground = UIManager.getColor("Tree.textBackground");
    }
- 
+  
+   /**
+    * Gets the CheckBoxRenderer
+    * @return the TreeNodeCheckBox in the checkBoxRenderer field
+    */
    public TreeNodeCheckBox getCheckBoxRenderer() {
       return checkBoxRenderer;
    }
  
-   public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+   /* (non-Javadoc)
+ * @see javax.swing.tree.TreeCellRenderer#getTreeCellRendererComponent(javax.swing.JTree, java.lang.Object, boolean, boolean, boolean, int, boolean)
+ */
+public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
       Component component;
       if (leaf) {
          String stringValue = tree.convertValueToText(value, selected, expanded, leaf, row, false);
@@ -120,15 +161,23 @@ class CheckBoxTreeNodeRenderer implements TreeCellRenderer {
    }
 }
  
+/** Editor for the CheckBoxTree */
 @SuppressWarnings("serial")
 class CheckBoxTreeNodeEditor extends AbstractCellEditor implements TreeCellEditor {
    CheckBoxTreeNodeRenderer renderer = new CheckBoxTreeNodeRenderer();
    JTree tree;
  
+   /**
+    * Creates a CheckBoxTreeNodeEditor
+    * @param tree JTree to create an editor for
+    */
    public CheckBoxTreeNodeEditor(JTree tree) {
       this.tree = tree;
    }
  
+	   /* (non-Javadoc)
+	 * @see javax.swing.CellEditor#getCellEditorValue()
+	 */
    public Object getCellEditorValue() {
       TreeNodeCheckBox checkBox = renderer.getCheckBoxRenderer();
       TreeNodeCheckBox checkBoxNode = new TreeNodeCheckBox(checkBox.getText(), checkBox.isSelected());
@@ -136,7 +185,10 @@ class CheckBoxTreeNodeEditor extends AbstractCellEditor implements TreeCellEdito
       return checkBoxNode;
    }
  
-   public boolean isCellEditable(EventObject event) {
+	   /* (non-Javadoc)
+	 * @see javax.swing.AbstractCellEditor#isCellEditable(java.util.EventObject)
+	 */
+	public boolean isCellEditable(EventObject event) {
       boolean editable = false;
       if (event instanceof MouseEvent) {
          MouseEvent mouseEvent = (MouseEvent) event;
@@ -152,17 +204,20 @@ class CheckBoxTreeNodeEditor extends AbstractCellEditor implements TreeCellEdito
       return editable;
    }
  
-   public Component getTreeCellEditorComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row) {
-      Component editor = renderer.getTreeCellRendererComponent(tree, value, true, expanded, leaf, row, true);
-      if (editor instanceof TreeNodeCheckBox) {
-         ((TreeNodeCheckBox) editor).addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent itemEvent) {
-               if (stopCellEditing()) {
-                  fireEditingStopped();
-               }
-            }
-         });
-      }
-      return editor;
-   }
+   /* (non-Javadoc)
+ * @see javax.swing.tree.TreeCellEditor#getTreeCellEditorComponent(javax.swing.JTree, java.lang.Object, boolean, boolean, boolean, int)
+ */
+	public Component getTreeCellEditorComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row) {
+	      Component editor = renderer.getTreeCellRendererComponent(tree, value, true, expanded, leaf, row, true);
+	      if (editor instanceof TreeNodeCheckBox) {
+	         ((TreeNodeCheckBox) editor).addItemListener(new ItemListener() {
+	            public void itemStateChanged(ItemEvent itemEvent) {
+	               if (stopCellEditing()) {
+	                  fireEditingStopped();
+	               }
+	            }
+	         });
+	      }
+	      return editor;
+	   }
 }
