@@ -88,6 +88,8 @@ public class LogParser {
 	 */
 	void parseErrors(File file, ProgressDialog pd) throws IOException {
 		view.updateKeyWords(selectedTab);
+		view.linesBeforeArrayList.clear();
+		view.linesAfterArrayList.clear();
 		
 		percent = 0;
 		oldPercent = 0;
@@ -205,6 +207,7 @@ public class LogParser {
 		for(int i = 0; i < errorData.size(); i++) {
 			data[i] = errorData.get(i);
 		}
+		view.menuItemLinesBefore.setEnabled(true);
 		makeTable();
 	}
 	

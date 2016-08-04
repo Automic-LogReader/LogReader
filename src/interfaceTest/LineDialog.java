@@ -9,6 +9,7 @@ import java.awt.GraphicsConfiguration;
 import java.awt.Window;
 import java.util.ArrayList;
 
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
@@ -48,9 +49,11 @@ public class LineDialog extends JDialog {
 		
 		ArrayList<String> listOfLines = view.linesBeforeArrayList.get(currentRow);
 		
-		JLabel lblTitle = new JLabel("Lines Before");
+		JLabel lblTitle = new JLabel("Lines before error #" + currentRow);
 		lblTitle.setAlignmentX(CENTER_ALIGNMENT);
 		pnlMain.add(lblTitle);
+		
+		pnlMain.add(Box.createRigidArea(new Dimension(0,10)));
 		
 		list = new JList(listOfLines.toArray());
 		

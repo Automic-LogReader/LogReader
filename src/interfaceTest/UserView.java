@@ -168,6 +168,8 @@ public class UserView extends JFrame{
 	protected ArrayList<ArrayList<String>> linesBeforeArrayList = new ArrayList<ArrayList<String>>();
 	protected ArrayList<ArrayList<String>> linesAfterArrayList = new ArrayList<ArrayList<String>>();
 	
+	protected JMenuItem menuItemLinesBefore;
+	
 	/**
 	 * Creates the UserView frame
 	 * @param menu 		MainMenu window that instantiated the UserView
@@ -639,10 +641,12 @@ public class UserView extends JFrame{
 			}
         });
         popupMenu.add(menuItemUrl);
-        JMenuItem menuItemLinesBefore = new JMenuItem("Show Lines Before");
+        
+        menuItemLinesBefore = new JMenuItem("Show Lines Before");
         menuItemLinesBefore.addActionListener(e -> {
         	LineDialog linesBefore = new LineDialog(TableMouseListener.getCurrentRow(), this);
         });
+        menuItemLinesBefore.setEnabled(false);
         popupMenu.add(menuItemLinesBefore);
         
 		errorTable = new JTable(tableModel);
