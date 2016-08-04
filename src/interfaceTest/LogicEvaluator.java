@@ -37,21 +37,25 @@ public class LogicEvaluator {
 	/**True if the user has used the keyword ===> with the AND operand*/
 	private boolean AND_ARROW;
 	/**True if the user has used the keyword ===> with the OR operand*/
-	private boolean byPass;
 	private boolean OR_ARROW;
 	private int arrowCount;
 	
+	/**
+	 * Contains functions that implements the logic parsing
+	 * of a file, depending on the logic statement
+	 * inputed by the user.
+	 * @param logParse 
+	 */
 	LogicEvaluator(LogParser logParse) {
 		this.logParse = logParse;
 		orWord = "";
 		OR_DEADLOCK = false;
 		AND_NOT_DEADLOCK = false;
 		AND_DEADLOCK = false;
-		byPass = false;
 	}
 	
 	/**
-	 * Caleld in UserView to set the array to the one generated
+	 * Called in UserView to set the array to the one generated
 	 * by the user's logic statement
 	 * @param keyWords Contains the keywords chosen by the user
 	 */

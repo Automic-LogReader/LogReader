@@ -2,11 +2,11 @@
  * @file DataController.java
  * @authors Leah Talkov, Jerry Tsui
  * @date 8/3/2016
- * This class contains functions that modify the table in AdminView
+ * Contains functions that modify the table in AdminView
  * depending on whether the user adds, modifies, or deletes entries. The
  * class also has variables that keep track of default values of the database.
- * When the user wants to save their changes to the database, this class also
- * has functions that query to the database to reflect those changes. 
+ * When the user wants to save their changes to the database, functions
+ * will query to the database to reflect those changes. 
  */
 
 package interfaceTest;
@@ -21,30 +21,33 @@ import java.util.List;
 
 public class DataController {
 
-	//A list that contains the true current entries in the database
+	/**List that contains the true current entries in the database*/
 	private List <String[]> defaultList = new ArrayList<String[]>();
-	//A list that starts out with the same contents as defaultList, and
-	//then changes its contents to reflect the user changes
+	/**List that starts out with the same contents as defaultList, and
+	then changes its contents to reflect the user changes*/
 	private List <String[]> list = new ArrayList<String[]>();
-	//A dataStructure that serves as a helper when transferring
-	//contents between list and defaultList
+	/**Serves as a helper when transferring contents between list and defaultList*/
 	private List <String[]> tempList = new ArrayList<String[]>();
-	//Queries to be made to the database
+	/**Queries to be made to the database*/
 	private List <String> queries = new ArrayList<String>();
-	//private Object [][] defaultData;
-	//Entries to be into the JTable in adminview
+	/**Entries to be into the JTable in AdminView*/
 	private Object [][] data;
-	//Set in modify dialog, true if keyword was changed
+	/**Set in modify dialog, true if keyword was changed*/
 	private boolean keywordChanged;
-	//Set in modify dialog, true if error message was changed
+	/**Set in modify dialog, true if error message was changed*/
 	private boolean errorMessageChanged;
-	//Set in modify dialog, true if solution message was changed
+	/**Set in modify dialog, true if solution message was changed*/
 	private boolean suggestedSolutionChanged;
-	//Set in modify dialog, true if folder name was changed
+	/**Set in modify dialog, true if folder name was changed*/
 	private boolean folderChanged;
-	//Admin object that contains the table that DataController is changing
+	/**AdminView object that contains the table DataController is changing*/
 	private AdminView admin;
 
+	/**
+	 * Created in AdminView, contains functions that connects to the database
+	 * and creates queries to modify the data
+	 * @param admin AdminView associated with this object
+	 */
 	DataController(AdminView admin){
 		this.admin = admin;
 		keywordChanged = false;
@@ -54,7 +57,7 @@ public class DataController {
 	}
 
 	/**
-	 * This function is called in AddDialog and ModifyDialog to
+	 * Called in AddDialog and ModifyDialog to
 	 * access variables within Admin, particularly to see
 	 * what keywords are already used so that no duplicates are allowed
 	 * @return Returns the admin object that was given in the main
@@ -104,7 +107,7 @@ public class DataController {
 	}
 
 	/**
-	 * This function is called in AdminView to intialize the contents of the list
+	 * Called in AdminView to initialize the contents of the list
 	 * @param list A list of the entries of the table from AdminView
 	 */
 	void setList(List <String[]> list){
@@ -112,15 +115,15 @@ public class DataController {
 	}
 
 	/**
-	 * This function is called in AdminView to intialize the contents of the defaultList
-	 * @param defaultList A list of the entries of the table from AdminView
+	 * TCalled in AdminView to initialize the contents of the defaultList
+	 * @param list A list of the entries of the table from AdminView
 	 */
 	void setDefaultList(List <String[]> defaultList){
 		this.defaultList = defaultList;
 	}
 
 	/**
-	 * This function is called in AdminView to either retrieve the contents to change the 
+	 * Called in AdminView to either retrieve the contents to change the 
 	 * JTable, or to clear the list if the user wants to revert their changes
 	 * @return Returns the list which reflects the user changes
 	 */
@@ -129,7 +132,7 @@ public class DataController {
 	}
 
 	/**
-	 * This function is called in AdminView to get the old content when the user
+	 * Called in AdminView to get the old content when the user
 	 * wants to revert their changes back to the default 
 	 * @return Returns the list which reflects the current contents of the DB
 	 */
@@ -138,8 +141,7 @@ public class DataController {
 	}
 
 	/**
-	 * This function modfies the data by depending on the value of "choice". It is
-	 * called in both ModifyDialog and AddDialog. If the value
+	 * Modfies the data by depending on the value of "choice". If the value
 	 * is "MODIFY" then the function modifies an entry by modifying list, and by adding a query
 	 * to the queries data structure. If the value is "ADD", then the function adds an entry to
 	 * list and adds a query that makes an entry reflecting the values given by the user. 
@@ -149,7 +151,7 @@ public class DataController {
 	 * @param solution The solution message given by the user
 	 * @param choice Determines whether the user is modifying or adding entries
 	 * @param row If the choice is MODIFY, the row index that is being modified
-	 * @throws IOException thrown if connection failed
+	 * @throws IOException
 	 */
 	protected void modifyData(String folder, String keyWord, String message, String solution, String choice, int row) throws IOException {
 		String [] tempArray = new String[4];
@@ -198,10 +200,8 @@ public class DataController {
 	/**
 	 * Adds single quotes to the parameter old word, because SQL syntax uses
 	 * single quotes to encapsulate; i.e. if we had an error message that said
-	 * I want to make 'examples' 
-	 * There would be an error with the single quotes. This function adds single
-	 * quotes to change the message to: I want to make ''examples'' to that this 
-	 * will bypass the error and keep the message intact. 
+	 * I want to make 'examples', This function adds single quotes to change 
+	 * the message to: I want to make ''examples'' and keeps the message intact. 
 	 * @param oldWord A string that will be modified 
 	 * @return Returns old word but with additional single quotes if need be
 	 */
@@ -217,11 +217,11 @@ public class DataController {
 	}
 
 	/**
-	 * When the user highlights a piece of data and then clicks the delete button, 
-	 * this function will add a query to queries that will delete the row, and also
-	 * deletes the corresponding row within list. 
+	 * When the user highlights a piece of data and clicks the delete button, 
+	 * this function will add a query to the data structure queries which 
+	 * will delete the row, and also deletes the corresponding row within list. 
 	 * @param row - the row in which the data will be deleted
-	 * @throws IOException thrown if connection failed
+	 * @throws IOException 
 	 */
 	protected void deleteData(int row) throws IOException {
 		queries.add("delete from logerrors where Keyword = \'" + addSingleQuote(list.get(row)[1]) + "\'");
@@ -268,13 +268,13 @@ public class DataController {
 	}
 
 	/**
-	 * This function goes through all the strings in queries and sends them to the database
+	 * Goes through all the strings in queries and sends them to the database
 	 * to save the changes that the user has made, so that the database now reflects what is
 	 * seen in the interface table. The contents of defaultList are set to be the same
 	 * as the contents in list. 
-	 * @throws IOException thrown if connection failed
-	 * @throws ClassNotFoundException thrown if classpath is broken
-	 * @throws SQLException thrown if error connecting to database
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 * @throws SQLException
 	 */
 	protected void saveDefault() throws IOException, ClassNotFoundException, SQLException{
 		defaultList.clear();

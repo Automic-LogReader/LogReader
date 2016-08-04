@@ -1,6 +1,21 @@
 /**
- * file: UserView.java
+ * @file UserView.java
+ * @authors Leah Talkov, Jerry Tsui
+ * @date 8/4/2016
+ * Creates the main user interface. The user can input a log file and
+ * parse through it to find specified errors. The interface contains a
+ * table which displays the results of the parse by showing the timestamp
+ * for when the error occurred, the name of the error, the error description
+ * from the file, and the suggested solution for the error. The three ways that can 
+ * be used to find errors are through the checkbox tree, groups, and logical 
+ * statements. The checkbox tree allows the user to select which keywords they 
+ * want to find, and the parse will search for all the selected errors. The group
+ * functionality is similar, but these are built in groups of keywords that are 
+ * commonly searched for together. The logical statement allows users to refine
+ * their search by putting more specifications on what they want within a single line
+ * using a mixture of keywords and AND, OR, and NOT. 
  */
+ 
 
 package interfaceTest;
 
@@ -64,58 +79,75 @@ import interfaceTest.CheckBoxList.CheckBoxListRenderer;
 @SuppressWarnings("serial")
 
 public class UserView extends JFrame{
+	/**Holds the content of the table from the database about group contents and names*/
+	protected HashMap<String, String> GroupInfo = new HashMap<String, String>();
+	/**Headers for the JTable in the interface*/
 	protected final String [] headers = {"Error #", "Timestamp",
 								"Keywords", "Error Message", "Suggested Solution"};
+	/**Used to fill the contents of the JTable, will contains headers and errorData*/
 	private Object [][] data;
+	/**ProgressDialog with progress bar showing the progress of parsing process*/
 	protected ProgressDialog dialog;
+	/**Thread to run progress bar while parsing is happening*/
 	private Thread t;
-	//Holds path of the user given logfile
+	/**Holds path of the user given logfile*/
 	protected String logFile;
-	//Holds a line when the logfile is read
-	protected String logLine;
-	//Holds the individual entries from logLine, split by " "
-	
-	protected HashMap<String, ArrayList<String>> treeMap = new HashMap<String, ArrayList<String>>();
-	protected HashMap<String, String> GroupInfo = new HashMap<String, String>();
+	/**Maps keywords to their solutions where the keyword is the key, and the solution is the value*/
 	protected HashMap<String, String> solutions = new HashMap<String, String>();
+	/**Maps keywords to their folders where the keyword is the key, and the folder is the value*/
 	protected HashMap<String, String> folderMap = new HashMap<String, String>();
+	/**Contains all the unique names of the folders*/
 	protected HashSet<String> folderSet = new HashSet<String>();
+	/**Links folders to keywords where folders are the key and the list of keywords is the value*/
+	protected HashMap<String, ArrayList<String>> treeMap = new HashMap<String, ArrayList<String>>();
+	/**Contains all of the keywords currently in the database*/
 	protected HashSet<String> keyWords = new HashSet<String>();
+	/**Contains the original keywords to compare against user selected keywords*/
 	protected HashSet<String> originalKeyWords;
+	/**Used to compare against user selected keywords*/
 	private boolean hasCopiedOriginalKeyWords;
-	
-	//Progress bar
+	/**The size of the logfile*/
 	private long fileSize;
+	/**The size of the file divided by 100, used for updating the ProgressDialog*/
 	protected long fileSizeDivHundred;
-	
+	/**The JTable used to display the error results*/
 	protected JTable errorTable;
+	/**Textfield for the selected filepath*/
 	private JTextField tfFilePath;
-	//User clicks after selecting directory for log file
+	/**User clicks after selecting directory for log file*/
 	protected JButton btnSubmit;
-	//Returns the User back to the Main Menu
-	
+	/**Scrollpane for errorTable*/
 	protected JScrollPane errorScrollPane;
+	/**AdminView that is initialized if isAdmin is true*/
 	private AdminView admin;
+	/**LogParser object used for file parsing*/
 	protected LogParser logParser;
 	
 	//For the PreferenceEditor
+	/**User selected lower bound for Time Critical errors*/
 	protected Double lowerBound;
+	/**User selected upper bound for Time Critical errors*/
 	protected Double upperBound;
+	/**User selected lines before an error*/
 	protected Integer numLinesBefore;
+	/**User selected lines after an error*/
 	protected Integer numLinesAfter;
-	
 	protected JList<CheckBoxListItem> list;
+	/**Model for the checkbox groups*/
 	protected DefaultListModel<CheckBoxListItem> listModel;
 	private JTabbedPane tabbedPane;
 	protected JScrollPane groupScrollPane;
-	
 	protected JList<CheckBoxListItem> groupList;
 	protected CheckBoxListItem[] listOfGroups;
 	
 	//For the and/or/not logic
+	/**Contains the list of keywords chosen for the logic statement*/
 	protected ArrayList<String> keyWordArrayList = new ArrayList<String>();
+	/**Contains the list of operands chosen for the logic statement*/
 	protected ArrayList<String> operandArrayList = new ArrayList<String>();
+	/**Contains the NOT values for the keywords chosen for the logic statement*/
 	protected ArrayList<Boolean> notArrayList = new ArrayList<Boolean>();
+	/**Combo box for drop down keywords*/
 	protected Vector<String> comboBoxKeyWords = new Vector<String>();
 	protected Stack<LogicalComboBox> mostRecentCB = new Stack<LogicalComboBox>();
 	private LogicalComboBox cbKey1;
@@ -123,7 +155,7 @@ public class UserView extends JFrame{
 	private LogicalComboBox cbKey2;
 	private LogicalComboBox cbLogic2;
 	private LogicalComboBox cbKey3;
-	
+
 	//For the CheckBoxTree view
 	protected CBTree cbTree;
 	protected DefaultMutableTreeNode rootNode;
@@ -133,6 +165,8 @@ public class UserView extends JFrame{
 	protected JPopupMenu popupMenu;
 	private JPanel pnlTreeView;
 	
+	protected ArrayList<ArrayList<String>> linesBeforeArrayList = new ArrayList<ArrayList<String>>();
+	protected ArrayList<ArrayList<String>> linesAfterArrayList = new ArrayList<ArrayList<String>>();
 	
 	/**
 	 * Creates the UserView frame
@@ -174,6 +208,10 @@ public class UserView extends JFrame{
 	}
 	
 	/**
+	 * Fills the data structure keyWords from the database content,
+	 * and also fills the folder map to see which keywords are associated
+	 * with which folder, as well as fills the folderSet with all the
+	 * unique folder names.
 	 * @param stmt SQL statement to be executed within the function
 	 * @throws SQLException if there is an error connecting 
 	 */
@@ -601,6 +639,11 @@ public class UserView extends JFrame{
 			}
         });
         popupMenu.add(menuItemUrl);
+        JMenuItem menuItemLinesBefore = new JMenuItem("Show Lines Before");
+        menuItemLinesBefore.addActionListener(e -> {
+        	LineDialog linesBefore = new LineDialog(TableMouseListener.getCurrentRow(), this);
+        });
+        popupMenu.add(menuItemLinesBefore);
         
 		errorTable = new JTable(tableModel);
 		errorTable.setCellSelectionEnabled(true);

@@ -2,7 +2,7 @@
  * @file AddDialog.java
  * @authors Leah Talkov, Jerry Tsui
  * @date 8/3/2016
- * This class brings up a Java Dialog when the user wants to Add an entry
+ * Brings up a Java Dialog when the user wants to add an entry
  * to the database. The dialog has four fields that allow the user to enter
  * in a keyword, the folder the keyword will belong to, an error message,
  * and a solution. The new entry info is then given to the AdminView to be
@@ -28,16 +28,16 @@ import java.awt.Dimension;
 @SuppressWarnings("serial")
 public class AddDialog extends JDialog {
 
-	//Main panel for the Dialog
+	/**Main panel for the Dialog*/
 	private final JPanel pnlMain = new JPanel();
-	//Textfield for the keyword, which cannot be an existing keyword
+	/**Textfield for the keyword, which cannot be an existing keyword*/
 	private JTextField tfKeyword;
-	//Textfield for the error message that corresponds to the given keyword
+	/**Textfield for the error message that corresponds to the given keyword*/
 	private JTextField tfError;
-	//Textfield for the solution that corresponds to the given keyword
+	/**Textfield for the solution that corresponds to the given keyword*/
 	private JTextField tfSolution;
-	//Textfield for the folder the keyword will be put into, can be a new
-	//or an existing folder
+	/**Textfield for the folder the keyword will be put into, can be a new
+	or an existing folder*/
 	private JTextField tfFolder;
 
 

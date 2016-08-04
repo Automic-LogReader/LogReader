@@ -15,7 +15,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Stack;
 
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
@@ -51,13 +53,19 @@ public class LogParser {
 	private LogicEvaluator logicEvaluator;
 	/**UserView object that contains Swing objects that
 	   will be changed by functions in this class*/
+	protected FixedStack<String> linesBefore;
+	protected FixedStack<String> linesAfter;
+	
 	protected static UserView view;
 	
 	public LogParser(UserView view, int tab) {
 		selectedTab = tab;
 		LogParser.view = view;
 		logicEvaluator = new LogicEvaluator(this);
-	
+		
+		linesBefore = new FixedStack<String>(view.numLinesBefore + 1);
+		linesAfter = new FixedStack<String>(view.numLinesAfter + 1);
+		
 		//If not null, we set the arrayLists in logicEval
 		if(view.keyWordArrayList != null)
 			logicEvaluator.setkeyWords(view.keyWordArrayList);
@@ -67,8 +75,6 @@ public class LogParser {
 			logicEvaluator.setHasNot(view.notArrayList);
 		if (tab == 1)
 			logicEvaluator.addORs();
-		
-	
 	}
 	
 	/**
@@ -101,6 +107,7 @@ public class LogParser {
 		//Timer for performance testing
 		long startTime = System.nanoTime();
 		while(logLine != null) {
+			linesBefore.push(logLine);
 			updateProgress();
 			//If the user is on the logic statement tab, we send 
 			//lines to the logic evaluator
@@ -165,17 +172,21 @@ public class LogParser {
 				//Make sure an entry was actually created for the line
 				if(entry != null) {
 					if (!specialCase) {
+						addLinesBefore();
 						entry[3] = errorMessage.toString();
 					}
 					//If there was no error message, then set to blank
 					if (entry[3] == null) {
 						entry[3] = " ";
 					}
+					
 					errorData.add(entry);
 				}
 			}
 			logLine = logbr.readLine();
 		}
+		
+		System.out.println("Size of Arraylist:" + view.linesBeforeArrayList.size());
 		//We make entries out of the errors that we've found in logic eval
 		logicEvaluator.makeEntries();
 		//Logs execution time to the console
@@ -207,7 +218,7 @@ public class LogParser {
 	 * @throws IOException
 	 */
 	Object[] parseArrowError(BufferedReader logbr, String timeStamp, String[] currArray) throws IOException {
-		
+		addLinesBefore();
 		Object[] tempEntry = new Object[5];
 		String[] words;
 		tempEntry[0] = errorCount;
@@ -241,6 +252,7 @@ public class LogParser {
 		String firstLineOfError = errorMsg.toString();
 		logLine = logbr.readLine();
 		while (!closingArrowTagFound && logLine != null) {
+			linesBefore.push(logLine);
 			updateProgress();
 			words = logLine.split(" ");
 			if (logLine.contains("===>")){
@@ -301,6 +313,7 @@ public class LogParser {
 	 * @throws IOException
 	 */
 	Object[] parseDeadlockError(BufferedReader logbr, String timeStamp) throws IOException {
+	   addLinesBefore();
        Object[] entry = new Object[5];
        ArrayList <String> errorLines = new ArrayList<String>();
        boolean matchingDeadlock = false;
@@ -312,6 +325,7 @@ public class LogParser {
        entry[2] = "DEADLOCK";
        String Line = logbr.readLine();
        while(!matchingDeadlock && Line != null) {
+    	  linesBefore.push(logLine);
           boolean timeStampFound = false;
           boolean uCodeFound = false;              
           testLine.setLength(0);
@@ -443,5 +457,14 @@ public class LogParser {
 		time = time.replace(":", ".");
 		double t = Double.parseDouble(time);
 		return ((t >= view.lowerBound) && (t <= view.upperBound));
+	}
+	
+	void addLinesBefore(){
+		ArrayList<String> arrayList = new ArrayList<String>();
+		for (String str : linesBefore){
+			arrayList.add(str);
+		}
+		arrayList.remove(arrayList.size()-1);
+		view.linesBeforeArrayList.add(arrayList);
 	}
 }

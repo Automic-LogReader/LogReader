@@ -1,6 +1,8 @@
 /**
- * file: MainMenu.java
- * This class brings up a simple frame that allows the user to select if they
+ * @file MainMenu.java
+ * @authors Leah Talkov, Jerry Tsui
+ * @date 8/4/2016
+ * Brings up a simple frame that allows the user to select if they
  * are either a "User" or an "Admin." If "User" is selected, then a new 
  * User object is created. If "Admin" is selected, a new Login object is created.
  */
@@ -31,21 +33,27 @@ import java.awt.Toolkit;
 @SuppressWarnings("serial")
 public class MainMenu extends JFrame {
 
+	/**Main panel for login that has the Automic logo and the User/Admin buttons*/
 	private JPanel contentPane;
-	//instantiated if the user selects "Admin"
+	/**instantiated if the user selects "Admin"*/
 	private Login loginFrame;
-	//instantiated if the user selects "User'
+	/**instantiated if the user selects "User"*/
 	private User user;
-	protected JButton userButton;
-	protected JButton adminButton;
-	
-	private JButton exitButton;
+	protected JButton btn_user;
+	protected JButton btn_admin;
+	private JButton btn_exit;
 	
 	public MainMenu() throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException {
 		prepareGUI();
 	}
 	
-	
+	/**
+	 * Creates the GUI for MainMenu
+	 * @throws ClassNotFoundException
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 * @throws UnsupportedLookAndFeelException
+	 */
 	private void prepareGUI() throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException{
 		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		
@@ -103,21 +111,21 @@ public class MainMenu extends JFrame {
 		JPanel middlePanel = new JPanel();
 		contentPane.add(middlePanel);
 			
-		userButton = new JButton("User");
-		userButton.addActionListener(e -> {
+		btn_user = new JButton("User");
+		btn_user.addActionListener(e -> {
 			user = new User(this, false);
 			this.setVisible(false);
 			
 		});
-		userButton.setPreferredSize(new Dimension(80, 25));
-		userButton.setAlignmentY(Component.CENTER_ALIGNMENT);
+		btn_user.setPreferredSize(new Dimension(80, 25));
+		btn_user.setAlignmentY(Component.CENTER_ALIGNMENT);
 		
 		middlePanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-		middlePanel.add(userButton);
+		middlePanel.add(btn_user);
 			
 		
-		adminButton = new JButton("Admin");
-		adminButton.addActionListener(e -> {
+		btn_admin = new JButton("Admin");
+		btn_admin.addActionListener(e -> {
 			try {
 				loginFrame = new Login(this);
 			} catch (Exception e1) {
@@ -127,29 +135,33 @@ public class MainMenu extends JFrame {
 			loginFrame.setVisible(true);
 			this.setVisible(false);
 		});
-		adminButton.setPreferredSize(new Dimension(80, 25));
-		adminButton.setAlignmentY(Component.CENTER_ALIGNMENT);
-		middlePanel.add(adminButton);
+		btn_admin.setPreferredSize(new Dimension(80, 25));
+		btn_admin.setAlignmentY(Component.CENTER_ALIGNMENT);
+		middlePanel.add(btn_admin);
 				
 		contentPane.add(Box.createRigidArea(new Dimension(0, 10)));
 		
 		JPanel bottomPanel = new JPanel();
 		contentPane.add(bottomPanel);
 		
-		exitButton = new JButton("Exit");
-		exitButton.addActionListener(e ->{
+		btn_exit = new JButton("Exit");
+		btn_exit.addActionListener(e ->{
 			setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			System.exit(0);
 		});
-		exitButton.setPreferredSize(new Dimension(60, 25));
+		btn_exit.setPreferredSize(new Dimension(60, 25));
 		
-		bottomPanel.add(exitButton);
+		bottomPanel.add(btn_exit);
 		contentPane.add(Box.createVerticalGlue());
 		
 		pack();
 		center(this);
 	}
 	
+	/**
+	 * Centers the MainMenu frame on the screen
+	 * @param frame Frame for class MainMenu
+	 */
 	public static void center(JFrame frame){
 		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
 		

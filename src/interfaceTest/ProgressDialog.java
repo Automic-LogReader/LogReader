@@ -1,3 +1,12 @@
+/**
+ * @file ProgressDialog.java
+ * @authors Leah Talkov, Jerry Tsui
+ * @date 8/4/2016
+ * Creates a JDialog that contains a progress bar, as well as text
+ * to show the percentage the bar is currently at. The progress bar
+ * serves to show the user how far along the parsing progress is.
+ */
+
 package interfaceTest;
 
 import java.awt.BorderLayout;
@@ -23,27 +32,46 @@ import java.awt.Dimension;
 
 import javax.swing.Box;
 
-
 @SuppressWarnings("serial")
 public class ProgressDialog extends JDialog {
 
+	/**The main panel that contains the progress bar and text*/
 	private final JPanel pnlMain = new JPanel();
+	/**Simple progressbar that progresses from 0% to 100%*/
 	private JProgressBar progressBar;
 	private JLabel lblTop;
 	private JButton btnExit;
+	/**A button that allows the user to export the results to a csv file*/
 	private JButton btnExport;
 	private JLabel lblBottom;
 	
+	/**
+	 * Contains a progress bar that allows the user to follow the parsing progress
+	 * @param file The file that is being parsed
+	 * @param view The UserView that is associated with this object
+	 */
 	public ProgressDialog(File file, UserView view) {
 		prepareGUI(file, view);
 	}
 
-	
+	/**
+	 * Updates the progress of the ProgressDialog to reflect
+	 * how far the parsing progress is. 
+	 * @param i A new value to set the progress bar to
+	 */
 	void updateProgress(int i){
 		progressBar.setValue(i);
 		lblTop.setText("Parsing through file..." + i + "% complete");
 	}
 	
+	/**
+	 * Called when the parsing process has been completed. The progress 
+	 * bar value is set to 100, the JDialog displays that the parsing 
+	 * process has finished, and also displays the number of errors that
+	 * were found. The export button also becomes visible so that
+	 * the user can export the results to a CSV file. 
+	 * @param numErrors The number of errors found during the parsing process
+	 */
 	void doneParse(int numErrors){
 		progressBar.setValue(100);
 		lblTop.setText("Parsing through file... done!");
@@ -52,6 +80,11 @@ public class ProgressDialog extends JDialog {
 		btnExit.setVisible(true);
 	}
 	
+	/**
+	 * Prepares the GUI for the ProgressDialog class.
+	 * @param file The filepath for the file being parsed
+	 * @param view The UserView object associated with this ProgressDialog
+	 */
 	void prepareGUI(File file, UserView view){
 		setBounds(200, 200, 300, 200);
 		setLocationRelativeTo(null);
@@ -61,7 +94,6 @@ public class ProgressDialog extends JDialog {
 		pnlMain.setBorder(new EmptyBorder(new Insets(10, 10, 10, 10)));
 		
 		progressBar = new JProgressBar(0, 100);
-		//progressBar = new JProgressBar(0, fileSize);
 		progressBar.setBorder(new EmptyBorder(10, 10, 10, 10));
 		progressBar.setAlignmentX(Component.CENTER_ALIGNMENT);
 		pnlMain.add(progressBar);
@@ -115,7 +147,6 @@ public class ProgressDialog extends JDialog {
 			chooser.setDialogTitle("Export To");
 			String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
 			chooser.setSelectedFile(new File("Error_Log_" + timeStamp + ".csv"));
-		   // FileNameExtensionFilter filter = new FileNameExtensionFilter("csv");
 		    FileNameExtensionFilter filter = new FileNameExtensionFilter(
                     "CSV files (*csv)", "csv");
 		    chooser.setFileFilter(filter);
@@ -123,12 +154,10 @@ public class ProgressDialog extends JDialog {
 		    int returnVal = chooser.showSaveDialog(getParent());
 		    if(returnVal == JFileChooser.APPROVE_OPTION) {
 		    	try {
-					//generateCSVFile(chooser.getSelectedFile().getName(), view);
 		    		CSVFileWriter CSVWriter = new CSVFileWriter(view);
 		    		CSVWriter.writeTo(chooser.getSelectedFile().getName());
 		    		
 				} catch (Exception e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 		    }

@@ -1,8 +1,10 @@
 /**
- * file: Login.java
+ * @file Login.java
+ * @authors Leah Talkov, Jerry Tsui
+ * @date 8/4/2016
  * This class brings up a frame that allows the user to enter in a 
- * username and password. If the info given is within the file
- * Usernames_Passwords.csv, then a new Admin is created. Otherwise,
+ * username and password. If the info given matches the info
+ * in the database, then a new Admin is created. Otherwise,
  * a popup shows that the username or password is incorrect. 
  */
 
@@ -17,12 +19,9 @@ import javax.swing.JOptionPane;
 
 import java.sql.*;
 import java.util.HashMap;
-import java.awt.AWTKeyStroke;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.IOException;
 import javax.swing.JTextField;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
@@ -162,9 +161,9 @@ public class Login extends JFrame {
 	
 	/**
 	 * This function takes in the credentials given by the user
-	 * and checks it against the entries within Usernames_Passwords.csv
-	 * @param userName - Username given by the user
-	 * @param passWord - Password given by the user
+	 * and checks it against the entries within the database table
+	 * @param userName Username given by the user
+	 * @param passWord Password given by the user
 	 * @return - returns true if the username and password match an 
 	 * 			 entry in Usernames_Passwords.csv, false otherwise
 	 */

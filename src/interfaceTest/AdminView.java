@@ -3,7 +3,7 @@
  * @file AdminView.java
  * @authors Leah Talkov, Jerry Tsui
  * @date 8/3/2016
- * This class shows the frame for the AdminView. It consists of a JTable that displays
+ * Shows the frame for an Admin User. Consists of a JTable that displays
  * the information from the database table, and users can delete, add, or modify
  * entries of the data. The modifications are controlled by the functions 
  * in DataController.  
@@ -68,33 +68,33 @@ import javax.swing.JScrollBar;
 @SuppressWarnings({ "serial", "unused" })
 public class AdminView extends JFrame {
 	
-	//Reflects the keywords that are currently in the database
+	/**Reflects the keywords that are currently in the database*/
 	protected List<String> keyWords = new ArrayList<String>();
-	//Contains the keywords in the database, and serves as a temp list
-	//for modifications done to the table. Its contents are placed into
-	//keywords when the user presses save to default.
+	/**Contains the keywords in the database, and serves as a temp list
+	for modifications done to the table. Its contents are placed into
+	keywords when the user presses save to default.*/
 	List <String> savedWords = new ArrayList<String>();
-	//A list that contains the deafault values used to load up the JTable
+	/**A list that contains the default values used to load up the JTable*/
 	List <String[]> defaultList = new ArrayList<String[]>();
-	//A list that contains the original values, and is serves as a temp list
-	//for modifications done to the table. 
+	/**A list that contains the original values, and is serves as a temp list
+	for modifications done to the table. */
 	List <String[]> list = new ArrayList<String[]>();
-	//Headers for the JTable
+	/**Headers for the JTable */
 	private final String[] columnHeaders = {"Folder", "Keyword", "Log Error Description",
 									"Suggested Solution"};
-	//JTable that displays the database contents and changes accordingly for user changes
+	/**JTable that displays the database contents and changes accordingly for user changes*/
 	private JTable tblEntries;
-	//Main panel for the groups tab
+	/**Main panel for the groups tab*/
 	protected JPanel pnlGroups;
-	//Contains a list of the current groups
+	/**Contains a list of the current groups*/
 	protected JList<String> groupList;
-	//A model for the list of groups which is refreshed when groups are added or deleted
+	/**A model for the list of groups which is refreshed when groups are added or deleted*/
 	protected DefaultListModel<String> defaultListModel;
-	//A selection of options for when the user wants to delete an entry
+	/**A selection of options for when the user wants to delete an entry*/
 	Object[] options = {"Yes", "Cancel"};
-	//A model for the table which is refreshed when the user adds, deletes, or mods an entry
+	/**A model for the table which is refreshed when the user adds, deletes, or mods an entry*/
 	private DefaultTableModel tableModel;
-	//A private dataController that modifies the table content
+	/**A private dataController that modifies the table content*/
 	DataController dc;
 	
 	public AdminView(UserView view) throws ClassNotFoundException, SQLException {
@@ -276,12 +276,12 @@ public class AdminView extends JFrame {
 	}
 	
 	/**
-	 * This function fills myData with arrays. Each array represents a entry 
+	 * Fills myData with arrays. Each array represents a entry 
 	 * from the database where each entry is loaded into an array index. 
-	 * The resulting array is then used in the JTable to fill its contents with 
-	 * the database entries.
-	 * @throws SQLException thrown if connection to SQL server failed
-	 * @throws ClassNotFoundException thrown is classpath is broken
+	 * The resulting array is used as a JTable parameter. 
+	 * @throws SQLException 
+	 * @throws ClassNotFoundException 
+	 * @throws IOException
 	 */
 	void createDataTable() throws SQLException, ClassNotFoundException {		
 		String driver = "net.sourceforge.jtds.jdbc.Driver";
@@ -292,7 +292,8 @@ public class AdminView extends JFrame {
 		String query2 = "select Keyword, Log_Error_Description, "+
 						"Suggested_Solution, Folder from logerrors";
 		ResultSet rs = stmt.executeQuery(query2);
-		while(rs.next()) {
+		while(rs.next())
+		{
 			String[] entry = new String[4];
 			entry[0] = rs.getString("Folder");
 			entry[1] = rs.getString("Keyword");
@@ -328,8 +329,8 @@ public class AdminView extends JFrame {
 	}
 	
 	/**
-	 * This function updates the defaultListModel depending on the changes
-	 * the admin has done (if they have created or deleted a group)
+	 * Updates the defaultListModel depending on the changes
+	 * the Admin has done (if they have created or deleted a group)
 	 * @param view The current JFrame for AdminView
 	 */
 	protected void updateGroups(UserView view){
@@ -341,12 +342,12 @@ public class AdminView extends JFrame {
 	}
 	
 	/**
-	 * This function removes a group from the database. It brings
+	 * Removes a group from the database. Brings
 	 * up a JDialog if the admin presses the delete group button, but has
 	 * not selected a group to delete. 
 	 * @param view The current JFrame used for AdminView
-	 * @throws ClassNotFoundException thrown is classpath is broken
-	 * @throws SQLException thrown if error connection to SQL server
+	 * @throws ClassNotFoundException
+	 * @throws SQLException
 	 */
 	private void removeGroup(UserView view) throws ClassNotFoundException, SQLException{
 		String groupToRemove = groupList.getSelectedValue();
@@ -385,7 +386,7 @@ public class AdminView extends JFrame {
 	
 	/**
 	 * Initializes the table of errors, suggested solutions, folders, etc
-	 * that can be modified by the administrator
+	 * that can be modified by the Administrator
 	 */
 	private void initTable(){
 		tableModel = new DefaultTableModel(dc.getData(), columnHeaders) {
@@ -411,7 +412,7 @@ public class AdminView extends JFrame {
 	}
 	
 	/**
-	 * This function resizes the columns to fit the contents of the entries given.
+	 * Resizes the columns of a Jtable to fit the contents of the entries given.
 	 * @param table The JTable that is being displayed to the admin
 	 */
 	public void resizeColumnWidth(JTable table) {

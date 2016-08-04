@@ -1,5 +1,7 @@
 /**
- * file: MainController.java
+ * @file MainController.java
+ * @authors Leah Talkov, Jerry Tsui
+ * @date 8/4/2016
  * Contains the main function for the program, and brings up the main menu. 
  * This program allows users to input log files, and finds errors within
  * the files for the user. The timestamp, Ucode, the error message, and 
@@ -16,10 +18,6 @@ import java.awt.EventQueue;
 
 public class MainController {
 
-	public static final String errorFile = "resources/LogErrors_Suggestions.csv";
-	public static final String oldFile = "src/interfaceTest/resources/LogErrors_Suggestions.csv";
-	public static final String userPwFile = "resources/Usernames_Passwords.csv";
-	
 	public static void main(String[] args) throws IOException
 	{
 	

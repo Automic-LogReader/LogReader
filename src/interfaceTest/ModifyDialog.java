@@ -2,7 +2,7 @@
  * @file ModifyDialog.java
  * @authors Leah Talkov, Jerry Tsui
  * @data 8/3/2016
- * This class brings up a JDialog when the user wants to modify an 
+ * Brings up a JDialog when the user wants to modify an 
  * entry. There are four textboxes that are initially filled with
  * the entry's original values. The user can change any of these four
  * (though the keyWord must be unique) and press the modify button to 
@@ -29,20 +29,29 @@ import java.awt.Dimension;
 @SuppressWarnings("serial")
 public class ModifyDialog extends JDialog {
 
-	//Main panel for the Dialog
+	/**Main panel for the Dialog*/
 	private final JPanel pnlMain = new JPanel();
-	//Textfield for the keyword, which cannot be an existing keyword
+	/**Textfield for the keyword, which cannot be an existing keyword*/
 	private JTextField tfKeyword;
-	//Textfield for the error message that corresponds to the given keyword
+	/**Textfield for the error message that corresponds to the given keyword*/
 	private JTextField tfError;
-	//Textfield for the solution that corresponds to the given keyword
+	/**Textfield for the solution that corresponds to the given keyword*/
 	private JTextField tfSolution;
-	//Textfield for the folder the keyword will be put into, can be a new
-	//or an existing folder
+	/**Textfield for the folder the keyword will be put into, can be a new
+	   or an existing folder*/
 	private JTextField tfFolder;
-	//The row index for the entry the user is modifying
+	/**The row index for the entry the user is modifying*/
 	private int selectedRow;
 
+	/**
+	 * Creates the dialog for modifying an entry. 
+	 * @param folder The previous folder name for the entry
+	 * @param keyWord The previous keyword name for the entry
+	 * @param errorMessage The previous error message for the entry
+	 * @param solutionMessage The previous solution message for the entry
+	 * @param dc The DataController that created this object
+	 * @param row The row of the entry to be modified
+	 */
 	public ModifyDialog(String folder, String keyWord, String errorMessage,
 						String solutionMessage,  DataController dc, int row) {
 		try {
@@ -148,7 +157,7 @@ public class ModifyDialog extends JDialog {
 					!keyWord.equals(tfKeyword.getText())) {
 					JOptionPane.showMessageDialog(null, "No duplicate keywords allowed");
 			}
-			else{
+			else {
 				//Otherwise we see if the text is the same by checking it against
 				//the original values, and set the booleans accordingly. 
 				try {

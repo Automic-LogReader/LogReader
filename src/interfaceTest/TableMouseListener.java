@@ -21,6 +21,11 @@ public class TableMouseListener extends MouseAdapter {
     public TableMouseListener(JTable table) {
         this.table = table;
     }
+    
+    public static int getCurrentRow(){
+    	return TableMouseListener.currentRow;
+    }
+   
      
     @Override
     public void mousePressed(MouseEvent event) {
