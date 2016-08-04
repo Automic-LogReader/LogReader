@@ -118,12 +118,12 @@ public class UserView extends JFrame{
 	protected ArrayList<String> operandArrayList = new ArrayList<String>();
 	protected ArrayList<Boolean> notArrayList = new ArrayList<Boolean>();
 	protected Vector<String> comboBoxKeyWords = new Vector<String>();
-	private Stack<JComboBox<String>> mostRecentCB = new Stack<JComboBox<String>>();
-	private JComboBox<String> cbKey1;
-	private JComboBox<String> cbLogic1;
-	private JComboBox<String> cbKey2;
-	private JComboBox<String> cbLogic2;
-	private JComboBox<String> cbKey3;
+	protected Stack<LogicalComboBox> mostRecentCB = new Stack<LogicalComboBox>();
+	private LogicalComboBox cbKey1;
+	private LogicalComboBox cbLogic1;
+	private LogicalComboBox cbKey2;
+	private LogicalComboBox cbLogic2;
+	private LogicalComboBox cbKey3;
 	
 	//For the CheckBoxTree view
 	protected CBTree cbTree;
@@ -496,30 +496,30 @@ public class UserView extends JFrame{
 		JPanel pnlComboBox = new JPanel(new FlowLayout());
 		pnlComboBox.setOpaque(true);
 		pnlComboBox.setBackground(Color.WHITE);
-		cbKey1 = logicalComboBox(2);
+		cbKey1 = new LogicalComboBox(2, this);
 		cbKey1.addActionListener(e -> {
 			if (cbKey1.getSelectedIndex() != -1 && cbLogic1.getSelectedIndex() != -1 && cbKey2.getSelectedIndex() != -1){
 				cbLogic2.setEnabled(true);
 				cbKey3.setEnabled(true);
 			}
 		});
-		cbLogic1 = logicalComboBox(3);
+		cbLogic1 = new LogicalComboBox(3, this);
 		cbLogic1.addActionListener(e -> {
 			if (cbKey1.getSelectedIndex() != -1 && cbLogic1.getSelectedIndex() != -1 && cbKey2.getSelectedIndex() != -1){
 				cbLogic2.setEnabled(true);
 				cbKey3.setEnabled(true);
 			}
 		});
-		cbKey2 = logicalComboBox(2);
+		cbKey2 = new LogicalComboBox(2, this);
 		cbKey2.addActionListener(e -> {
 			if (cbKey1.getSelectedIndex() != -1 && cbLogic1.getSelectedIndex() != -1 && cbKey2.getSelectedIndex() != -1){
 				cbLogic2.setEnabled(true);
 				cbKey3.setEnabled(true);
 			}
 		});
-		cbLogic2 = logicalComboBox(1);
+		cbLogic2 = new LogicalComboBox(1, this);
 		cbLogic2.setEnabled(false);
-		cbKey3 = logicalComboBox(2);
+		cbKey3 = new LogicalComboBox(2, this);
 		cbKey3.setEnabled(false);
 		
 		pnlComboBox.add(cbKey1);
@@ -528,24 +528,22 @@ public class UserView extends JFrame{
 		pnlComboBox.add(cbLogic2);
 		pnlComboBox.add(cbKey3);
 
-		JButton btnUndo = new JButton("Undo");
-		btnUndo.setAlignmentX(CENTER_ALIGNMENT);
-		btnUndo.addActionListener(e -> {
-			if (!mostRecentCB.isEmpty()){
-				mostRecentCB.pop().setSelectedIndex(-1);
-			}
-			if (cbLogic1.getSelectedIndex() == -1 || cbKey1.getSelectedIndex() == -1 || cbKey2.getSelectedIndex() == -1){
-				if (cbLogic2.isEnabled() && cbKey3.isEnabled()){
-					cbLogic2.setEnabled(false);
-					cbKey3.setEnabled(false);
-				}
-			}
+		JButton btnClear = new JButton("Clear");
+		btnClear.setAlignmentX(CENTER_ALIGNMENT);
+		btnClear.addActionListener(e -> {
+			cbLogic1.setSelectedIndex(-1);
+			cbLogic2.setSelectedIndex(-1);
+			cbKey1.setSelectedIndex(-1);
+			cbKey2.setSelectedIndex(-1);
+			cbKey3.setSelectedIndex(-1);
+			cbLogic2.setEnabled(false);
+			cbKey3.setEnabled(false);
 		});
 		
 		pnlAndOrNot.add(Box.createVerticalGlue());
 		pnlAndOrNot.add(Box.createRigidArea(new Dimension(0, 10)));
 		pnlAndOrNot.add(pnlComboBox);
-		pnlAndOrNot.add(btnUndo);
+		pnlAndOrNot.add(btnClear);
 		pnlAndOrNot.add(Box.createVerticalGlue());
 		
 		/*** GROUP PANEL ***/
@@ -615,49 +613,6 @@ public class UserView extends JFrame{
 		mainPanel.add(errorScrollPane);
 		
 		setVisible(true);
-	}
-	
-	/**
-	 * This function is a helper function that creates a JComboBox that 
-	 * populates the AND/OR/NOT tab of UserView's tabbedpane. 
-	 * @param option: Determines whether the JComboBox is an operand or an operator
-	 * @return Returns the JComboBox based off of the option (operand, operator)
-	 */
-	private JComboBox<String> logicalComboBox(int option){
-		JComboBox<String> cb = new JComboBox<String>();
-		MutableComboBoxModel<String> model = (MutableComboBoxModel<String>)cb.getModel();
-		cb.setOpaque(true);
-		cb.setBackground(Color.WHITE);
-		switch (option){
-		case 1:
-			cb.setPreferredSize(new Dimension(80, 20));
-			model.addElement("AND");
-			model.addElement("OR");
-			model.addElement("AND NOT");
-			break;
-		case 2:
-			cb.setPreferredSize(new Dimension(100, 20));
-			for (String s: comboBoxKeyWords){
-				model.addElement(s);
-			}
-			break;
-		case 3:
-			cb.setPreferredSize(new Dimension(80, 20));
-			model.addElement("AND");
-			model.addElement("AND NOT");
-			break;
-		}
-		cb.addActionListener(e -> {
-			if (cb.getSelectedIndex() != -1){
-				if (!mostRecentCB.isEmpty()){
-					if (mostRecentCB.peek() == cb) return;
-				}
-				mostRecentCB.push(cb);
-			}
-		});
-		cb.setSelectedIndex(-1);
-		
-		return cb;
 	}
 
 	/**
