@@ -64,10 +64,8 @@ import interfaceTest.CheckBoxList.CheckBoxListRenderer;
 @SuppressWarnings("serial")
 
 public class UserView extends JFrame{
-	protected HashMap<String, String> GroupInfo = new HashMap<String, String>();
 	protected final String [] headers = {"Error #", "Timestamp",
 								"Keywords", "Error Message", "Suggested Solution"};
-	
 	private Object [][] data;
 	protected ProgressDialog dialog;
 	private Thread t;
@@ -76,11 +74,12 @@ public class UserView extends JFrame{
 	//Holds a line when the logfile is read
 	protected String logLine;
 	//Holds the individual entries from logLine, split by " "
-
+	
+	protected HashMap<String, ArrayList<String>> treeMap = new HashMap<String, ArrayList<String>>();
+	protected HashMap<String, String> GroupInfo = new HashMap<String, String>();
 	protected HashMap<String, String> solutions = new HashMap<String, String>();
 	protected HashMap<String, String> folderMap = new HashMap<String, String>();
 	protected HashSet<String> folderSet = new HashSet<String>();
-	protected HashMap<String, ArrayList<String>> treeMap = new HashMap<String, ArrayList<String>>();
 	protected HashSet<String> keyWords = new HashSet<String>();
 	protected HashSet<String> originalKeyWords;
 	private boolean hasCopiedOriginalKeyWords;

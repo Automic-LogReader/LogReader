@@ -32,69 +32,74 @@ public class LogicEvaluator {
 	private boolean AND_NOT_DEADLOCK;
 	/**True if the user has used the keyword DEADLOCK with the AND operand*/
 	private boolean AND_DEADLOCK;
-	/**True if the user has used the arrow keyword with the AND NOT operand*/
+	/**True if the user has used the keyword ===> with the AND NOT operand*/
 	private boolean AND_NOT_ARROW;
-	/**True if the user has used the arrow keyword with the AND operand*/
+	/**True if the user has used the keyword ===> with the AND operand*/
 	private boolean AND_ARROW;
-	/**True if the user has used the arrow keyword with the OR operand*/
+	/**True if the user has used the keyword ===> with the OR operand*/
+	private boolean byPass;
 	private boolean OR_ARROW;
+	private int arrowCount;
 	
-	/** Creates a LogicEvaluator object
-	 * @param logParse The LogParser that instantiates the LogicEvaluator
-	 */
-	public LogicEvaluator(LogParser logParse) {
+	LogicEvaluator(LogParser logParse) {
 		this.logParse = logParse;
 		orWord = "";
 		OR_DEADLOCK = false;
 		AND_NOT_DEADLOCK = false;
 		AND_DEADLOCK = false;
+		byPass = false;
 	}
 	
 	/**
-	 * Sets the Logic Evaluator's keyWords ArrayList
-	 * @param keyWords The ArrayList to copy into the keyWords ArrayList
+	 * Caleld in UserView to set the array to the one generated
+	 * by the user's logic statement
+	 * @param keyWords Contains the keywords chosen by the user
 	 */
-	protected void setkeyWords(ArrayList <String> keyWords) {
+	void setkeyWords(ArrayList <String> keyWords) {
 		this.andWords = keyWords;
 	}
 	
 	/**
-	 * Sets the Logic Evaluator's Operands ArrayList
-	 * @param operands The ArrayList to copy into the operands ArrayList
+	 * Called in UserView to set the array to the one generated
+	 * by the user's logic statement
+	 * @param operands Contains the operands for the associated keywords
 	 */
-	protected void setOperands(ArrayList <String> operands) {
+	void setOperands(ArrayList <String> operands) {
 		this.operands = operands;
 	}
 	
 	/**
-	 * Sets the Logic Evaluator's hasNot ArrayList
-	 * @param hasNot The ArrayList to copy into the HasNot ArrayList
+	 * Called in UserView to set the array to the one generated
+	 * by the user's logic statement
+	 * @param hasNot Contains the boolean flags for the associated keywords
 	 */
-	protected void setHasNot(ArrayList <Boolean> hasNot) {
+	void setHasNot(ArrayList <Boolean> hasNot) {
 		this.hasNot = hasNot;
 	}
 	
 	/**
-	 * Gets the number of errors detected by the Logic Evaluator
-	 * @return The amount of errors detected by the Logic Evaluator 
-	 * for the AND OR NOT logic
+	 * Called in LogParser if the user has selected the LogicEval tab,
+	 * gives the number of errors found 
+	 * @return The errorCount that was generated during parsing 
 	 */
-	public int getErrorCount() {
+	int getErrorCount() {
 		return errorCount;
 	}
 	
 	/**
-	 * This function checks for duplicate errors against DEADLOCK and arrow errors, and 
+	 * Checks for duplicate errors against DEADLOCK and arrow errors, and 
 	 * then creates entries for the interface table based off of the entries in 
 	 * the arraylist validLines. 
 	 */
-	protected void makeEntries() {
-		
+	void makeEntries() {
 		if (!deadlockOrLines.isEmpty()) {
 			removeDuplicates(deadlockOrLines);
 		}
-		else if (!arrowOrLines.isEmpty())
+		else if (!arrowOrLines.isEmpty()){
+			System.out.println(arrowOrLines.size());
+			System.out.println(arrowCount);
 			removeDuplicates(arrowOrLines);
+		}
 		//If we have no entries, then we return
 		if(validLines.isEmpty()) {
 			return;
@@ -162,11 +167,11 @@ public class LogicEvaluator {
 	}
 	
 	/**
-	 * This function takes in an arraylist and checks for duplicates against
+	 * Takes in an arraylist and checks for duplicates against
 	 * validLines. If there is a duplicate entry, it is removed from validLines. 
 	 * After this process, all of the given arraylist's contents are added
 	 * to validLines. 
-	 * @param orLines This is an arraylist that is checked against
+	 * @param orLines An arraylist that is checked against
 	 * 				  validLines for duplicate error entries
 	 */
 	private void removeDuplicates(ArrayList<String> orLines) {
@@ -194,15 +199,15 @@ public class LogicEvaluator {
 	}
 
 	/**
-	 * This function adds lines to validLines, deadlockOrLines, and arrowOrLines
+	 * Adds lines to validLines, deadlockOrLines, and arrowOrLines
 	 * depending on the logical statement that the user has inputed. Lines that
-	 * fit the statement will be put into the above arraylists while invalid
+	 * fit the statement will be put into the above ArrayLists while invalid
 	 * lines will be ignored. 
-	 * @param line is a string containing the first line to be read
-	 * @param br is a BufferedReader that parses through the lines of the log file
-	 * @throws IOException if there is an error with the BufferedReader
+	 * @param line File line that is parsed against the logic statement
+	 * @param br Buffered Reader to read through the file
+	 * @throws IOException
 	 */
-	protected void addLines(String line, BufferedReader br) throws IOException {
+	void addLines(String line, BufferedReader br) throws IOException {
 		//If they don't want deadlock lines, then we skip over them
 		if(AND_NOT_DEADLOCK) {
 			if(line.contains("DEADLOCK")) {
@@ -227,7 +232,8 @@ public class LogicEvaluator {
 				deadlockOrLines.add(makeDeadlockLine(br, line));
 			}
 			else if (OR_ARROW) {
-				String tempLine = makeArrowLine(br, line, line.split(" "));
+				arrowCount++;
+				String tempLine = makeArrowLine(br, line);
 				if(tempLine != null) {
 					arrowOrLines.add(tempLine);
 				}
@@ -244,7 +250,7 @@ public class LogicEvaluator {
 				parseLine = makeDeadlockLine(br, line);
 			}
 			else if(AND_ARROW && line.contains("===>")) {
-				String tempLine = makeArrowLine(br, line, line.split(" "));
+				String tempLine = makeArrowLine(br, line);
 				if(tempLine != null) {
 					parseLine = tempLine;
 				}
@@ -276,12 +282,11 @@ public class LogicEvaluator {
 	}
 		
 	/**
-	 * This function looks at the logical statement that the user has given and checks
-	 * for special cases (such as AND NOT DEADLOCK, AND NOT ARROW and sees if an OR 
+	 * Looks at the logical statement that the user has given and checks
+	 * for special cases (such as AND NOT DEADLOCK, AND NOT arrow and sees if an OR 
 	 * operand was set. If so, then the variable orWord is set as the corresponding word. 
 	 */
-	protected void addORs()
-	{
+	void addORs() {
 		if(andWords != null){
 			firstKeyword = andWords.get(0);
 			//Checks for OR operand
@@ -313,18 +318,18 @@ public class LogicEvaluator {
 	}
 
 	/**
-	 * This function progresses the buffered reader if the user has
-	 * indicated that they do NOT want to include any arrow errors.
-	 * If there is a single arrow (indicated by a time stamp dif) 
+	 * Progresses the buffered reader if the user has
+	 * indicated that they do not want to include any arrow errors.
+	 * If there is a single arrow (indicated by a time stamp difference) 
 	 * then the function will return the line right below the first arrow found.
 	 * Otherwise if there are matching arrows, the line returned will be the line
 	 * below the matching arrow.
 	 * @param logbr A buffered reader to advance through the file, same br from LogParser
 	 * @param line The file line where an arrow was found
 	 * @return Returns a string that gives the program a new place to parse through
-	 * @throws IOException if there is an error with the BufferedReader
+	 * @throws IOException
 	 */
-	private String progressArrowBr(BufferedReader logbr, String line) throws IOException {
+	String progressArrowBr(BufferedReader logbr, String line) throws IOException {
         boolean matchingArrow = false;
         String timeStamp = "";
         String[] temp = line.split(" ");
@@ -338,47 +343,46 @@ public class LogicEvaluator {
         String logLine = logbr.readLine();
         logbr.mark(2500);
         while(!matchingArrow && logLine != null) {
-               boolean timeStampFound = false;            
-               logParse.updateProgress();
-               words = logLine.split(" ");
-               for(String testWord : words) {
-            	   //Find the timestamp in the line we are testing
-                     if(!timeStampFound && testWord.length() == 19) {
-                            timeStampFound = true;
-                            //If our timestamps are not equal, we 
-                            //don't have a matching arrow
-                            if(logParse.timeStampDifference(testWord, timeStamp)){
-                            	logbr.reset();
-                                return logbr.readLine();
-                            }
-                     }
-                     else if(timeStampFound) {
-                    	 	//If we've found an ===> and still have a matching
-                    	 	//timestamp, then we have a matching arrow error
-                            if(testWord.equals("===>")) {
-                                   matchingArrow = true;
-                                   return logbr.readLine();
-                            } 
-                     }      
-               }
-               logLine = logbr.readLine();
+           boolean timeStampFound = false;            
+           logParse.updateProgress();
+           words = logLine.split(" ");
+           for(String testWord : words) {
+        	   //Find the timestamp in the line we are testing
+                 if(!timeStampFound && testWord.length() == 19) {
+                        timeStampFound = true;
+                        //If our timestamps are not equal, we 
+                        //don't have a matching arrow
+                        if(logParse.timeStampDifference(testWord, timeStamp)){
+                        	logbr.reset();
+                            return logbr.readLine();
+                        }
+                 }
+                 else if(timeStampFound) {
+                	 	//If we've found an ===> and still have a matching
+                	 	//timestamp, then we have a matching arrow error
+                        if(testWord.equals("===>")) {
+                               matchingArrow = true;
+                               return logbr.readLine();
+                        } 
+                 }      
+           }
+           logLine = logbr.readLine();
         }
         return "";
 	}
 	
 	/**
-	 * This function progresses the buffered reader if the user has
-	 * indicated that they do NOT want to include any DEADLOCK errors.
-	 * If there is a single DEADLOCK (indicated by a time stamp dif) 
+	 * Progresses the buffered reader if the user has indicated that they do not 
+	 * want to include any DEADLOCK errors. If there is a single DEADLOCK (indicated by a time stamp dif) 
 	 * then the function will return the line right below the first DEADLOCK found.
 	 * Otherwise if there are matching DEADLOCKs, the line returned will be the line
 	 * below the matching DEADLOCK.
 	 * @param logbr A buffered reader to advance through the file, same br from LogParser
-	 * @param line The file line where a DEADLOCK was found
+	 * @param line File line where a DEADLOCK was found
 	 * @return Returns a string that gives the program a new place to parse through
-	 * @throws IOException if there is an error with the BufferedReader
+	 * @throws IOException
 	 */
-	private String progressDeadlockBr(BufferedReader logbr, String line) throws IOException {
+	String progressDeadlockBr(BufferedReader logbr, String line) throws IOException {
         boolean matchingDeadlock = false;
         String timeStamp = "";
         String[] temp = line.split(" ");
@@ -392,44 +396,44 @@ public class LogicEvaluator {
         String logLine = logbr.readLine();
         logbr.mark(2500);
         while(!matchingDeadlock && logLine != null) {
-               boolean timeStampFound = false;            
-               logParse.updateProgress();
-               words = logLine.split(" ");
-               for(String testWord : words) {
-                     if(!timeStampFound && testWord.length() == 19) {
-                            timeStampFound = true;
-                            //If our timestamps are not equal, we 
-                            //don't have a matching deadlock
-                            if(logParse.timeStampDifference(testWord, timeStamp)) {
-                            	logbr.reset();
-                                return logbr.readLine();
-                            }
-                     }
-                     else if(timeStampFound) {
-                    	 	//If we found deadlock and haven't had different 
-                    	 	//timestamps, we have a matching deadlock
-                            if(testWord.equals("DEADLOCK")) {
-                                   matchingDeadlock = true;
-                                   return logbr.readLine();
-                            } 
-                     }      
-               }
-               logLine = logbr.readLine();
+           boolean timeStampFound = false;            
+           logParse.updateProgress();
+           words = logLine.split(" ");
+           for(String testWord : words) {
+                 if(!timeStampFound && testWord.length() == 19) {
+                    timeStampFound = true;
+                    //If our timestamps are not equal, we 
+                    //don't have a matching deadlock
+                    if(logParse.timeStampDifference(testWord, timeStamp)) {
+                    	logbr.reset();
+                        return logbr.readLine();
+                    }
+                 }
+                 else if(timeStampFound) {
+            	 	//If we found deadlock and haven't had different 
+            	 	//timestamps, we have a matching deadlock
+                    if(testWord.equals("DEADLOCK")) {
+                           matchingDeadlock = true;
+                           return logbr.readLine();
+                    } 
+                }      
+           }
+           logLine = logbr.readLine();
         }
         return "";
 	}
 	
 	/**
-	 * This function generates a string that returns the entire deadlock error, 
+	 * Generates a string that returns the entire deadlock error, 
 	 * which includes the first line where a deadlock was found, and then the 
 	 * subsequent lines in between the matching deadlock. If the error is a single
 	 * error occurrence, then the error message is simply "".
 	 * @param logbr Buffered Reader to read through file, same br from LogParser
-	 * @param line The fileline where DEADLOCK first occurred
+	 * @param line File line where DEADLOCK first occurred
 	 * @return Returns a string with the full DEADLOCK error
-	 * @throws IOException if there is an error with the BufferedReader
+	 * @throws IOException
 	 */
-	private String makeDeadlockLine(BufferedReader logbr, String line) throws IOException {
+	String makeDeadlockLine(BufferedReader logbr, String line) throws IOException {
         ArrayList <String> errorLines = new ArrayList<String>();
         boolean matchingDeadlock = false;
         StringBuilder testLine = new StringBuilder();
@@ -447,75 +451,85 @@ public class LogicEvaluator {
         String[] words;
         String logLine = logbr.readLine();
         while(!matchingDeadlock && logLine != null) {
-               boolean timeStampFound = false;
-               boolean uCodeFound = false;              
-               testLine.setLength(0);
-               logParse.updateProgress();
-               words = logLine.split(" ");
-               for(String testWord : words) {
-                     if(!timeStampFound && testWord.length() == 19) {
-                            timeStampFound = true;
-                            //If our timestamps are not equal, we 
-                            //don't have a matching deadlock and just return first line
-                            if(logParse.timeStampDifference(testWord, timeStamp)) {
-                                   return errorLines.get(0);
-                            }
-                     }
-                     
-                     //We find the U-code so that the error message contains only the content,
-                     //not the timestamp and ucode as well
-                     else if(!uCodeFound && timeStampFound) {
-                            if(testWord.length() > 2) {
-                                   if(testWord.charAt(0) == 'U' && Character.isDigit(testWord.charAt(1))){
-                                          uCodeFound = true;
-                                   }
-                            }
-                     }
-                     else if(uCodeFound && timeStampFound) {
-                    	 	//We've found a matching deadlock, and can now build the full error msg
-                            if(testWord.equals("DEADLOCK")) {
-                                   matchingDeadlock = true;
-                                   for(int i = 0; i < errorLines.size(); i++) {
-                                	   fullMsg.append(errorLines.get(i)); 
-                                   }
-                                   return fullMsg.toString();
-                            }
-                            //If we haven't found a deadlock, then we keep adding 
-                            //onto the error message
-                            else
-                                   testLine.append(testWord + " ");  
-                     }      
-               }
-               errorLines.add(testLine.toString());
-               logLine = logbr.readLine();
-        }
+        	if(orWord.equals("===>") && logLine.contains("===>"))
+        	{
+        		String tempLine = (makeArrowLine(logbr, logLine));
+        		if(tempLine != null)
+        			arrowOrLines.add(tempLine);
+        	}
+        	
+           boolean timeStampFound = false;
+           boolean uCodeFound = false;              
+           testLine.setLength(0);
+           logParse.updateProgress();
+           words = logLine.split(" ");
+           for(String testWord : words) {
+        	   if(!timeStampFound && testWord.length() == 19) {
+        		   timeStampFound = true;
+                    //If our timestamps are not equal, we 
+                    //don't have a matching deadlock and just return first line
+                    if(logParse.timeStampDifference(testWord, timeStamp)) {
+                           return errorLines.get(0);
+                    }
+             }
+             
+             //We find the U-code so that the error message contains only the content,
+             //not the timestamp and ucode as well
+             else if(!uCodeFound && timeStampFound) {
+                    if(testWord.length() > 2) {
+                           if(testWord.charAt(0) == 'U' && Character.isDigit(testWord.charAt(1))) {
+                                  uCodeFound = true;
+                           }
+                    }
+             }
+             else if(uCodeFound && timeStampFound) {
+            	 	//We've found a matching deadlock, and can now build the full error msg
+                    if(testWord.equals("DEADLOCK")) {
+                           matchingDeadlock = true;
+                           for(int i = 0; i < errorLines.size(); i++) {
+                        	   fullMsg.append(errorLines.get(i)); 
+                           }
+                           return fullMsg.toString();
+                    }
+                    //If we haven't found a deadlock, then we keep adding 
+                    //onto the error message
+                    else
+                           testLine.append(testWord + " ");  
+             }      
+         }
+         errorLines.add(testLine.toString());
+         logLine = logbr.readLine();
+       }
         
-        return fullMsg.toString();
+       return fullMsg.toString();
 	}
 	
 	/**
-	 * This function generates the entire line of an arrow error, and includes all the lines
+	 * Generates the entire line of an arrow error, and includes all the lines
 	 * between the first arrow and then the matching arrow error. The string returned
 	 * includes the first line where the arrow was found and the full error message, but not
 	 * the line including the matching arrow. If there is only a single arrow, then only the
 	 * first line is returned.  
 	 * @param logbr Buffered Reader to read through file, same br from LogParser
-	 * @param logLine Fileline where an arrow error was first found
-	 * @param currArray The same line as above but split into an array using split(" ")
-	 * @return Returns a string with the full arrow error
-	 * @throws IOException If there is a problem reading with the bufferedReader
+	 * @param logLine File line where an arrow was first found
+	 * @return Returns a string with the full arrow error, null if outside
+	 * 		   time stamp bounds user chose in the interface
+	 * @throws IOException
 	 */
-	private String makeArrowLine(BufferedReader logbr, String logLine, String[] currArray) throws IOException {
+	String makeArrowLine(BufferedReader logbr, String logLine) throws IOException {
 		String[] words;
-		int arrowindex = 0;
+		int arrowindex = 0; 
         boolean closingArrowTagFound = false;
         boolean outsideTimeStampBounds = false;
         StringBuilder errorMsg = new StringBuilder();
+        String[] currArray = logLine.split(" ");
         if (logLine.contains("Time critical")){
-	        if (!logParse.isTimeBoundValid(currArray)) {
-				outsideTimeStampBounds = true;
-	        }
-		}
+        	//Line is outside requested time bounds
+        	if (!logParse.compareTimeStamp(currArray)) {
+        		outsideTimeStampBounds = true;
+        	}
+        }
+        //Find index where arrow is 
 		for (int i=0; i<currArray.length; i++) {
 			if (currArray[i].equals("===>")) {
 				arrowindex = i-1;
@@ -530,24 +544,18 @@ public class LogicEvaluator {
 			words = logLine.split(" ");
 			
 			if (logLine.contains("===>")) {
+				//A single arrow error, we make a recursive call
 				if (logLine.contains("Time critical")) {
 					errorMsg.setLength(0);
 					errorMsg.append(firstLineOfError);
-					String[] tempArray = logLine.split(" ");
-					String tempTimeStamp = "";
-					for (String s : tempArray) {
-						if (s.length() == 19) {
-							tempTimeStamp = s;
-							break;
-						}
-					}
-					return (makeArrowLine(logbr, tempTimeStamp, tempArray));
+					return (makeArrowLine(logbr, logLine));
 				}
 				if (arrowindex < words.length){
 					for (int i = arrowindex; i < words.length; i++) {
 						errorMsg.append(words[i] + " ");
 					}
 				}
+				//Add to the arrow error message
 				else {
 					errorMsg.append(logLine + " ");
 				}
@@ -566,6 +574,7 @@ public class LogicEvaluator {
 				logLine = logbr.readLine();
 			}
 		}
+		//We return null if not within time bounds
 		if (outsideTimeStampBounds) {
 			return null;
 		}
