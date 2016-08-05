@@ -198,7 +198,7 @@ public class LogParser {
 		
 		System.out.println("Size of Arraylist:" + view.linesBeforeArrayList.size());
 		//We make entries out of the errors that we've found in logic eval
-		logicEvaluator.makeEntries();
+		//logicEvaluator.makeEntries();
 		//Logs execution time to the console
 		long endTime = System.nanoTime();
 		long duration = (endTime - startTime)/1000000;
