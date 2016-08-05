@@ -15,9 +15,13 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Stack;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
@@ -54,7 +58,7 @@ public class LogParser {
 	/**UserView object that contains Swing objects that
 	   will be changed by functions in this class*/
 	protected FixedStack<String> linesBefore;
-	protected FixedStack<String> linesAfter;
+	protected ConcurrentHashMap<Integer, FixedStack<String>> linesAfter;
 	
 	protected static UserView view;
 	
@@ -64,7 +68,8 @@ public class LogParser {
 		logicEvaluator = new LogicEvaluator(this);
 		
 		linesBefore = new FixedStack<String>(view.numLinesBefore + 1);
-		linesAfter = new FixedStack<String>(view.numLinesAfter + 1);
+		linesAfter = new ConcurrentHashMap<Integer, FixedStack<String>>();
+		
 		
 		//If not null, we set the arrayLists in logicEval
 		if(view.keyWordArrayList != null)
@@ -89,7 +94,7 @@ public class LogParser {
 	void parseErrors(File file, ProgressDialog pd) throws IOException {
 		view.updateKeyWords(selectedTab);
 		view.linesBeforeArrayList.clear();
-		view.linesAfterArrayList.clear();
+		view.linesAfterHashMap.clear();
 		
 		percent = 0;
 		oldPercent = 0;
@@ -110,6 +115,7 @@ public class LogParser {
 		long startTime = System.nanoTime();
 		while(logLine != null) {
 			linesBefore.push(logLine);
+			updateLinesAfter(logLine);
 			updateProgress(logLine);
 			//If the user is on the logic statement tab, we send 
 			//lines to the logic evaluator
@@ -139,6 +145,7 @@ public class LogParser {
 						if (view.keyWords.contains(testWord)) {
 							keywordFound = true;
 							errorCount++;
+							
 							//If we have a deadlock error, this is a special case
 							if (testWord.equals("DEADLOCK")) {
 								entry = parseDeadlockError(logbr, timeStamp);
@@ -153,6 +160,7 @@ public class LogParser {
 							}
 							//Otherwise we make an entry like normal
 							else {
+								addLinesAfter();
 								entry = new Object[5];
 								entry[0] = errorCount;
 								entry[1] = timeStamp;
@@ -208,6 +216,7 @@ public class LogParser {
 			data[i] = errorData.get(i);
 		}
 		view.menuItemLinesBefore.setEnabled(true);
+		view.menuItemLinesAfter.setEnabled(true);
 		makeTable();
 	}
 	
@@ -256,6 +265,7 @@ public class LogParser {
 		logLine = logbr.readLine();
 		while (!closingArrowTagFound && logLine != null) {
 			linesBefore.push(logLine);
+			updateLinesAfter(logLine);
 			updateProgress(logLine);
 			words = logLine.split(" ");
 			if (logLine.contains("===>")){
@@ -304,6 +314,7 @@ public class LogParser {
 			errorCount--;
 			return null;
 		}
+		addLinesAfter();
 		return tempEntry;
 	}
 	
@@ -317,6 +328,7 @@ public class LogParser {
 	 */
 	Object[] parseDeadlockError(BufferedReader logbr, String timeStamp) throws IOException {
 	   addLinesBefore();
+	   addLinesAfter();
        Object[] entry = new Object[5];
        ArrayList <String> errorLines = new ArrayList<String>();
        boolean matchingDeadlock = false;
@@ -329,6 +341,7 @@ public class LogParser {
        String Line = logbr.readLine();
        while(!matchingDeadlock && Line != null) {
     	  linesBefore.push(logLine);
+    	  updateLinesAfter(logLine);
           boolean timeStampFound = false;
           boolean uCodeFound = false;              
           testLine.setLength(0);
@@ -469,5 +482,24 @@ public class LogParser {
 		}
 		arrayList.remove(arrayList.size()-1);
 		view.linesBeforeArrayList.add(arrayList);
+	}
+	
+	void addLinesAfter(){
+		linesAfter.put(errorCount, new FixedStack<String>(view.numLinesAfter + 1));
+	}
+	
+	void updateLinesAfter(String line){
+		for (Map.Entry<Integer, FixedStack<String>> entry : linesAfter.entrySet()){
+			entry.getValue().push(line);
+			if (entry.getValue().isFull()){
+				ArrayList<String> arrayList = new ArrayList<String>();
+				for (String str : entry.getValue()){
+					arrayList.add(str);
+				}
+				arrayList.remove(arrayList.size()-1);
+				view.linesAfterHashMap.put(entry.getKey(), arrayList);
+				linesAfter.remove(entry.getKey());
+			}
+		}
 	}
 }

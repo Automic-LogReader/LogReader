@@ -54,17 +54,16 @@ public class LineDialog extends JDialog {
 		
 		setPreferredSize(new Dimension(400, 300));
 		setLocationRelativeTo(null);
+		getContentPane().add(pnlMain, BorderLayout.CENTER);
+		pnlMain.setBorder(new EmptyBorder(5,5,5,5));
+		pnlMain.setLayout(new BoxLayout(pnlMain, BoxLayout.Y_AXIS));
+		System.out.println("Current Row: " + currentRow);
 		if (type.equals("BEFORE")){
 			setTitle("Lines Before");
 			
-			getContentPane().add(pnlMain, BorderLayout.CENTER);
-			pnlMain.setBorder(new EmptyBorder(5,5,5,5));
-			pnlMain.setLayout(new BoxLayout(pnlMain, BoxLayout.Y_AXIS));
-			System.out.println("Current Row: " + currentRow);
-			
 			ArrayList<String> listOfLines = view.linesBeforeArrayList.get(currentRow);
 			
-			JLabel lblTitle = new JLabel("Lines before error #" + currentRow);
+			JLabel lblTitle = new JLabel("Lines before error #" + (currentRow + 1));
 			lblTitle.setAlignmentX(CENTER_ALIGNMENT);
 			pnlMain.add(lblTitle);
 			
@@ -77,7 +76,21 @@ public class LineDialog extends JDialog {
 			
 			pnlMain.add(scrollPane);	
 		} else if (type.equals("AFTER")){
+			setTitle("Lines After");
 			
+			ArrayList<String> listOfLines = view.linesAfterHashMap.get(currentRow + 1);
+			JLabel lblTitle = new JLabel("Lines after error #" + (currentRow + 1));
+			lblTitle.setAlignmentX(CENTER_ALIGNMENT);
+			pnlMain.add(lblTitle);
+			
+			pnlMain.add(Box.createRigidArea(new Dimension(0,10)));
+			
+			list = new JList(listOfLines.toArray());
+			
+			scrollPane = new JScrollPane(list);
+			scrollPane.setBackground(Color.WHITE);
+			
+			pnlMain.add(scrollPane);
 		}
 		
 		pack();

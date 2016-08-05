@@ -35,4 +35,8 @@ public class FixedStack<E> extends Stack<E> {
         }
         return super.push((E) object);
     }
+    
+    public boolean isFull(){
+    	return (this.size() == maxSize);
+    }
 }

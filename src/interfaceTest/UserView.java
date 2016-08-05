@@ -166,7 +166,7 @@ public class UserView extends JFrame{
 	private JPanel pnlTreeView;
 	
 	protected ArrayList<ArrayList<String>> linesBeforeArrayList = new ArrayList<ArrayList<String>>();
-	protected ArrayList<ArrayList<String>> linesAfterArrayList = new ArrayList<ArrayList<String>>();
+	protected HashMap<Integer, ArrayList<String>> linesAfterHashMap = new HashMap<Integer, ArrayList<String>>();
 	
 	protected JMenuItem menuItemLinesBefore;
 	protected JMenuItem menuItemLinesAfter;
@@ -652,8 +652,9 @@ public class UserView extends JFrame{
         
         menuItemLinesAfter = new JMenuItem("Show Lines After");
         menuItemLinesAfter.addActionListener(e -> {
-        	
+        	LineDialog linesAfter = new LineDialog(TableMouseListener.getCurrentRow(), this, "AFTER");
         });
+        menuItemLinesAfter.setEnabled(false);
         popupMenu.add(menuItemLinesAfter);
         
         
