@@ -55,6 +55,7 @@ public class LineDialog extends JDialog {
 		setPreferredSize(new Dimension(400, 300));
 		setLocationRelativeTo(null);
 		getContentPane().add(pnlMain, BorderLayout.CENTER);
+		
 		pnlMain.setBorder(new EmptyBorder(5,5,5,5));
 		pnlMain.setLayout(new BoxLayout(pnlMain, BoxLayout.Y_AXIS));
 		System.out.println("Current Row: " + currentRow);

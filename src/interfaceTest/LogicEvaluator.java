@@ -12,10 +12,6 @@ public class LogicEvaluator {
 	private String firstKeyword;
 	/**Contains matching booleans for whether a keyword is NOT-ed*/
 	private ArrayList<Boolean> hasNot = new ArrayList<Boolean>();
-	/**Contains the lines for deadlock errors which will be parsed upon for duplicates*/
-	private ArrayList <String> deadlockOrLines = new ArrayList<String>();
-	/**Contains the lines for arrow errors which will be parsed upon for duplicates*/
-	private ArrayList <String> arrowOrLines = new ArrayList<String>();
 	/**Contains the final valid lines that entries will be made from*/
 	private ArrayList<String> validLines = new ArrayList<String>();
 	/**Contains the list of words that are used with the operand "And"*/
@@ -38,8 +34,9 @@ public class LogicEvaluator {
 	private boolean AND_ARROW;
 	/**True if the user has used the keyword ===> with the OR operand*/
 	private boolean OR_ARROW;
-	private int arrowCount;
-	
+	private ArrayList<String> tempLinesBefore = new ArrayList<String>();	
+	private int resetCount;
+	private boolean earlyAdd;
 	/**
 	 * Contains functions that implements the logic parsing
 	 * of a file, depending on the logic statement
@@ -52,6 +49,9 @@ public class LogicEvaluator {
 		OR_DEADLOCK = false;
 		AND_NOT_DEADLOCK = false;
 		AND_DEADLOCK = false;
+		errorCount = 0;
+		resetCount = 0;
+		earlyAdd = false;
 	}
 	
 	/**
@@ -95,112 +95,62 @@ public class LogicEvaluator {
 	 * then creates entries for the interface table based off of the entries in 
 	 * the arraylist validLines. 
 	 */
-	void makeEntries() {
-		if (!deadlockOrLines.isEmpty()) {
-			removeDuplicates(deadlockOrLines);
-		}
-		else if (!arrowOrLines.isEmpty()){
-			System.out.println(arrowOrLines.size());
-			System.out.println(arrowCount);
-			removeDuplicates(arrowOrLines);
-		}
-		//If we have no entries, then we return
-		if(validLines.isEmpty()) {
-			return;
-		}
-		else {
-			errorCount = 0;
-			for(int i = 0; i < validLines.size(); i++) {
-				errorCount++;
-				Object[] entry = new Object[5];
-				boolean timeStampFound = false;
-				boolean uCodeFound = false;
-				boolean hitDeadLock = false;
-				boolean hitArrow = false;
-				StringBuilder errorMsg = new StringBuilder();
-				String[] logWords = validLines.get(i).split(" ");
-				for (String testWord : logWords) {
-					//We find the timeStamp to load it as one of the Entry fields
-					if (testWord.length() == 19 && !timeStampFound) {
-						entry[0] = errorCount;
-						entry[1] = testWord;
-						entry[2] = firstKeyword;
-						timeStampFound = true;
-					}
-					//We find the U-code to get to the start of the error message
-					else if(!uCodeFound && timeStampFound) {
-						if(testWord.length() > 2) {
-							if(testWord.charAt(0) == 'U' && Character.isDigit(testWord.charAt(1))) {
-								uCodeFound = true;
-							}
-						}
-					}
-					//After we find the U-code, then we can start building up the error message
-					else if(uCodeFound && timeStampFound) {
-						if(validLines.get(i).contains("DEADLOCK")) {
-							if(testWord.equals("DEADLOCK")) {
-								hitDeadLock = true;
-								continue;
-							}
-							//We don't start building the DEADLOCK message until
-							//we hit DEADLOCK on the line
-							if(hitDeadLock) {
-								errorMsg.append(testWord + " ");
-							}
-						}
-						else if(validLines.get(i).contains("===>")) {
-							if(testWord.equals("===>")) {
-								//We don't start building the ===> message until
-								//we hit ===> on the line
-								hitArrow = true;
-								continue;
-							}
-							if(hitArrow)
-								errorMsg.append(testWord + " ");
-						}
-						else
-							errorMsg.append(testWord + " ");	
+	void makeEntry(String makeLine) {
+		errorCount++;
+		Object[] entry = new Object[5];
+		boolean timeStampFound = false;
+		boolean uCodeFound = false;
+		boolean hitDeadLock = false;
+		boolean hitArrow = false;
+		StringBuilder errorMsg = new StringBuilder();
+		String[] logWords = makeLine.split(" ");
+		for (String testWord : logWords) {
+			//We find the timeStamp to load it as one of the Entry fields
+			if (testWord.length() == 19 && !timeStampFound) {
+				entry[0] = errorCount;
+				entry[1] = testWord;
+				entry[2] = firstKeyword;
+				timeStampFound = true;
+			}
+			//We find the U-code to get to the start of the error message
+			else if(!uCodeFound && timeStampFound) {
+				if(testWord.length() > 2) {
+					if(testWord.charAt(0) == 'U' && Character.isDigit(testWord.charAt(1))) {
+						uCodeFound = true;
 					}
 				}
-				entry[3] = errorMsg.toString();
-				entry[4] = logParse.view.solutions.get(entry[2]);
-				logParse.errorData.add(entry);
 			}
-			validLines.clear();
-		}
-	}
-	
-	/**
-	 * Takes in an arraylist and checks for duplicates against
-	 * validLines. If there is a duplicate entry, it is removed from validLines. 
-	 * After this process, all of the given arraylist's contents are added
-	 * to validLines. 
-	 * @param orLines An arraylist that is checked against
-	 * 				  validLines for duplicate error entries
-	 */
-	private void removeDuplicates(ArrayList<String> orLines) {
-		ArrayList<String> temp = new ArrayList<String>();
-		//If the AND statement didn't get any results 
-		//then we automatically fill validLines with all 
-		//the contents from orLines
-		if(validLines.isEmpty()) {
-			validLines.addAll(orLines);
-			return;
-		}
-		
-		for (String testLine : orLines) {
-			for (String validLine : validLines) {
-				if (testLine.contains(validLine)) {
-					validLines.remove(validLine);
+			//After we find the U-code, then we can start building up the error message
+			else if(uCodeFound && timeStampFound) {
+				if(makeLine.contains("DEADLOCK")) {
+					if(testWord.equals("DEADLOCK")) {
+						hitDeadLock = true;
+						continue;
+					}
+					//We don't start building the DEADLOCK message until
+					//we hit DEADLOCK on the line
+					if(hitDeadLock) {
+						errorMsg.append(testWord + " ");
+					}
 				}
+				else if(makeLine.contains("===>")) {
+					if(testWord.equals("===>")) {
+						//We don't start building the ===> message until
+						//we hit ===> on the line
+						hitArrow = true;
+						continue;
+					}
+					if(hitArrow)
+						errorMsg.append(testWord + " ");
+				}
+				else
+					errorMsg.append(testWord + " ");	
 			}
-			temp.add(testLine);
 		}
-		for (String validLine : validLines) {
-			temp.add(validLine);
-		}
-		validLines.clear();
-		validLines.addAll(temp);
+		entry[3] = errorMsg.toString();
+		if(logParse.view.solutions.get(entry[2]) != null)
+			entry[4] = logParse.view.solutions.get(entry[2]);
+		logParse.errorData.add(entry);
 	}
 
 	/**
@@ -234,30 +184,43 @@ public class LogicEvaluator {
 		if(line.contains(orWord) && (orWord != "")) {
 			if(OR_DEADLOCK) {
 				//This is the arraylist that has the deadlock lines (check duplicates on)
-				deadlockOrLines.add(makeDeadlockLine(br, line));
+				logParse.addLinesBefore();
+				makeEntry(makeDeadlockLine(br, line));
 			}
 			else if (OR_ARROW) {
-				arrowCount++;
+				//Wanna put addlines here
+				logParse.addLinesBefore();
 				String tempLine = makeArrowLine(br, line);
 				if(tempLine != null) {
-					arrowOrLines.add(tempLine);
+					makeEntry(tempLine);
 				}
+				else
+					logParse.view.linesBeforeArrayList.remove(logParse.view.linesBeforeArrayList.size() - 1);
+				//And if null, then remove the last one
+				
 			}
 			//Otherwise it is a normal OR word and we add the line to validLines
-			else
-				validLines.add(line);
+			else {
+				logParse.addLinesBefore();
+				makeEntry(line);
+			}
 		}	
 		else {
+			earlyAdd = false;
 			String parseLine;
-			//If we have and AND DEADLOCK or an AND ===>, we need to include
+			//If we have an AND DEADLOCK or an AND ===>, we need to include
 			//the entire error message to parse against
 			if(AND_DEADLOCK && line.contains("DEADLOCK")) {
+				saveCurLines();
 				parseLine = makeDeadlockLine(br, line);
+				earlyAdd = true;
 			}
 			else if(AND_ARROW && line.contains("===>")) {
+				saveCurLines();
 				String tempLine = makeArrowLine(br, line);
 				if(tempLine != null) {
 					parseLine = tempLine;
+					earlyAdd = true;
 				}
 				else 
 					return;
@@ -280,10 +243,27 @@ public class LogicEvaluator {
 				}
 			}
 			//If we make it here the line is added
-			validLines.add(parseLine);
-		}
-
 			
+			for(int i = 0; i < tempLinesBefore.size(); i ++)
+			{
+				//System.out.println(errorCount+ " " + tempLinesBefore.get(i));
+			}
+			
+			if(earlyAdd) {
+				System.out.println("Sdf");
+				logParse.view.linesBeforeArrayList.add(tempLinesBefore);
+				for (String s : tempLinesBefore){
+					System.out.println(s);
+				}
+			}
+			else {
+				System.out.println("else");
+				logParse.addLinesBefore();
+			}
+			makeEntry(parseLine);
+			//}
+		}
+	
 	}
 		
 	/**
@@ -346,9 +326,13 @@ public class LogicEvaluator {
         }
         String[] words;
         String logLine = logbr.readLine();
+        //Save the lines at the beginning of the process
+        //in case we need to reset our buffer
+        saveCurLines();
         logbr.mark(2500);
         while(!matchingArrow && logLine != null) {
-           boolean timeStampFound = false;            
+           boolean timeStampFound = false;      
+           logParse.linesBefore.push(logLine);
            logParse.updateProgress(logLine);
            words = logLine.split(" ");
            for(String testWord : words) {
@@ -359,6 +343,7 @@ public class LogicEvaluator {
                         //don't have a matching arrow
                         if(logParse.timeStampDifference(testWord, timeStamp)){
                         	logbr.reset();
+                        	revertLines();
                             return logbr.readLine();
                         }
                  }
@@ -399,8 +384,12 @@ public class LogicEvaluator {
         }
         String[] words;
         String logLine = logbr.readLine();
+        //Save the lines at the beginning of the process
+        //in case we need to reset our buffer
+        saveCurLines();
         logbr.mark(2500);
         while(!matchingDeadlock && logLine != null) {
+           logParse.linesBefore.push(logLine);
            boolean timeStampFound = false;            
            logParse.updateProgress(logLine);
            words = logLine.split(" ");
@@ -411,6 +400,7 @@ public class LogicEvaluator {
                     //don't have a matching deadlock
                     if(logParse.timeStampDifference(testWord, timeStamp)) {
                     	logbr.reset();
+                    	revertLines();
                         return logbr.readLine();
                     }
                  }
@@ -424,6 +414,7 @@ public class LogicEvaluator {
                 }      
            }
            logLine = logbr.readLine();
+           //logParse.linesBefore.push(logLine);
         }
         return "";
 	}
@@ -456,13 +447,18 @@ public class LogicEvaluator {
         String[] words;
         String logLine = logbr.readLine();
         while(!matchingDeadlock && logLine != null) {
+            logParse.linesBefore.push(logLine);
         	if(orWord.equals("===>") && logLine.contains("===>"))
         	{
+        		logParse.addLinesBefore();
         		String tempLine = (makeArrowLine(logbr, logLine));
-        		if(tempLine != null)
-        			arrowOrLines.add(tempLine);
+        		if(tempLine != null) {
+        			makeEntry(tempLine);
+        		}
+        		else
+        			logParse.view.linesBeforeArrayList.remove(logParse.view.linesBeforeArrayList.size() - 1);
+
         	}
-        	
            boolean timeStampFound = false;
            boolean uCodeFound = false;              
            testLine.setLength(0);
@@ -545,6 +541,7 @@ public class LogicEvaluator {
 		
 		logLine = logbr.readLine();
 		while (!closingArrowTagFound && logLine != null) {
+			logParse.linesBefore.push(logLine);
 			logParse.updateProgress(logLine);
 			words = logLine.split(" ");
 			
@@ -585,4 +582,20 @@ public class LogicEvaluator {
 		}
 		return errorMsg.toString();
 	}	
+	
+	void saveCurLines()
+	{
+		tempLinesBefore.clear();
+		for (String str : logParse.linesBefore){
+			tempLinesBefore.add(str);
+		}
+	}
+	
+	void revertLines()
+	{
+		for(int i = 0; i < tempLinesBefore.size(); i++)
+		{
+			logParse.linesBefore.push(tempLinesBefore.get(i));
+		}
+	}
 }

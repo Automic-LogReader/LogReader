@@ -851,8 +851,8 @@ public class UserView extends JFrame{
 	private void initPreferenceEditorValues(){
 		lowerBound = (double) 0;
 		upperBound = Double.MAX_VALUE;
-		numLinesBefore = 0;
-		numLinesAfter = 0;
+		numLinesBefore = 5;
+		numLinesAfter = 5;
 	}
 }
 
