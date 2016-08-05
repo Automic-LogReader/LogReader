@@ -34,7 +34,6 @@ public class LogicEvaluator {
 	private boolean AND_ARROW;
 	/**True if the user has used the keyword ===> with the OR operand*/
 	private boolean OR_ARROW;
-	private ArrayList<String> tempLinesBefore = new ArrayList<String>();	
 	private int resetCount;
 	private boolean earlyAdd;
 	/**
@@ -186,6 +185,7 @@ public class LogicEvaluator {
 				//This is the arraylist that has the deadlock lines (check duplicates on)
 				logParse.addLinesBefore();
 				makeEntry(makeDeadlockLine(br, line));
+				logParse.addLinesAfter(errorCount);
 			}
 			else if (OR_ARROW) {
 				//Wanna put addlines here
@@ -193,6 +193,7 @@ public class LogicEvaluator {
 				String tempLine = makeArrowLine(br, line);
 				if(tempLine != null) {
 					makeEntry(tempLine);
+					logParse.addLinesAfter(errorCount);
 				}
 				else
 					logParse.view.linesBeforeArrayList.remove(logParse.view.linesBeforeArrayList.size() - 1);
@@ -203,20 +204,22 @@ public class LogicEvaluator {
 			else {
 				logParse.addLinesBefore();
 				makeEntry(line);
+				logParse.addLinesAfter(errorCount);
 			}
 		}	
 		else {
+			ArrayList<String> tempLinesBefore = new ArrayList<String>();
 			earlyAdd = false;
 			String parseLine;
 			//If we have an AND DEADLOCK or an AND ===>, we need to include
 			//the entire error message to parse against
 			if(AND_DEADLOCK && line.contains("DEADLOCK")) {
-				saveCurLines();
+				tempLinesBefore = saveCurLines();
 				parseLine = makeDeadlockLine(br, line);
 				earlyAdd = true;
 			}
 			else if(AND_ARROW && line.contains("===>")) {
-				saveCurLines();
+				tempLinesBefore = saveCurLines();
 				String tempLine = makeArrowLine(br, line);
 				if(tempLine != null) {
 					parseLine = tempLine;
@@ -243,25 +246,16 @@ public class LogicEvaluator {
 				}
 			}
 			//If we make it here the line is added
-			
-			for(int i = 0; i < tempLinesBefore.size(); i ++)
-			{
-				//System.out.println(errorCount+ " " + tempLinesBefore.get(i));
-			}
-			
 			if(earlyAdd) {
-				System.out.println("Sdf");
+				tempLinesBefore.remove(tempLinesBefore.size() - 1);
 				logParse.view.linesBeforeArrayList.add(tempLinesBefore);
-				for (String s : tempLinesBefore){
-					System.out.println(s);
-				}
 			}
 			else {
 				System.out.println("else");
 				logParse.addLinesBefore();
 			}
 			makeEntry(parseLine);
-			//}
+			logParse.addLinesAfter(errorCount);
 		}
 	
 	}
@@ -331,7 +325,8 @@ public class LogicEvaluator {
         saveCurLines();
         logbr.mark(2500);
         while(!matchingArrow && logLine != null) {
-           boolean timeStampFound = false;      
+           boolean timeStampFound = false;     
+           logParse.updateLinesAfter(logLine);
            logParse.linesBefore.push(logLine);
            logParse.updateProgress(logLine);
            words = logLine.split(" ");
@@ -343,7 +338,7 @@ public class LogicEvaluator {
                         //don't have a matching arrow
                         if(logParse.timeStampDifference(testWord, timeStamp)){
                         	logbr.reset();
-                        	revertLines();
+                        	//revertLines();
                             return logbr.readLine();
                         }
                  }
@@ -389,9 +384,10 @@ public class LogicEvaluator {
         saveCurLines();
         logbr.mark(2500);
         while(!matchingDeadlock && logLine != null) {
+           logParse.updateLinesAfter(logLine);
            logParse.linesBefore.push(logLine);
-           boolean timeStampFound = false;            
            logParse.updateProgress(logLine);
+           boolean timeStampFound = false;            
            words = logLine.split(" ");
            for(String testWord : words) {
                  if(!timeStampFound && testWord.length() == 19) {
@@ -400,7 +396,7 @@ public class LogicEvaluator {
                     //don't have a matching deadlock
                     if(logParse.timeStampDifference(testWord, timeStamp)) {
                     	logbr.reset();
-                    	revertLines();
+                    	//revertLines();
                         return logbr.readLine();
                     }
                  }
@@ -447,7 +443,9 @@ public class LogicEvaluator {
         String[] words;
         String logLine = logbr.readLine();
         while(!matchingDeadlock && logLine != null) {
+        	logParse.updateLinesAfter(logLine);
             logParse.linesBefore.push(logLine);
+            logParse.updateProgress(logLine);
         	if(orWord.equals("===>") && logLine.contains("===>"))
         	{
         		logParse.addLinesBefore();
@@ -462,7 +460,6 @@ public class LogicEvaluator {
            boolean timeStampFound = false;
            boolean uCodeFound = false;              
            testLine.setLength(0);
-           logParse.updateProgress(logLine);
            words = logLine.split(" ");
            for(String testWord : words) {
         	   if(!timeStampFound && testWord.length() == 19) {
@@ -541,6 +538,7 @@ public class LogicEvaluator {
 		
 		logLine = logbr.readLine();
 		while (!closingArrowTagFound && logLine != null) {
+			logParse.updateLinesAfter(logLine);
 			logParse.linesBefore.push(logLine);
 			logParse.updateProgress(logLine);
 			words = logLine.split(" ");
@@ -583,19 +581,14 @@ public class LogicEvaluator {
 		return errorMsg.toString();
 	}	
 	
-	void saveCurLines()
+	ArrayList<String> saveCurLines()
 	{
-		tempLinesBefore.clear();
+		ArrayList<String> tempArrayList = new ArrayList<String>();
 		for (String str : logParse.linesBefore){
-			tempLinesBefore.add(str);
+			tempArrayList.add(str);
 		}
+		return tempArrayList;
 	}
 	
-	void revertLines()
-	{
-		for(int i = 0; i < tempLinesBefore.size(); i++)
-		{
-			logParse.linesBefore.push(tempLinesBefore.get(i));
-		}
-	}
+
 }

@@ -69,11 +69,7 @@ public class LogParser {
 		selectedTab = tab;
 		LogParser.view = view;
 		logicEvaluator = new LogicEvaluator(this);
-		considerLinesAfter = true;
-		considerLinesBefore = true;
-		
-		if (view.numLinesBefore == 0) considerLinesBefore = false;
-		if (view.numLinesAfter == 0) considerLinesAfter = false;
+	
 		
 		linesBefore = new FixedStack<String>(view.numLinesBefore + 1);
 		linesAfter = new ConcurrentHashMap<Integer, FixedStack<String>>();
@@ -103,7 +99,11 @@ public class LogParser {
 		view.updateKeyWords(selectedTab);
 		view.linesBeforeArrayList.clear();
 		view.linesAfterHashMap.clear();
+		considerLinesAfter = true;
+		considerLinesBefore = true;
 		
+		if (view.numLinesBefore == 0) considerLinesBefore = false;
+		if (view.numLinesAfter == 0) considerLinesAfter = false;
 		percent = 0;
 		oldPercent = 0;
 		errorData.clear();
@@ -170,7 +170,7 @@ public class LogParser {
 							}
 							//Otherwise we make an entry like normal
 							else {
-								addLinesAfter();
+								addLinesAfter(errorCount);
 								entry = new Object[5];
 								entry[0] = errorCount;
 								entry[1] = timeStamp;
@@ -225,8 +225,11 @@ public class LogParser {
 		for(int i = 0; i < errorData.size(); i++) {
 			data[i] = errorData.get(i);
 		}
+		//Sets the menu items as visible after the parsing is done
 		view.menuItemLinesBefore.setEnabled(true);
 		view.menuItemLinesAfter.setEnabled(true);
+		view.menuItemUrl.setEnabled(true);
+		view.menuItemCopy.setEnabled(true);
 		makeTable();
 	}
 	
@@ -324,7 +327,7 @@ public class LogParser {
 			errorCount--;
 			return null;
 		}
-		addLinesAfter();
+		addLinesAfter(errorCount);
 		return tempEntry;
 	}
 	
@@ -338,7 +341,7 @@ public class LogParser {
 	 */
 	Object[] parseDeadlockError(BufferedReader logbr, String timeStamp) throws IOException {
 	   addLinesBefore();
-	   addLinesAfter();
+	   addLinesAfter(errorCount);
        Object[] entry = new Object[5];
        ArrayList <String> errorLines = new ArrayList<String>();
        boolean matchingDeadlock = false;
@@ -487,7 +490,7 @@ public class LogParser {
 	
 	void addLinesBefore(){
 		if (!considerLinesBefore) return;
-		System.out.println("continue");
+		//System.out.println("continue");
 		ArrayList<String> arrayList = new ArrayList<String>();
 		for (String str : linesBefore){
 			arrayList.add(str);
@@ -496,9 +499,9 @@ public class LogParser {
 		view.linesBeforeArrayList.add(arrayList);
 	}
 	
-	void addLinesAfter(){
+	void addLinesAfter(int errorNum){
 		if (!considerLinesAfter) return;
-		linesAfter.put(errorCount, new FixedStack<String>(view.numLinesAfter + 1));
+		linesAfter.put(errorNum, new FixedStack<String>(view.numLinesAfter + 1));
 	}
 	
 	void updateLinesAfter(String line){

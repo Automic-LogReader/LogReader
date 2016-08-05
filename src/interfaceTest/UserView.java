@@ -170,6 +170,8 @@ public class UserView extends JFrame{
 	
 	protected JMenuItem menuItemLinesBefore;
 	protected JMenuItem menuItemLinesAfter;
+	protected JMenuItem menuItemUrl;
+	protected JMenuItem menuItemCopy;
 	
 	/**
 	 * Creates the UserView frame
@@ -627,13 +629,14 @@ public class UserView extends JFrame{
 		    }
 		}; 
 		popupMenu = new JPopupMenu();
-        JMenuItem menuItemCopy = new JMenuItem("Copy");
+        menuItemCopy = new JMenuItem("Copy");
         menuItemCopy.addActionListener(e -> {
         	TableMouseListener.copyCellValueToClipBoard();
         });
+        menuItemCopy.setEnabled(false);
         popupMenu.add(menuItemCopy);
         
-        JMenuItem menuItemUrl = new JMenuItem("See suggested solution online");
+        menuItemUrl = new JMenuItem("See suggested solution online");
         menuItemUrl.addActionListener(e -> {
         	try {
 				TableMouseListener.openURI();
@@ -641,6 +644,7 @@ public class UserView extends JFrame{
 				e1.printStackTrace();
 			}
         });
+        menuItemUrl.setEnabled(false);
         popupMenu.add(menuItemUrl);
         
         menuItemLinesBefore = new JMenuItem("Show Lines Before");
