@@ -187,6 +187,7 @@ public class LogicEvaluator {
 			validLines.addAll(orLines);
 			return;
 		}
+		
 		for (String testLine : orLines) {
 			for (String validLine : validLines) {
 				if (testLine.contains(validLine)) {
@@ -348,7 +349,7 @@ public class LogicEvaluator {
         logbr.mark(2500);
         while(!matchingArrow && logLine != null) {
            boolean timeStampFound = false;            
-           logParse.updateProgress();
+           logParse.updateProgress(logLine);
            words = logLine.split(" ");
            for(String testWord : words) {
         	   //Find the timestamp in the line we are testing
@@ -401,7 +402,7 @@ public class LogicEvaluator {
         logbr.mark(2500);
         while(!matchingDeadlock && logLine != null) {
            boolean timeStampFound = false;            
-           logParse.updateProgress();
+           logParse.updateProgress(logLine);
            words = logLine.split(" ");
            for(String testWord : words) {
                  if(!timeStampFound && testWord.length() == 19) {
@@ -465,7 +466,7 @@ public class LogicEvaluator {
            boolean timeStampFound = false;
            boolean uCodeFound = false;              
            testLine.setLength(0);
-           logParse.updateProgress();
+           logParse.updateProgress(logLine);
            words = logLine.split(" ");
            for(String testWord : words) {
         	   if(!timeStampFound && testWord.length() == 19) {
@@ -544,7 +545,7 @@ public class LogicEvaluator {
 		
 		logLine = logbr.readLine();
 		while (!closingArrowTagFound && logLine != null) {
-			logParse.updateProgress();
+			logParse.updateProgress(logLine);
 			words = logLine.split(" ");
 			
 			if (logLine.contains("===>")) {

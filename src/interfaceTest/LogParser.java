@@ -110,7 +110,7 @@ public class LogParser {
 		long startTime = System.nanoTime();
 		while(logLine != null) {
 			linesBefore.push(logLine);
-			updateProgress();
+			updateProgress(logLine);
 			//If the user is on the logic statement tab, we send 
 			//lines to the logic evaluator
 			if(selectedTab == 1) {
@@ -256,7 +256,7 @@ public class LogParser {
 		logLine = logbr.readLine();
 		while (!closingArrowTagFound && logLine != null) {
 			linesBefore.push(logLine);
-			updateProgress();
+			updateProgress(logLine);
 			words = logLine.split(" ");
 			if (logLine.contains("===>")){
 				//This is the case for a single arrow, and we
@@ -332,7 +332,7 @@ public class LogParser {
           boolean timeStampFound = false;
           boolean uCodeFound = false;              
           testLine.setLength(0);
-          updateProgress();
+          updateProgress(logLine);
           words = Line.split(" ");
           for(String testWord : words) {
         	  if(!timeStampFound && testWord.length() == 19) {
@@ -439,8 +439,8 @@ public class LogParser {
 	 * bar is only updated if the generated percent (integer of the division)
 	 * is greater than oldPercent.
 	 */
-	void updateProgress(){
-		progress += logLine.length();
+	void updateProgress(String addLine){
+		progress += addLine.length();
 		percent = (int) (progress / view.fileSizeDivHundred);
 		if (percent > oldPercent){
 			view.dialog.updateProgress(percent);

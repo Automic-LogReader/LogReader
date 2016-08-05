@@ -281,7 +281,6 @@ public class AdminView extends JFrame {
 	 * The resulting array is used as a JTable parameter. 
 	 * @throws SQLException 
 	 * @throws ClassNotFoundException 
-	 * @throws IOException
 	 */
 	void createDataTable() throws SQLException, ClassNotFoundException {		
 		String driver = "net.sourceforge.jtds.jdbc.Driver";

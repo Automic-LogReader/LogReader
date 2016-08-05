@@ -116,7 +116,7 @@ public class DataController {
 
 	/**
 	 * TCalled in AdminView to initialize the contents of the defaultList
-	 * @param list A list of the entries of the table from AdminView
+	 * @param defaultList A list of the entries of the table from AdminView
 	 */
 	void setDefaultList(List <String[]> defaultList){
 		this.defaultList = defaultList;

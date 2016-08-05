@@ -17,8 +17,8 @@ public class User {
 	
 	/**
 	 * Creates a User Object
-	 * @param menu
-	 * @param isAdmin
+	 * @param menu MainMenu frame that instantiated the User object
+	 * @param isAdmin Boolean value representing administrator status
 	 */
 	public User(MainMenu menu, boolean isAdmin) {
 		

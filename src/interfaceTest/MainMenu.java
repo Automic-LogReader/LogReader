@@ -49,7 +49,7 @@ public class MainMenu extends JFrame {
 	
 	/**
 	 * Creates the GUI for MainMenu
-	 * @throws ClassNotFoundException
+	 * @throws ClassNotFoundException if classpath is broken
 	 * @throws InstantiationException
 	 * @throws IllegalAccessException
 	 * @throws UnsupportedLookAndFeelException

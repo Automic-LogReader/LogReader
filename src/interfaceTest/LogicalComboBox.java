@@ -1,3 +1,9 @@
+/**
+ * @file LogicalComboBox.java
+ * @authors Leah Talkov, Jerry Tsui
+ * @date 8/3/2016
+ * Helper class that makes creating JComboBoxes easier within the UserView..
+ */
 package interfaceTest;
 
 import java.awt.Color;
@@ -8,6 +14,11 @@ import javax.swing.MutableComboBoxModel;
 
 public class LogicalComboBox extends JComboBox<String> {
 	
+	/**
+	 * Constructor
+	 * @param option Option 1: AND/OR/AND NOT, Option 2: Keywords, Option 3: AND/AND NOT
+	 * @param view The UserView object that instantiated the LogicalComboBox
+	 */
 	LogicalComboBox(int option, UserView view){
 		super();
 		MutableComboBoxModel<String> model = (MutableComboBoxModel<String>)this.getModel();
