@@ -86,6 +86,7 @@ public class ProgressDialog extends JDialog {
 	 * @param view The UserView object associated with this ProgressDialog
 	 */
 	void prepareGUI(File file, UserView view){
+		//this.setModal(true);
 		setBounds(200, 200, 300, 200);
 		setLocationRelativeTo(null);
 	

@@ -28,6 +28,7 @@ public class LineDialog extends JDialog {
 	private final JPanel pnlMain = new JPanel();
 	private JList<?> list;
 	private JScrollPane scrollPane;
+	private ArrayList<String> listOfLines;
 	/**
 	 * Constructor
 	 * @param currentRow The current selected row within the JTable
@@ -62,7 +63,12 @@ public class LineDialog extends JDialog {
 		if (type.equals("BEFORE")){
 			setTitle("Lines Before");
 			
-			ArrayList<String> listOfLines = view.linesBeforeArrayList.get(currentRow);
+			if (!view.linesBeforeArrayList.isEmpty()){
+				listOfLines = view.linesBeforeArrayList.get(currentRow);
+			}
+			else {
+				listOfLines = new ArrayList<String>();
+			}
 			
 			JLabel lblTitle = new JLabel("Lines before error #" + (currentRow + 1));
 			lblTitle.setAlignmentX(CENTER_ALIGNMENT);
@@ -79,7 +85,12 @@ public class LineDialog extends JDialog {
 		} else if (type.equals("AFTER")){
 			setTitle("Lines After");
 			
-			ArrayList<String> listOfLines = view.linesAfterHashMap.get(currentRow + 1);
+			if (!view.linesAfterHashMap.isEmpty()){
+				listOfLines = view.linesAfterHashMap.get(currentRow + 1);
+			}
+			else {
+				listOfLines = new ArrayList<String>();
+			}
 			JLabel lblTitle = new JLabel("Lines after error #" + (currentRow + 1));
 			lblTitle.setAlignmentX(CENTER_ALIGNMENT);
 			pnlMain.add(lblTitle);

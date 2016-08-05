@@ -1,6 +1,7 @@
 package interfaceTest;
 
 import java.awt.BorderLayout;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Insets;
@@ -33,6 +34,7 @@ public class PreferenceEditor extends JDialog {
 	}
 	
 	private void prepareGUI(UserView view){
+		this.setModal(true);
 		setTitle("Preference Editor");
 		setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 		setBounds(100, 100, 400, 240);

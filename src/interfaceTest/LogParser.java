@@ -60,12 +60,20 @@ public class LogParser {
 	protected FixedStack<String> linesBefore;
 	protected ConcurrentHashMap<Integer, FixedStack<String>> linesAfter;
 	
+	private boolean considerLinesBefore;
+	private boolean considerLinesAfter;
+	
 	protected static UserView view;
 	
 	public LogParser(UserView view, int tab) {
 		selectedTab = tab;
 		LogParser.view = view;
 		logicEvaluator = new LogicEvaluator(this);
+		considerLinesAfter = true;
+		considerLinesBefore = true;
+		
+		if (view.numLinesBefore == 0) considerLinesBefore = false;
+		if (view.numLinesAfter == 0) considerLinesAfter = false;
 		
 		linesBefore = new FixedStack<String>(view.numLinesBefore + 1);
 		linesAfter = new ConcurrentHashMap<Integer, FixedStack<String>>();
@@ -114,7 +122,9 @@ public class LogParser {
 		//Timer for performance testing
 		long startTime = System.nanoTime();
 		while(logLine != null) {
-			linesBefore.push(logLine);
+			if (considerLinesBefore){
+				linesBefore.push(logLine);
+			}
 			updateLinesAfter(logLine);
 			updateProgress(logLine);
 			//If the user is on the logic statement tab, we send 
@@ -476,6 +486,8 @@ public class LogParser {
 	}
 	
 	void addLinesBefore(){
+		if (!considerLinesBefore) return;
+		System.out.println("continue");
 		ArrayList<String> arrayList = new ArrayList<String>();
 		for (String str : linesBefore){
 			arrayList.add(str);
@@ -485,10 +497,12 @@ public class LogParser {
 	}
 	
 	void addLinesAfter(){
+		if (!considerLinesAfter) return;
 		linesAfter.put(errorCount, new FixedStack<String>(view.numLinesAfter + 1));
 	}
 	
 	void updateLinesAfter(String line){
+		if (!considerLinesAfter) return;
 		for (Map.Entry<Integer, FixedStack<String>> entry : linesAfter.entrySet()){
 			entry.getValue().push(line);
 			if (entry.getValue().isFull()){
