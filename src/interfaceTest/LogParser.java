@@ -353,12 +353,12 @@ public class LogParser {
        entry[2] = "DEADLOCK";
        String Line = logbr.readLine();
        while(!matchingDeadlock && Line != null) {
-    	  linesBefore.push(logLine);
-    	  updateLinesAfter(logLine);
+    	  linesBefore.push(Line);
+    	  //updateLinesAfter(Line);
           boolean timeStampFound = false;
           boolean uCodeFound = false;              
           testLine.setLength(0);
-          updateProgress(logLine);
+          updateProgress(Line);
           words = Line.split(" ");
           for(String testWord : words) {
         	  if(!timeStampFound && testWord.length() == 19) {
