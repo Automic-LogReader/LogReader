@@ -80,6 +80,9 @@ public class AdminView extends JFrame {
 	for modifications done to the table. */
 	List <String[]> list = new ArrayList<String[]>();
 	/**Headers for the error JTable */
+	List <String[]> hyperlinkList = new ArrayList<String[]>();
+	List <String[]> defaultHyperlinkList = new ArrayList<String[]>();
+	
 	private final String[] errorTableColumnHeaders = {"Folder", "Keyword", "Log Error Description",
 									"Suggested Solution"};
 	/**Headers for the hyperlink JTable*/
@@ -116,6 +119,8 @@ public class AdminView extends JFrame {
 		//We create the datatable with the database info, and set the lists within DataController
 		createDataTable();
 		dc = new DataController(this);
+		dc.curHyperlinkList = hyperlinkList;
+		dc.defaultHyperlinkList = defaultHyperlinkList;
 		dc.setList(list);
 		dc.setDefaultList(defaultList);
 		dc.transferData("CHANGE");
@@ -139,7 +144,7 @@ public class AdminView extends JFrame {
 		JScrollPane scrollPane = new JScrollPane(tblErrorEntries, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		pnlTabOne.add(scrollPane);
 		
-		initTable();
+		initErrorTable();
 		
 		scrollPane.setViewportView(tblErrorEntries);
 		
@@ -231,12 +236,17 @@ public class AdminView extends JFrame {
 			//The table will revert back to the contents of the database, erasing
 			//all changes the admin has done
 			dc.getList().clear();
-			for(int i = 0; i < dc.getDefaultList().size(); i++)
-			{
+			for(int i = 0; i < dc.getDefaultList().size(); i++) {
 				dc.getList().add(dc.getDefaultList().get(i));
 			}
+			dc.curHyperlinkList.clear();
+			for(int j = 0; j < dc.defaultHyperlinkList.size(); j++) {
+				dc.curHyperlinkList.add(dc.defaultHyperlinkList.get(j));
+			}
+				
 			dc.transferData("DEFAULT");
-			resetData();
+			resetErrorData();
+			resetHyperlinkData();
 		});
 		
 		JPanel pnlTabTwo = new JPanel();
@@ -281,7 +291,8 @@ public class AdminView extends JFrame {
 		
 		JScrollPane pnlHyperlinkTable = new JScrollPane();
 		pnlTabThree.add(pnlHyperlinkTable);
-		
+		initHyperlinkTable();
+		pnlHyperlinkTable.setViewportView(tblHyperlinkEntries);
 		
 		pnlTabThree.add(Box.createVerticalGlue());
 		
@@ -307,7 +318,7 @@ public class AdminView extends JFrame {
 
 		Statement stmt = conn.createStatement();
 		String query2 = "select Keyword, Log_Error_Description, "+
-						"Suggested_Solution, Folder from logerrors";
+						"Suggested_Solution, Folder, Hyperlink from logerrors";
 		ResultSet rs = stmt.executeQuery(query2);
 		while(rs.next())
 		{
@@ -320,6 +331,12 @@ public class AdminView extends JFrame {
 			savedWords.add(rs.getString("Keyword"));
 			list.add(entry);
 			defaultList.add(entry);
+			
+			String[] hyperlinkEntry = new String[2];
+			hyperlinkEntry[0] = rs.getString("Keyword");
+			hyperlinkEntry[1] = rs.getString("Hyperlink");
+			hyperlinkList.add(hyperlinkEntry);
+			defaultHyperlinkList.add(hyperlinkEntry);
 		}
 		stmt.close();
 	}
@@ -393,19 +410,25 @@ public class AdminView extends JFrame {
 	 * in the DataController. This happens when a new entry is made, edited,
 	 * or deleted, and the table properly reflects the changes made by the user.
 	 */
-	protected void resetData(){
+	protected void resetErrorData(){
 		DefaultTableModel model = new DefaultTableModel(dc.getData(), errorTableColumnHeaders); 
 		tblErrorEntries.setModel(model);
 		resizeColumnWidth(tblErrorEntries);
 		model.fireTableDataChanged();
 	}
 	
+	protected void resetHyperlinkData() {
+		DefaultTableModel model = new DefaultTableModel(dc.hyperlinkData, hyperlinkColumnHeaders); 
+		tblHyperlinkEntries.setModel(model);
+		resizeColumnWidth(tblHyperlinkEntries);
+		model.fireTableDataChanged();
+	}
 	
 	/**
 	 * Initializes the table of errors, suggested solutions, folders, etc
 	 * that can be modified by the Administrator
 	 */
-	private void initTable(){
+	private void initErrorTable(){
 		errorTableModel = new DefaultTableModel(dc.getData(), errorTableColumnHeaders) {
 		    @Override
 		    public boolean isCellEditable(int row, int column) {
@@ -429,6 +452,20 @@ public class AdminView extends JFrame {
 		
 		
 	}
+	
+	private void initHyperlinkTable() {
+		hyperlinkTableModel = new DefaultTableModel(dc.hyperlinkData, hyperlinkColumnHeaders) {
+		    @Override
+		    public boolean isCellEditable(int row, int column) {
+		       //all cells false
+		       return false;
+		    }     
+		};
+		tblHyperlinkEntries = new JTable(hyperlinkTableModel);
+		resizeColumnWidth(tblHyperlinkEntries);	
+		tblHyperlinkEntries.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+	}
+	
 	
 	/**
 	 * Resizes the columns of a Jtable to fit the contents of the entries given.

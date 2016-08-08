@@ -22,16 +22,18 @@ import java.util.List;
 public class DataController {
 
 	/**List that contains the true current entries in the database*/
-	private List <String[]> defaultList = new ArrayList<String[]>();
+	private List <String[]> defaultErrorList = new ArrayList<String[]>();
 	/**List that starts out with the same contents as defaultList, and
 	then changes its contents to reflect the user changes*/
-	private List <String[]> list = new ArrayList<String[]>();
+	private List <String[]> curErrorlist = new ArrayList<String[]>();
 	/**Serves as a helper when transferring contents between list and defaultList*/
-	private List <String[]> tempList = new ArrayList<String[]>();
+	private List <String[]> tempErrorList = new ArrayList<String[]>();
 	/**Queries to be made to the database*/
-	private List <String> queries = new ArrayList<String>();
+	private List <String> errorQueries = new ArrayList<String>();
+	private List <String> hyperlinkQueries = new ArrayList<String>();
 	/**Entries to be into the JTable in AdminView*/
-	private Object [][] data;
+	private Object [][] errorData;
+	protected Object [][] hyperlinkData;
 	/**Set in modify dialog, true if keyword was changed*/
 	private boolean keywordChanged;
 	/**Set in modify dialog, true if error message was changed*/
@@ -42,6 +44,9 @@ public class DataController {
 	private boolean folderChanged;
 	/**AdminView object that contains the table DataController is changing*/
 	private AdminView admin;
+	protected List<String[]> defaultHyperlinkList = new ArrayList<String[]>();
+	protected List<String[]> curHyperlinkList = new ArrayList<String[]>();
+	protected List<String[]> tempHyperlinkList = new ArrayList<String[]>();
 
 	/**
 	 * Created in AdminView, contains functions that connects to the database
@@ -111,7 +116,7 @@ public class DataController {
 	 * @param list A list of the entries of the table from AdminView
 	 */
 	void setList(List <String[]> list){
-		this.list = list;
+		this.curErrorlist = list;
 	}
 
 	/**
@@ -119,7 +124,7 @@ public class DataController {
 	 * @param defaultList A list of the entries of the table from AdminView
 	 */
 	void setDefaultList(List <String[]> defaultList){
-		this.defaultList = defaultList;
+		this.defaultErrorList = defaultList;
 	}
 
 	/**
@@ -128,7 +133,7 @@ public class DataController {
 	 * @return Returns the list which reflects the user changes
 	 */
 	List<String[]> getList(){
-		return list;
+		return curErrorlist;
 	}
 
 	/**
@@ -137,7 +142,7 @@ public class DataController {
 	 * @return Returns the list which reflects the current contents of the DB
 	 */
 	List<String[]> getDefaultList(){
-		return defaultList;
+		return defaultErrorList;
 	}
 
 	/**
@@ -163,28 +168,32 @@ public class DataController {
 		//modifed to see which queries we need to add
 		if(choice.equals("MODIFY")) {
 			if(folderChanged)
-				queries.add("update logerrors set Folder = \'" + 
-						addSingleQuote(folder) + "\' where Keyword = \'" + addSingleQuote(list.get(row)[1]) + "\'");
+				errorQueries.add("update logerrors set Folder = \'" + 
+						addSingleQuote(folder) + "\' where Keyword = \'" + addSingleQuote(curErrorlist.get(row)[1]) + "\'");
 			if(errorMessageChanged)
-				queries.add("update logerrors set Log_Error_Description = \'" +
-						addSingleQuote(message) + "\' where Keyword = \'" + addSingleQuote(list.get(row)[1]) + "\'");
+				errorQueries.add("update logerrors set Log_Error_Description = \'" +
+						addSingleQuote(message) + "\' where Keyword = \'" + addSingleQuote(curErrorlist.get(row)[1]) + "\'");
 			if(suggestedSolutionChanged)
-				queries.add("update logerrors set Suggested_Solution = \'" +
-						addSingleQuote(solution) + "\' where Keyword = \'" + addSingleQuote(list.get(row)[1]) + "\'");
+				errorQueries.add("update logerrors set Suggested_Solution = \'" +
+						addSingleQuote(solution) + "\' where Keyword = \'" + addSingleQuote(curErrorlist.get(row)[1]) + "\'");
 			if(keywordChanged)
-				queries.add("update logerrors set Keyword = \'" +
-						addSingleQuote(keyWord) + "\' where Keyword = \'" + addSingleQuote(list.get(row)[1]) + "\'");
-			admin.savedWords.remove(list.get(row)[1]);
+				errorQueries.add("update logerrors set Keyword = \'" +
+						addSingleQuote(keyWord) + "\' where Keyword = \'" + addSingleQuote(curErrorlist.get(row)[1]) + "\'");
+			admin.savedWords.remove(curErrorlist.get(row)[1]);
 			admin.savedWords.add(keyWord);
-			list.set(row, tempArray);
+			curErrorlist.set(row, tempArray);
+			curHyperlinkList.get(row)[0] = keyWord;
 
 		}
 		//Otherwise we are adding an entry and simply add to the list and queries
 		else {
-			queries.add("insert into logerrors values (\'" + addSingleQuote(keyWord) + "\',\'"
+			errorQueries.add("insert into logerrors values (\'" + addSingleQuote(keyWord) + "\',\'"
 					+ addSingleQuote(message) + "\',\'" + addSingleQuote(solution) + "\',\'" +
-					addSingleQuote(folder) + "\')");
-			list.add(tempArray);
+					addSingleQuote(folder) + "\',\'" + "http://google.com" + "\')");
+			curErrorlist.add(tempArray);
+			String[] someArray = new String[2];
+			someArray[0] = keyWord;
+			curHyperlinkList.add(someArray);
 			admin.savedWords.add(keyWord);
 		}
 		//Reset the booleans and transfer data indicating that a change in the data has occurred
@@ -193,7 +202,8 @@ public class DataController {
 		keywordChanged = false;
 		errorMessageChanged = false;
 		suggestedSolutionChanged = false;
-		admin.resetData();
+		admin.resetErrorData();	
+		admin.resetHyperlinkData();
 	}
 
 
@@ -224,12 +234,14 @@ public class DataController {
 	 * @throws IOException 
 	 */
 	protected void deleteData(int row) throws IOException {
-		queries.add("delete from logerrors where Keyword = \'" + addSingleQuote(list.get(row)[1]) + "\'");
-		list.remove(row);
+		errorQueries.add("delete from logerrors where Keyword = \'" + addSingleQuote(curErrorlist.get(row)[1]) + "\'");
+		curErrorlist.remove(row);
+		curHyperlinkList.remove(row);
 		//Change the data accordingly since something has been deleted
 		transferData("CHANGE");
-		admin.resetData();
-		admin.savedWords.remove(list.get(row)[1]);
+		admin.resetErrorData();
+		admin.resetHyperlinkData();
+		admin.savedWords.remove(curErrorlist.get(row)[1]);
 	}
 
 	/**
@@ -243,19 +255,29 @@ public class DataController {
 	 */
 	protected void transferData(String choice) {
 		if(choice.equals("DEFAULT")) {
-			tempList = defaultList;
-			queries.clear();
-			admin.savedWords = admin.keyWords;
+			tempErrorList = defaultErrorList;
+			tempHyperlinkList = defaultHyperlinkList;
+			errorQueries.clear();
+			admin.savedWords.clear();
+			for(int i = 0; i < admin.keyWords.size(); i++) {
+				admin.savedWords.add(admin.keyWords.get(i));
+			}
 		}
 		else {
-			tempList = list;
+			tempHyperlinkList = curHyperlinkList;
+			tempErrorList = curErrorlist;
 		}
-		Object[][] myData = new Object[tempList.size()][];
-		for(int i = 0; i < tempList.size(); i++) {
-			myData[i] = tempList.get(i);
+		Object[][] myData = new Object[tempErrorList.size()][];
+		for(int i = 0; i < tempErrorList.size(); i++) {
+			myData[i] = tempErrorList.get(i);
 		}
-		data = myData;
-
+		errorData = myData;
+		
+		Object[][] tempData = new Object[tempHyperlinkList.size()][];
+		for(int j = 0; j < tempHyperlinkList.size(); j++) {
+			tempData[j] = tempHyperlinkList.get(j);
+		}
+		hyperlinkData = tempData;
 	}
 
 	/**
@@ -264,7 +286,7 @@ public class DataController {
 	 * @return Returns the data object which contains entries reflecting user actions
 	 */
 	protected Object[][] getData(){
-		return data;
+		return errorData;
 	}
 
 	/**
@@ -277,16 +299,16 @@ public class DataController {
 	 * @throws SQLException
 	 */
 	protected void saveDefault() throws IOException, ClassNotFoundException, SQLException{
-		defaultList.clear();
+		defaultErrorList.clear();
 		admin.keyWords.clear();
 		for(int x = 0; x < admin.savedWords.size(); x++) {
 			admin.keyWords.add(admin.savedWords.get(x));
 		}
-		for(int i = 0; i < list.size(); i++){
-			defaultList.add(list.get(i));
+		for(int i = 0; i < curErrorlist.size(); i++){
+			defaultErrorList.add(curErrorlist.get(i));
 		}
-		for (int j = 0; j < queries.size(); j++) {
-			System.out.println(queries.get(j));
+		for (int j = 0; j < errorQueries.size(); j++) {
+			System.out.println(errorQueries.get(j));
 		}
 
 		String driver = "net.sourceforge.jtds.jdbc.Driver";
@@ -294,11 +316,11 @@ public class DataController {
 		Connection conn = DriverManager.getConnection("jdbc:jtds:sqlserver://vwaswp02:1433/coeus", "coeus", "C0eus");
 
 		Statement stmt = conn.createStatement();
-		for(int j = 0; j < queries.size(); j++) {
-			stmt.executeUpdate(queries.get(j));
+		for(int j = 0; j < errorQueries.size(); j++) {
+			stmt.executeUpdate(errorQueries.get(j));
 		}
 		stmt.close();
-		queries.clear();
+		errorQueries.clear();
 	}
 
 }
