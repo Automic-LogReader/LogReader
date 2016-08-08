@@ -108,6 +108,7 @@ public class UserView extends JFrame{
 	protected HashSet<String> keyWords = new HashSet<String>();
 	/**Contains the original keywords to compare against user selected keywords*/
 	protected HashSet<String> originalKeyWords;
+	protected HashSet<String> groupKeywordsHashSet;
 	/**Used to compare against user selected keywords*/
 	private boolean hasCopiedOriginalKeyWords;
 	/**The size of the logfile*/
@@ -138,10 +139,13 @@ public class UserView extends JFrame{
 	protected Integer numLinesAfter;
 	protected JList<CheckBoxListItem> list;
 	/**Model for the checkbox groups*/
-	protected DefaultListModel<CheckBoxListItem> listModel;
+	protected DefaultListModel<CheckBoxListItem> groupNameListModel;
+	protected DefaultListModel<String> groupKeywordsListModel;
 	private JTabbedPane tabbedPane;
 	protected JScrollPane groupScrollPane;
-	protected JList<CheckBoxListItem> groupList;
+	protected JList<CheckBoxListItem> groupNameList;
+	protected JList<String> groupKeywordsList;
+	
 	protected CheckBoxListItem[] listOfGroups;
 	
 	//For the and/or/not logic
@@ -346,14 +350,10 @@ public class UserView extends JFrame{
 		}
 		else if (selectedTab == 2){
 			System.out.println("Group search");
-			if (listOfGroups == null) return; //If list hasn't been intialized yet
-			for (int i = 0; i < listOfGroups.length; i++){
-				if (listOfGroups[i].isSelected()){
-					String array[] = listOfGroups[i].toString().split(" ");
-					for (String s : array){
-						keyWords.add(s);
-					}
-				}
+			if (groupKeywordsListModel.isEmpty()) return;
+			for (int i=0; i<groupKeywordsListModel.size(); i++){
+				keyWords.add(groupKeywordsListModel.getElementAt(i));
+				System.out.println(groupKeywordsListModel.getElementAt(i));
 			}
 		}
 	}
@@ -618,12 +618,16 @@ public class UserView extends JFrame{
 		JPanel pnlGroupView = new JPanel();
 		pnlGroupView.setLayout(new BoxLayout(pnlGroupView, BoxLayout.Y_AXIS));
 		pnlGroupView.setMaximumSize(new Dimension(600, 280));
-		listModel = new DefaultListModel<CheckBoxListItem>();
+		groupKeywordsListModel = new DefaultListModel<String>();
+		groupKeywordsList = new JList<String>(groupKeywordsListModel);
+		
+		
+		groupNameListModel = new DefaultListModel<CheckBoxListItem>();
 		createGroupView();
-		groupList = new JList<CheckBoxListItem>(listModel);
-		groupList.setCellRenderer(new CheckBoxListRenderer());
-		groupList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		groupList.addMouseListener(new MouseAdapter(){
+		groupNameList = new JList<CheckBoxListItem>(groupNameListModel);
+		groupNameList.setCellRenderer(new CheckBoxListRenderer());
+		groupNameList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		groupNameList.addMouseListener(new MouseAdapter(){
 			 public void mouseClicked(MouseEvent event) {
 		            @SuppressWarnings("unchecked")
 					JList<CheckBoxListItem> list =
@@ -633,11 +637,30 @@ public class UserView extends JFrame{
 		                  .getElementAt(index);
 		            item.setSelected(!item.isSelected());
 		            list.repaint(list.getCellBounds(index, index));
+		            groupKeywordsHashSet.clear();
+		            groupKeywordsListModel.clear();
+		            for (int i=0; i<groupNameListModel.size(); i++){
+	            		CheckBoxListItem cbItem = (CheckBoxListItem) list.getModel()
+	            				.getElementAt(i);
+	            		if (cbItem.isSelected()){
+	            			String keywordString = GroupInfo.get(cbItem.toString());
+				            String keywordStringArray[] = keywordString.split(" ");
+				            for (String key : keywordStringArray){
+				            	groupKeywordsHashSet.add(key);
+				            }
+	            		}
+	            	}
+		            for (String key : groupKeywordsHashSet){
+		            	groupKeywordsListModel.addElement(key);
+		            }
 		         }
 		});
-		groupScrollPane = new JScrollPane(groupList);
+		groupScrollPane = new JScrollPane(groupNameList);
 		
 		pnlGroupView.add(groupScrollPane);
+		
+		JScrollPane pnlGroupViewBottom = new JScrollPane(groupKeywordsList);
+		pnlGroupView.add(pnlGroupViewBottom);
 		
 		tabbedPane.addTab("Tree View", pnlTreeView);
 		tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
@@ -789,7 +812,9 @@ public class UserView extends JFrame{
 	 * @return Returns true for succesful creation of group view, false for empty group list
 	 */
 	protected boolean createGroupView(){
-		listModel.clear();
+		groupKeywordsHashSet = new HashSet<String>();
+		groupKeywordsListModel.clear();
+		groupNameListModel.clear();
 		if (GroupInfo.isEmpty()){
 			return false;
 		}
@@ -797,8 +822,8 @@ public class UserView extends JFrame{
 		listOfGroups = new CheckBoxListItem[GroupInfo.size()];
 		for (Map.Entry<String, String> entry : GroupInfo.entrySet()){
 			String txt = "(" + entry.getKey() + ")" + " " + entry.getValue();
-	    	listOfGroups[index] = new CheckBoxListItem(txt);
-	    	listModel.addElement(listOfGroups[index]);
+	    	listOfGroups[index] = new CheckBoxListItem(entry.getKey());
+	    	groupNameListModel.addElement(listOfGroups[index]);
 	    	++index;
 		}
 		return true;
