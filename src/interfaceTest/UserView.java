@@ -94,6 +94,8 @@ public class UserView extends JFrame{
 	private Thread t;
 	/**Holds path of the user given logfile*/
 	protected String logFile;
+	/** Maps the keywords to a URL pertaining to the solution */ 
+	protected static HashMap<String, String> urlMap = new HashMap<String, String>();
 	/**Maps keywords to their solutions where the keyword is the key, and the solution is the value*/
 	protected HashMap<String, String> solutions = new HashMap<String, String>();
 	/**Maps keywords to their folders where the keyword is the key, and the folder is the value*/
@@ -237,11 +239,12 @@ public class UserView extends JFrame{
 		folderSet.clear();
 		treeMap.clear();
 		
-		String query = "select Keyword, Folder from logerrors";
+		String query = "select Keyword, Folder, Hyperlink from logerrors";
 		ResultSet rs = stmt.executeQuery(query);
 		while(rs.next()){
 			keyWords.add(rs.getString("Keyword"));
 			folderMap.put(rs.getString("Keyword"), rs.getString("Folder"));
+			urlMap.put(rs.getString("Keyword"), rs.getString("Hyperlink"));
 			folderSet.add(rs.getString("Folder"));
 		}
 		//Fills the treeMap

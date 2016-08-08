@@ -74,11 +74,12 @@ public class TableMouseListener extends MouseAdapter {
      * @throws URISyntaxException if URI is not formatted properly
      */
     public static void openURI() throws URISyntaxException{
-    	Object valueInCell = table.getValueAt(currentRow, currentColumn);
-    	if (valueInCell instanceof String && currentColumn == 4){
+    	Object valueInCell = table.getValueAt(currentRow, 2);
+
+    	if (valueInCell instanceof String){
     		String uriString = (String) valueInCell;
     		System.out.println(uriString);
-    		URI uri = new URI("http://google.com");
+    		URI uri = new URI(UserView.urlMap.get(uriString));
     		openURIHelper(uri);
     	}
     }

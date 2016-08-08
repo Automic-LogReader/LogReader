@@ -28,7 +28,7 @@ public class LineDialog extends JDialog {
 	/** Main content panel */
 	private final JPanel pnlMain = new JPanel();
 	/** JList holding the list of lines before or after a given error message */
-	private JList<?> list;
+	private JList<Object> list;
 	/** Holds the contents of the lines to be displayed */
 	private JScrollPane scrollPane;
 	/** Holds the list of lines before or after a given error message */
@@ -80,7 +80,7 @@ public class LineDialog extends JDialog {
 			
 			pnlMain.add(Box.createRigidArea(new Dimension(0,10)));
 			
-			list = new JList(listOfLines.toArray());
+			list = new JList<Object>(listOfLines.toArray());
 			
 			scrollPane = new JScrollPane(list);
 			scrollPane.setBackground(Color.WHITE);
@@ -101,7 +101,7 @@ public class LineDialog extends JDialog {
 			
 			pnlMain.add(Box.createRigidArea(new Dimension(0,10)));
 			
-			list = new JList(listOfLines.toArray());
+			list = new JList<Object>(listOfLines.toArray());
 			
 			scrollPane = new JScrollPane(list);
 			scrollPane.setBackground(Color.WHITE);
