@@ -79,11 +79,15 @@ public class AdminView extends JFrame {
 	/**A list that contains the original values, and is serves as a temp list
 	for modifications done to the table. */
 	List <String[]> list = new ArrayList<String[]>();
-	/**Headers for the JTable */
-	private final String[] columnHeaders = {"Folder", "Keyword", "Log Error Description",
+	/**Headers for the error JTable */
+	private final String[] errorTableColumnHeaders = {"Folder", "Keyword", "Log Error Description",
 									"Suggested Solution"};
+	/**Headers for the hyperlink JTable*/
+	private final String[] hyperlinkColumnHeaders = {"Keyword", "Hyperlink"};
 	/**JTable that displays the database contents and changes accordingly for user changes*/
-	private JTable tblEntries;
+	private JTable tblErrorEntries;
+	/**Jtable that displays the corresponding solution hyperlink for each keyword*/
+	private JTable tblHyperlinkEntries;
 	/**Main panel for the groups tab*/
 	protected JPanel pnlGroups;
 	/**Contains a list of the current groups*/
@@ -92,8 +96,10 @@ public class AdminView extends JFrame {
 	protected DefaultListModel<String> defaultListModel;
 	/**A selection of options for when the user wants to delete an entry*/
 	Object[] options = {"Yes", "Cancel"};
-	/**A model for the table which is refreshed when the user adds, deletes, or mods an entry*/
-	private DefaultTableModel tableModel;
+	/**A model for the error table which is refreshed when the user adds, deletes, or mods an entry*/
+	private DefaultTableModel errorTableModel;
+	/**A model for the hyperlink table which is refrehsed when the user adds, deletes, or mods an entry*/
+	private DefaultTableModel hyperlinkTableModel;
 	/**A private dataController that modifies the table content*/
 	DataController dc;
 	
@@ -130,12 +136,12 @@ public class AdminView extends JFrame {
 		JPanel pnlTabOne = new JPanel();
 		pnlTabOne.setLayout(new BoxLayout(pnlTabOne, BoxLayout.Y_AXIS));
 		
-		JScrollPane scrollPane = new JScrollPane(tblEntries, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		JScrollPane scrollPane = new JScrollPane(tblErrorEntries, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		pnlTabOne.add(scrollPane);
 		
 		initTable();
 		
-		scrollPane.setViewportView(tblEntries);
+		scrollPane.setViewportView(tblErrorEntries);
 		
 		pnlTabOne.add(Box.createRigidArea(new Dimension(0, 5)));
 		
@@ -157,12 +163,12 @@ public class AdminView extends JFrame {
 		btnModifyEntry.addActionListener(e -> {
 			//If the admin wants to modify a value we send DataController the current
 			//cell contents of the entry they chose
-			if(tblEntries.getSelectedRow() != -1){
-				int rowSelect = tblEntries.getSelectedRow();
-				ModifyDialog modify = new ModifyDialog((String)tblEntries.getValueAt(rowSelect, 0),
-													 (String)tblEntries.getValueAt(rowSelect, 1),
-													 (String)tblEntries.getValueAt(rowSelect, 2),
-													 (String)tblEntries.getValueAt(rowSelect, 3),
+			if(tblErrorEntries.getSelectedRow() != -1){
+				int rowSelect = tblErrorEntries.getSelectedRow();
+				ModifyDialog modify = new ModifyDialog((String)tblErrorEntries.getValueAt(rowSelect, 0),
+													 (String)tblErrorEntries.getValueAt(rowSelect, 1),
+													 (String)tblErrorEntries.getValueAt(rowSelect, 2),
+													 (String)tblErrorEntries.getValueAt(rowSelect, 3),
 													 dc, rowSelect);
 				modify.setVisible(true);
 			}
@@ -172,7 +178,7 @@ public class AdminView extends JFrame {
 		
 		JButton btnDeleteEntry = new JButton("Delete Entry");
 		btnDeleteEntry.addActionListener(e -> {
-			int viewIndex = tblEntries.getSelectedRow();
+			int viewIndex = tblErrorEntries.getSelectedRow();
 			if(viewIndex != -1) {
 				//Ensures user wants to delete selected entry
 				int confirmation = JOptionPane.showOptionDialog(this,
@@ -181,7 +187,7 @@ public class AdminView extends JFrame {
 				    null, options, options[1]);
 				//If yes, then we continue delete process
 				if (confirmation == JOptionPane.YES_OPTION){
-					int modelIndex = tblEntries.convertRowIndexToModel(viewIndex); 
+					int modelIndex = tblErrorEntries.convertRowIndexToModel(viewIndex); 
 					try {
 						dc.deleteData(viewIndex);
 					} catch (Exception e1) {
@@ -269,10 +275,22 @@ public class AdminView extends JFrame {
 		pnlTabTwoButtons.add(btnDeleteGroup);
 		pnlTabTwo.add(Box.createVerticalGlue());
 		
+		JPanel pnlTabThree = new JPanel();
+		pnlTabThree.setLayout(new BoxLayout(pnlTabThree, BoxLayout.Y_AXIS));
+		pnlTabThree.add(Box.createVerticalGlue());
+		
+		JScrollPane pnlHyperlinkTable = new JScrollPane();
+		pnlTabThree.add(pnlHyperlinkTable);
+		
+		
+		pnlTabThree.add(Box.createVerticalGlue());
+		
 		tabbedPane.add("Edit Entries", pnlTabOne);
 		tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
 		tabbedPane.add("Create Groups", pnlTabTwo);
 		tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
+		tabbedPane.add("Edit Solution Hyperlinks", pnlTabThree);
+		tabbedPane.setMnemonicAt(2,  KeyEvent.VK_3);
 	}
 	
 	/**
@@ -376,9 +394,9 @@ public class AdminView extends JFrame {
 	 * or deleted, and the table properly reflects the changes made by the user.
 	 */
 	protected void resetData(){
-		DefaultTableModel model = new DefaultTableModel(dc.getData(), columnHeaders); 
-		tblEntries.setModel(model);
-		resizeColumnWidth(tblEntries);
+		DefaultTableModel model = new DefaultTableModel(dc.getData(), errorTableColumnHeaders); 
+		tblErrorEntries.setModel(model);
+		resizeColumnWidth(tblErrorEntries);
 		model.fireTableDataChanged();
 	}
 	
@@ -388,14 +406,14 @@ public class AdminView extends JFrame {
 	 * that can be modified by the Administrator
 	 */
 	private void initTable(){
-		tableModel = new DefaultTableModel(dc.getData(), columnHeaders) {
+		errorTableModel = new DefaultTableModel(dc.getData(), errorTableColumnHeaders) {
 		    @Override
 		    public boolean isCellEditable(int row, int column) {
 		       //all cells false
 		       return false;
 		    }     
 		};
-		tblEntries = new JTable(tableModel){
+		tblErrorEntries = new JTable(errorTableModel){
 			//Renders each columnn to fit the data
 			public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
 				Component component = super.prepareRenderer(renderer, row, column);
@@ -406,8 +424,10 @@ public class AdminView extends JFrame {
 			}
 
 		};
-		resizeColumnWidth(tblEntries);	
-		tblEntries.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		resizeColumnWidth(tblErrorEntries);	
+		tblErrorEntries.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		
+		
 	}
 	
 	/**
