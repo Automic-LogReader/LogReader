@@ -1,3 +1,10 @@
+/**
+ * @file Utility.java
+ * @authors Leah Talkov, Jerry Tsui
+ * @date 8/3/2016
+ * Contains helper functions for CBTree and CheckBoxList.
+ */
+
 package interfaceTest;
 
 import java.awt.event.ActionEvent;

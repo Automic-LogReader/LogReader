@@ -1,3 +1,13 @@
+/**
+ * @file PreferenceEditor.java
+ * @authors Leah Talkov, Jerry Tsui
+ * @date 8/3/2016
+ * Allows the user to make more specifications on their searches by inputing
+ * timebounds for Time Critical errors, and how many lines (0-10) the user would
+ * like to see before and after an error. The default values for the time bounds 
+ * are 0 to infinity, and 5 for before/after lines.
+ */
+
 package interfaceTest;
 
 import java.awt.BorderLayout;
@@ -22,14 +32,16 @@ import javax.swing.UIManager;
 
 @SuppressWarnings("serial")
 public class PreferenceEditor extends JDialog {
+	/**For lower bound input, value cannot be greater than upper bound*/
 	private JTextField tfLowerBound;
+	/**For upper bound input, value cannot be less than 0*/
 	private JTextField tfUpperBound;
+	/**For lines before input, value cannot be less than 0 or greater than 10*/
 	private JTextField tfNumLinesBefore;
+	/**For lines after input, value cannot be less than 0 or greater than 10*/
 	private JTextField tfNumLinesAfter;
-	boolean isAdmin;
 	
 	public PreferenceEditor(UserView view, boolean admin) {
-		this.isAdmin = admin;
 		prepareGUI(view);
 	}
 	
@@ -183,6 +195,11 @@ public class PreferenceEditor extends JDialog {
 		}
 	}
 	
+	/**
+	 * Saves the number of lines the user wishes to see before/after an error,
+	 * and ensures that the input is valid.
+	 * @param view The UserView associated with this PreferenceEditor
+	 */
 	private void saveNumLines(UserView view){
 		int before = 0;
 		int after = 0;
@@ -204,6 +221,11 @@ public class PreferenceEditor extends JDialog {
 		view.numLinesAfter = after;
 	}
 	
+	/**
+	 * Saves the time bounds that the user has inputed, and ensures
+	 * that the time bounds are valid.
+	 * @param view The UserView associated with this PreferenceEditor
+	 */
 	private void saveTimeBounds(UserView view){
 		double low, high;
 		try {

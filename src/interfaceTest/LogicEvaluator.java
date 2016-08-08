@@ -28,11 +28,11 @@ public class LogicEvaluator {
 	private boolean AND_NOT_DEADLOCK;
 	/**True if the user has used the keyword DEADLOCK with the AND operand*/
 	private boolean AND_DEADLOCK;
-	/**True if the user has used the keyword ===> with the AND NOT operand*/
+	/**True if the user has used the keyword ARROW with the AND NOT operand*/
 	private boolean AND_NOT_ARROW;
-	/**True if the user has used the keyword ===> with the AND operand*/
+	/**True if the user has used the keyword ARROW with the AND operand*/
 	private boolean AND_ARROW;
-	/**True if the user has used the keyword ===> with the OR operand*/
+	/**True if the user has used the keyword ARROW with the OR operand*/
 	private boolean OR_ARROW;
 	private int resetCount;
 	private boolean earlyAdd;

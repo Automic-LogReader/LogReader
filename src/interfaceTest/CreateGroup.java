@@ -1,3 +1,13 @@
+/**
+ * @file CreateGroup.java
+ * @authors Leah Talkov, Jerry Tsui
+ * @date 8/3/2016
+ * Frame that allows the administrator to create, name, and save groups
+ * of keywords to the database. These groups can be used to make
+ * searching easier for the user. Admins cannot create duplicate
+ * groups, and groups cannot have duplicate names. 
+ */
+
 package interfaceTest;
 
 import java.awt.BorderLayout;
@@ -35,7 +45,6 @@ import interfaceTest.CheckBoxList.CheckBoxListRenderer;
 
 
 /**
- * @author jts
  * Dialog that allows a user to create and save search groups
  */
 @SuppressWarnings("serial")
@@ -190,10 +199,5 @@ public class CreateGroup extends JDialog{
 			admin.updateGroups(view);
 		}
 	}
-	
-	/**
-	 * Utility func
-	 * @param dialog
-	 */
-	
+
 }

@@ -1,3 +1,12 @@
+/**
+ * @file CBTree.java
+ * @authors Leah Talkov, Jerry Tsui
+ * @date 8/3/2016
+ * Creates a Checkbox tree for the UserView interface. Every unique folder is shown 
+ * in a tree format, and within each folder are the associated keywords. 
+ * Tree automatically updates whenever an administrator makes a change to the data.
+ */
+
 package interfaceTest;
 import javax.swing.AbstractCellEditor;
 import javax.swing.Icon;
@@ -53,8 +62,7 @@ class CBTree extends JTree {
 	      }
 	    }
 	    this.expandPath(parent);
-	}
-	   
+	} 
 }
 	
 	 

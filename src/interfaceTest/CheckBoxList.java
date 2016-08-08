@@ -1,3 +1,10 @@
+/**
+ * @file CheckBoxList.java
+ * @authors Leah Talkov, Jerry Tsui
+ * @date 8/3/2016
+ * Constructs Checkbox items for the keywords in the database.
+ */
+
 package interfaceTest;
 
 import java.awt.Component;
