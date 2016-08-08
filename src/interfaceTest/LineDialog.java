@@ -25,9 +25,13 @@ import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
 
 public class LineDialog extends JDialog {
+	/** Main content panel */
 	private final JPanel pnlMain = new JPanel();
+	/** JList holding the list of lines before or after a given error message */
 	private JList<?> list;
+	/** Holds the contents of the lines to be displayed */
 	private JScrollPane scrollPane;
+	/** Holds the list of lines before or after a given error message */
 	private ArrayList<String> listOfLines;
 	/**
 	 * Constructor
@@ -41,7 +45,7 @@ public class LineDialog extends JDialog {
 
 	/**
 	 * This function prepares and displays the LineDialog GUI.
-	 * @param currentRow THe current selected row within the JTable
+	 * @param currentRow The current selected row within the JTable
 	 * @param view the UserView that instantiated the LineDialog
 	 */
 	private void prepareGUI(int currentRow, UserView view, String type){

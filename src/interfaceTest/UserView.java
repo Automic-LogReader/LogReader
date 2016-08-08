@@ -26,6 +26,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.GridLayout;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -52,6 +53,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -149,7 +151,7 @@ public class UserView extends JFrame{
 	protected ArrayList<Boolean> notArrayList = new ArrayList<Boolean>();
 	/**Combo box for drop down keywords*/
 	protected Vector<String> comboBoxKeyWords = new Vector<String>();
-	protected Stack<LogicalComboBox> mostRecentCB = new Stack<LogicalComboBox>();
+
 	private LogicalComboBox cbKey1;
 	private LogicalComboBox cbLogic1;
 	private LogicalComboBox cbKey2;
@@ -157,20 +159,31 @@ public class UserView extends JFrame{
 	private LogicalComboBox cbKey3;
 
 	//For the CheckBoxTree view
+	/** Checkbox tree for the tree view */
 	protected CBTree cbTree;
+	/** Root node of the Checkbox tree */
 	protected DefaultMutableTreeNode rootNode;
+	/** Model for the checkbox tree*/
 	protected DefaultTreeModel treeModel;
-	public HashMap<String, TreeNodeCheckBox> checkBoxMap = new HashMap<String, TreeNodeCheckBox>();
+	/** JScrollPane holding the contents of the checkbox view */
 	protected JScrollPane treeScrollPane;
+	/** Popup menu to be displayed when the user right-clicks on the JTable */
 	protected JPopupMenu popupMenu;
+	/** JPanel holding the JScrollPane for the checkbox view */
 	private JPanel pnlTreeView;
 	
+	/** Contains a list of lists holding the lines before an error message */
 	protected ArrayList<ArrayList<String>> linesBeforeArrayList = new ArrayList<ArrayList<String>>();
+	/** Maps an error number to the list of lines after an error message */
 	protected HashMap<Integer, ArrayList<String>> linesAfterHashMap = new HashMap<Integer, ArrayList<String>>();
 	
+	/** JMenuItem displaying a dialog showing the lines before an error */
 	protected JMenuItem menuItemLinesBefore;
+	/** JMenuItem displaying a dialog showing the lines after an error */
 	protected JMenuItem menuItemLinesAfter;
+	/** JMenuItem opening a hyperlink to the solution online */
 	protected JMenuItem menuItemUrl;
+	/** JMemuItem that copies the value of a given JTable cell when clicked */
 	protected JMenuItem menuItemCopy;
 	
 	/**
@@ -193,8 +206,6 @@ public class UserView extends JFrame{
 		}
 		
 		initPreferenceEditorValues();
-
-		mostRecentCB.clear();
 		
 		String driver = "net.sourceforge.jtds.jdbc.Driver";
 		Class.forName(driver);
@@ -529,13 +540,22 @@ public class UserView extends JFrame{
 		pnlTreeView.add(btnToggleAll);
 		
 		/*** AND OR NOT PANEL ***/
+		
 		JPanel pnlAndOrNot = new JPanel();
 		pnlAndOrNot.setMaximumSize(new Dimension(600, 280));
 		pnlAndOrNot.setOpaque(true);
 		pnlAndOrNot.setBackground(Color.WHITE);
 		pnlAndOrNot.setLayout(new BoxLayout(pnlAndOrNot, BoxLayout.Y_AXIS));
+	
+		JPanel pnlInstructions = new JPanel(new FlowLayout());
+		JLabel lblInstructions = new JLabel("Select keywords and operators from the boxes below", JLabel.CENTER);
+		lblInstructions.setAlignmentX(CENTER_ALIGNMENT);
+		pnlInstructions.add(lblInstructions);
+		pnlInstructions.setOpaque(true);
+		pnlInstructions.setBackground(Color.WHITE);
 		
 		JPanel pnlComboBox = new JPanel(new FlowLayout());
+		pnlComboBox.add(Box.createHorizontalGlue());
 		pnlComboBox.setOpaque(true);
 		pnlComboBox.setBackground(Color.WHITE);
 		cbKey1 = new LogicalComboBox(2, this);
@@ -569,7 +589,8 @@ public class UserView extends JFrame{
 		pnlComboBox.add(cbKey2);
 		pnlComboBox.add(cbLogic2);
 		pnlComboBox.add(cbKey3);
-
+		pnlComboBox.add(Box.createHorizontalGlue());
+		
 		JButton btnClear = new JButton("Clear");
 		btnClear.setAlignmentX(CENTER_ALIGNMENT);
 		btnClear.addActionListener(e -> {
@@ -584,6 +605,8 @@ public class UserView extends JFrame{
 		
 		pnlAndOrNot.add(Box.createVerticalGlue());
 		pnlAndOrNot.add(Box.createRigidArea(new Dimension(0, 10)));
+		pnlAndOrNot.add(pnlInstructions);
+		
 		pnlAndOrNot.add(pnlComboBox);
 		pnlAndOrNot.add(btnClear);
 		pnlAndOrNot.add(Box.createVerticalGlue());
