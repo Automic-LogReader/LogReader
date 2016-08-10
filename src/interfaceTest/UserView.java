@@ -108,6 +108,7 @@ public class UserView extends JFrame{
 	protected HashSet<String> keyWords = new HashSet<String>();
 	/**Contains the original keywords to compare against user selected keywords*/
 	protected HashSet<String> originalKeyWords;
+	/**A HashSet used to prevent duplicates when listing out the individual keywords in the groups */
 	protected HashSet<String> groupKeywordsHashSet;
 	/**Used to compare against user selected keywords*/
 	private boolean hasCopiedOriginalKeyWords;
@@ -656,10 +657,14 @@ public class UserView extends JFrame{
 		         }
 		});
 		groupScrollPane = new JScrollPane(groupNameList);
-		
+		groupScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 		pnlGroupView.add(groupScrollPane);
-		
+		pnlGroupView.add(Box.createRigidArea(new Dimension(0, 10)));
 		JScrollPane pnlGroupViewBottom = new JScrollPane(groupKeywordsList);
+		
+		pnlGroupViewBottom.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+		pnlGroupViewBottom.setViewportView(groupKeywordsList);
+		
 		pnlGroupView.add(pnlGroupViewBottom);
 		
 		tabbedPane.addTab("Tree View", pnlTreeView);
