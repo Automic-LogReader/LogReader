@@ -226,8 +226,8 @@ public class LogParser {
 			data[i] = errorData.get(i);
 		}
 		//Sets the menu items as visible after the parsing is done
-		view.menuItemLinesBefore.setEnabled(true);
-		view.menuItemLinesAfter.setEnabled(true);
+		view.menuItemLines.setEnabled(true);
+		
 		view.menuItemUrl.setEnabled(true);
 		view.menuItemCopy.setEnabled(true);
 		makeTable();

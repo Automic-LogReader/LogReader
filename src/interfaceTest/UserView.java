@@ -187,10 +187,8 @@ public class UserView extends JFrame{
 	/** Maps an error number to the list of lines after an error message */
 	protected HashMap<Integer, ArrayList<String>> linesAfterHashMap = new HashMap<Integer, ArrayList<String>>();
 	
-	/** JMenuItem displaying a dialog showing the lines before an error */
-	protected JMenuItem menuItemLinesBefore;
-	/** JMenuItem displaying a dialog showing the lines after an error */
-	protected JMenuItem menuItemLinesAfter;
+	/** JMenuItem displaying a dialog showing the lines before and after an error */
+	protected JMenuItem menuItemLines;
 	/** JMenuItem opening a hyperlink to the solution online */
 	protected JMenuItem menuItemUrl;
 	/** JMemuItem that copies the value of a given JTable cell when clicked */
@@ -714,19 +712,15 @@ public class UserView extends JFrame{
         menuItemUrl.setEnabled(false);
         popupMenu.add(menuItemUrl);
         
-        menuItemLinesBefore = new JMenuItem("Show Lines Before");
-        menuItemLinesBefore.addActionListener(e -> {
-        	LineDialog linesBefore = new LineDialog(TableMouseListener.getCurrentRow(), this, "BEFORE");
+        menuItemLines = new JMenuItem("Show lines before and after");
+        menuItemLines.addActionListener(e -> {
+        	LineDialog lineDialog = new LineDialog(TableMouseListener.getCurrentRow(), this, 
+        			(String) errorTable.getValueAt(TableMouseListener.getCurrentRow(), 3));
         });
-        menuItemLinesBefore.setEnabled(false);
-        popupMenu.add(menuItemLinesBefore);
+        menuItemLines.setEnabled(false);
+        popupMenu.add(menuItemLines);
         
-        menuItemLinesAfter = new JMenuItem("Show Lines After");
-        menuItemLinesAfter.addActionListener(e -> {
-        	LineDialog linesAfter = new LineDialog(TableMouseListener.getCurrentRow(), this, "AFTER");
-        });
-        menuItemLinesAfter.setEnabled(false);
-        popupMenu.add(menuItemLinesAfter);
+       
         
         
 		errorTable = new JTable(tableModel);

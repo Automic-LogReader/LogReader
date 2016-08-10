@@ -43,6 +43,7 @@ public class PreferenceEditor extends JDialog {
 	
 	public PreferenceEditor(UserView view, boolean admin) {
 		prepareGUI(view);
+		Utility.addEscapeListener(this);
 	}
 	
 	private void prepareGUI(UserView view){
