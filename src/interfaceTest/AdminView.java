@@ -11,6 +11,7 @@
 
 package interfaceTest;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -22,6 +23,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
 
 import java.awt.GridBagLayout;
 import java.io.BufferedReader;
@@ -62,7 +64,9 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 import javax.swing.JScrollBar;
 
 @SuppressWarnings({ "serial", "unused" })
@@ -82,15 +86,19 @@ public class AdminView extends JFrame {
 	/**Headers for the error JTable */
 	List <String[]> hyperlinkList = new ArrayList<String[]>();
 	List <String[]> defaultHyperlinkList = new ArrayList<String[]>();
-	
+	/**Headers for the error JTable*/
 	private final String[] errorTableColumnHeaders = {"Folder", "Keyword", "Log Error Description",
 									"Suggested Solution"};
 	/**Headers for the hyperlink JTable*/
 	private final String[] hyperlinkColumnHeaders = {"Keyword", "Hyperlink"};
+	/**Headers for the group JTable*/
+	private final String[] groupColumnHeaders = {"Name", "Keywords"};
 	/**JTable that displays the database contents and changes accordingly for user changes*/
 	private JTable tblErrorEntries;
-	/**Jtable that displays the corresponding solution hyperlink for each keyword*/
+	/**JTable that displays the corresponding solution hyperlink for each keyword*/
 	private JTable tblHyperlinkEntries;
+	/**JTable that displays the current groups*/
+	protected JTable tblGroupEntries;
 	/**Main panel for the groups tab*/
 	protected JPanel pnlGroups;
 	/**Contains a list of the current groups*/
@@ -101,10 +109,16 @@ public class AdminView extends JFrame {
 	Object[] options = {"Yes", "Cancel"};
 	/**A model for the error table which is refreshed when the user adds, deletes, or mods an entry*/
 	private DefaultTableModel errorTableModel;
-	/**A model for the hyperlink table which is refrehsed when the user adds, deletes, or mods an entry*/
+	/**A model for the hyperlink table which is refreshed when the user adds, deletes, or mods an entry*/
 	private DefaultTableModel hyperlinkTableModel;
+	/**A model for the group table which is refreshed when the user adds, deletes, or mods an entry*/
+	private DefaultTableModel groupTableModel;
 	/**A private dataController that modifies the table content*/
 	DataController dc;
+	/**A 2-D Object array holding the information for the group*/
+	protected Object groupRowData[][];
+	
+	
 	
 	public AdminView(UserView view) throws ClassNotFoundException, SQLException {
 			
@@ -130,6 +144,8 @@ public class AdminView extends JFrame {
 		setBounds(200, 200, 1000, 300);
 		setMinimumSize(new Dimension(750, 300));
 		setLocationRelativeTo(null);
+		
+		JButton btnModifyHyperlink = new JButton("Save Changes");
 		
 		JPanel pnlMain = new JPanel();
 		pnlMain.setLayout(new BoxLayout(pnlMain, BoxLayout.Y_AXIS));
@@ -157,6 +173,7 @@ public class AdminView extends JFrame {
 		JButton btnAddEntry = new JButton("Add Entry");
 		btnAddEntry.setToolTipText("Changes will be made locally");
 		btnAddEntry.addActionListener(e -> {
+			btnModifyHyperlink.setEnabled(false);
 			AddDialog add = new AddDialog(dc);
 			add.setVisible(true);
 		});
@@ -169,6 +186,7 @@ public class AdminView extends JFrame {
 			//If the admin wants to modify a value we send DataController the current
 			//cell contents of the entry they chose
 			if(tblErrorEntries.getSelectedRow() != -1){
+				btnModifyHyperlink.setEnabled(false);
 				int rowSelect = tblErrorEntries.getSelectedRow();
 				ModifyDialog modify = new ModifyDialog((String)tblErrorEntries.getValueAt(rowSelect, 0),
 													 (String)tblErrorEntries.getValueAt(rowSelect, 1),
@@ -192,6 +210,7 @@ public class AdminView extends JFrame {
 				    null, options, options[1]);
 				//If yes, then we continue delete process
 				if (confirmation == JOptionPane.YES_OPTION){
+					btnModifyHyperlink.setEnabled(false);
 					int modelIndex = tblErrorEntries.convertRowIndexToModel(viewIndex); 
 					try {
 						dc.deleteData(viewIndex);
@@ -218,10 +237,10 @@ public class AdminView extends JFrame {
 				Class.forName(driver);
 				Connection conn = DriverManager.getConnection("jdbc:jtds:sqlserver://vwaswp02:1433/coeus", "coeus", "C0eus");
 				Statement stmt = conn.createStatement();
-
 				view.fillKeywords(stmt);
 				view.createErrorDictionary(stmt);
 				view.updateTreeView();
+				btnModifyHyperlink.setEnabled(true);
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
@@ -236,6 +255,7 @@ public class AdminView extends JFrame {
 			//The table will revert back to the contents of the database, erasing
 			//all changes the admin has done
 			dc.getList().clear();
+			btnModifyHyperlink.setEnabled(true);
 			for(int i = 0; i < dc.getDefaultList().size(); i++) {
 				dc.getList().add(dc.getDefaultList().get(i));
 			}
@@ -254,9 +274,10 @@ public class AdminView extends JFrame {
 		pnlTabTwo.add(Box.createVerticalGlue());
 		
 		pnlGroups = createGroupDisplay (view);
-		pnlGroups.setBorder(new EmptyBorder(10,5,0,5));
-		pnlTabTwo.add(pnlGroups);
+		pnlGroups.setBorder(new LineBorder(Color.BLACK));
 		
+		pnlTabTwo.add(pnlGroups);
+		pnlTabTwo.add(Box.createVerticalGlue());
 		JPanel pnlTabTwoButtons = new JPanel();
 		pnlTabTwoButtons.setLayout(new FlowLayout());
 		pnlTabTwo.add(pnlTabTwoButtons);
@@ -293,6 +314,21 @@ public class AdminView extends JFrame {
 		pnlTabThree.add(pnlHyperlinkTable);
 		initHyperlinkTable();
 		pnlHyperlinkTable.setViewportView(tblHyperlinkEntries);
+		
+		btnModifyHyperlink.addActionListener(e -> {
+			for(int i = 0; i < dc.defaultHyperlinkList.size(); i++) {
+				dc.defaultHyperlinkList.get(i)[1] = (String)tblHyperlinkEntries.getValueAt(i, 1);
+			}
+			try {
+				dc.writeURLsToDB();
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+		});
+		
+		btnModifyHyperlink.setEnabled(true);
+		btnModifyHyperlink.setAlignmentX(CENTER_ALIGNMENT);
+		pnlTabThree.add(btnModifyHyperlink);
 		
 		pnlTabThree.add(Box.createVerticalGlue());
 		
@@ -354,11 +390,12 @@ public class AdminView extends JFrame {
 		pnlGroup.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
 	    pnlGroup.add(Box.createHorizontalGlue());
 
-	    defaultListModel = new DefaultListModel<String>();
-	    updateGroups(view);
-	    groupList = new JList<String>(defaultListModel);
-	    JScrollPane scrollPane = new JScrollPane(groupList);
-	    pnlGroup.add(scrollPane);
+	    createGroupData(view);
+	    groupTableModel = new DefaultTableModel(groupRowData, groupColumnHeaders);
+	    tblGroupEntries = new JTable(groupTableModel);
+	    tblGroupEntries.setRowSelectionAllowed(true);
+	    tblGroupEntries.setColumnSelectionAllowed(true);
+	    pnlGroup.add(tblGroupEntries);
 	    return pnlGroup;
 	}
 	
@@ -367,12 +404,25 @@ public class AdminView extends JFrame {
 	 * the Admin has done (if they have created or deleted a group)
 	 * @param view The current JFrame for AdminView
 	 */
-	protected void updateGroups(UserView view){
-		defaultListModel.clear();
+	protected void createGroupData(UserView view){
+		groupRowData = new Object[view.GroupInfo.size()][2];
+		int i = 0;
 		for (Map.Entry<String, String> entry : view.GroupInfo.entrySet()){
-			String keyWords = entry.getValue();
-	    	defaultListModel.addElement(keyWords);
-		}
+			groupRowData[i][0] = entry.getKey();
+			groupRowData[i][1] = entry.getValue();
+	    	i++;
+		}	
+	}
+	
+	/**
+	 * Function called in CreateGroup.java to help udpate the tablemodel when new groups are added
+	 * @param view The UserView to extact the group data from
+	 */
+	protected void updateGroupData(UserView view){
+		createGroupData(view);
+		groupTableModel = new DefaultTableModel(groupRowData, groupColumnHeaders);
+		tblGroupEntries.setModel(groupTableModel);
+		groupTableModel.fireTableDataChanged();
 	}
 	
 	/**
@@ -384,11 +434,14 @@ public class AdminView extends JFrame {
 	 * @throws SQLException
 	 */
 	private void removeGroup(UserView view) throws ClassNotFoundException, SQLException{
-		String groupToRemove = groupList.getSelectedValue();
-		if (groupToRemove == null){
+		int row = tblGroupEntries.getSelectedRow();
+		if (row == -1) { 
 			JOptionPane.showMessageDialog(this, "No group selected");
-			return;
+			return; //If no row is selected
 		}
+		Object group = tblGroupEntries.getValueAt(row, 1);
+		String groupToRemove = (String) group;
+		
 		String driver = "net.sourceforge.jtds.jdbc.Driver";
 		Class.forName(driver);
 		Connection conn = DriverManager.getConnection("jdbc:jtds:sqlserver://vwaswp02:1433/coeus", "coeus", "C0eus");
@@ -401,7 +454,8 @@ public class AdminView extends JFrame {
 		System.out.println(groupToRemove);
 		StringBuilder query = new StringBuilder();
 		
-		updateGroups(view);
+		createGroupData(view);
+		updateGroupData(view);
 		view.createGroupView();
 	}
 	
@@ -449,21 +503,33 @@ public class AdminView extends JFrame {
 		};
 		resizeColumnWidth(tblErrorEntries);	
 		tblErrorEntries.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-		
-		
+		tblErrorEntries.setRowSelectionAllowed(true);
+		tblErrorEntries.setColumnSelectionAllowed(true);
 	}
 	
 	private void initHyperlinkTable() {
 		hyperlinkTableModel = new DefaultTableModel(dc.hyperlinkData, hyperlinkColumnHeaders) {
-		    @Override
+		    
 		    public boolean isCellEditable(int row, int column) {
-		       //all cells false
-		       return false;
+		    	//Make only the hyperlink table editable
+		    	if(column == 1)
+		    		return true;
+		    	else 
+		    		return false;
 		    }     
 		};
-		tblHyperlinkEntries = new JTable(hyperlinkTableModel);
+		tblHyperlinkEntries = new JTable(hyperlinkTableModel) {
+			public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+				Component component = super.prepareRenderer(renderer, row, column);
+				int rendererWidth = component.getPreferredSize().width;
+	            TableColumn tableColumn = getColumnModel().getColumn(column);
+	            tableColumn.setPreferredWidth(Math.max(rendererWidth + getIntercellSpacing().width, tableColumn.getPreferredWidth()));
+	            return component;
+			}
+		};
+		tblHyperlinkEntries.setColumnSelectionAllowed(true);
+		tblHyperlinkEntries.setRowSelectionAllowed(true);
 		resizeColumnWidth(tblHyperlinkEntries);	
-		tblHyperlinkEntries.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 	}
 	
 	

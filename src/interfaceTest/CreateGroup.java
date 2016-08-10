@@ -196,7 +196,8 @@ public class CreateGroup extends JDialog{
 			view.loadGroupInfo(stmt);
 			stmt.close();
 			view.createGroupView();
-			admin.updateGroups(view);
+			//admin.createGroupData(view);
+			admin.updateGroupData(view);
 		}
 	}
 

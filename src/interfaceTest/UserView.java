@@ -516,10 +516,10 @@ public class UserView extends JFrame{
 		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		tabbedPane.setPreferredSize(new Dimension(600, 280));
 		
-		JPanel mainPanel = new JPanel();
-		mainPanel.setMaximumSize(new Dimension(600, 280));
-		pnlMain.add(mainPanel, BorderLayout.CENTER);
-		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.X_AXIS));
+		JPanel pnlTop = new JPanel();
+		pnlTop.setMaximumSize(new Dimension(600, 280));
+		pnlMain.add(pnlTop, BorderLayout.CENTER);
+		pnlTop.setLayout(new BoxLayout(pnlTop, BoxLayout.X_AXIS));
 			
 		pnlTreeView = new JPanel();
 		pnlTreeView.setLayout(new BoxLayout(pnlTreeView, BoxLayout.Y_AXIS));
@@ -686,7 +686,8 @@ public class UserView extends JFrame{
 		tabbedPane.addTab("Group View", pnlGroupView);
 		tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
 		
-		mainPanel.add(tabbedPane);
+		pnlTop.add(tabbedPane);
+		pnlTop.add(Box.createRigidArea(new Dimension(10, 0)));
 		DefaultTableModel tableModel = new DefaultTableModel(data, headers) {
 		    @Override
 		    public boolean isCellEditable(int row, int column) {
@@ -735,7 +736,7 @@ public class UserView extends JFrame{
 		
 		errorScrollPane = new JScrollPane(errorTable, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		errorScrollPane.setPreferredSize(new Dimension(700, 280));
-		mainPanel.add(errorScrollPane);
+		pnlTop.add(errorScrollPane);
 		
 		setVisible(true);
 	}

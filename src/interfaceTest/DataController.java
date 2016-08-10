@@ -30,7 +30,6 @@ public class DataController {
 	private List <String[]> tempErrorList = new ArrayList<String[]>();
 	/**Queries to be made to the database*/
 	private List <String> errorQueries = new ArrayList<String>();
-	private List <String> hyperlinkQueries = new ArrayList<String>();
 	/**Entries to be into the JTable in AdminView*/
 	private Object [][] errorData;
 	protected Object [][] hyperlinkData;
@@ -323,6 +322,21 @@ public class DataController {
 		errorQueries.clear();
 	}
 
+	void writeURLsToDB() throws ClassNotFoundException, SQLException
+	{
+		String driver = "net.sourceforge.jtds.jdbc.Driver";
+		Class.forName(driver);
+		Connection conn = DriverManager.getConnection("jdbc:jtds:sqlserver://vwaswp02:1433/coeus", "coeus", "C0eus");
+		Statement stmt = conn.createStatement();
+		for(int i = 0; i < defaultHyperlinkList.size(); i++)
+		{
+			stmt.executeUpdate("update logerrors set Hyperlink = \'" + 
+					addSingleQuote(defaultHyperlinkList.get(i)[1]) + 
+					"\' where Keyword = \'" + addSingleQuote(defaultHyperlinkList.get(i)[0]) + "\'");
+		}
+		stmt.close();
+	}
+	
 }
 
 
