@@ -66,7 +66,10 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.SwingUtilities;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 
@@ -520,6 +523,7 @@ public class UserView extends JFrame{
 			
 		pnlTreeView = new JPanel();
 		pnlTreeView.setLayout(new BoxLayout(pnlTreeView, BoxLayout.Y_AXIS));
+		pnlTreeView.setBorder(new CompoundBorder(new EmptyBorder(5,5,5,5), pnlTreeView.getBorder()));
 		createTreeView();
 		
 		
@@ -541,6 +545,7 @@ public class UserView extends JFrame{
 		
 		treeScrollPane = new JScrollPane(cbTree);
 		pnlTreeView.add(treeScrollPane);
+		pnlTreeView.add(Box.createRigidArea(new Dimension(0, 5)));
 		pnlTreeView.add(btnToggleAll);
 		
 		/*** AND OR NOT PANEL ***/
@@ -658,14 +663,21 @@ public class UserView extends JFrame{
 		});
 		groupScrollPane = new JScrollPane(groupNameList);
 		groupScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+		Border border = groupScrollPane.getBorder();
+		Border margin = new EmptyBorder(5,5,5,5);
+		groupScrollPane.setBorder(new CompoundBorder(margin, border));
 		pnlGroupView.add(groupScrollPane);
-		pnlGroupView.add(Box.createRigidArea(new Dimension(0, 10)));
+		
+		
 		JScrollPane pnlGroupViewBottom = new JScrollPane(groupKeywordsList);
 		
 		pnlGroupViewBottom.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 		pnlGroupViewBottom.setViewportView(groupKeywordsList);
 		
+		pnlGroupViewBottom.setBorder(new CompoundBorder(margin, border));
 		pnlGroupView.add(pnlGroupViewBottom);
+
+		
 		
 		tabbedPane.addTab("Tree View", pnlTreeView);
 		tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);

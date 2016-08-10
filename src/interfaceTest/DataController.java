@@ -235,13 +235,13 @@ public class DataController {
 	 */
 	protected void deleteData(int row) throws IOException {
 		errorQueries.add("delete from logerrors where Keyword = \'" + addSingleQuote(curErrorlist.get(row)[1]) + "\'");
+		admin.savedWords.remove(curErrorlist.get(row)[1]);
 		curErrorlist.remove(row);
 		curHyperlinkList.remove(row);
 		//Change the data accordingly since something has been deleted
 		transferData("CHANGE");
 		admin.resetErrorData();
 		admin.resetHyperlinkData();
-		admin.savedWords.remove(curErrorlist.get(row)[1]);
 	}
 
 	/**
