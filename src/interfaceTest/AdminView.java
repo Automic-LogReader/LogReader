@@ -11,6 +11,7 @@
 
 package interfaceTest;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -270,17 +271,32 @@ public class AdminView extends JFrame {
 		});
 		
 		JPanel pnlTabTwo = new JPanel();
-		pnlTabTwo.setLayout(new BoxLayout(pnlTabTwo, BoxLayout.Y_AXIS));
-		pnlTabTwo.add(Box.createVerticalGlue());
+		pnlTabTwo.setLayout(new BorderLayout());
+
+		JPanel pnlGroup = new JPanel();
+		pnlGroup.setLayout(new BoxLayout(pnlGroup, BoxLayout.Y_AXIS));
 		
-		pnlGroups = createGroupDisplay (view);
-		pnlGroups.setBorder(new LineBorder(Color.BLACK));
 		
-		pnlTabTwo.add(pnlGroups);
-		pnlTabTwo.add(Box.createRigidArea(new Dimension(0,70)));
+		JLabel lblGroup = new JLabel("Current Groups");
+		lblGroup.setAlignmentX(CENTER_ALIGNMENT);
+		pnlGroup.add(lblGroup);
+		
+		pnlGroup.add(Box.createRigidArea(new Dimension(0, 15)));
+		
+	    createGroupData(view);
+	    groupTableModel = new DefaultTableModel(groupRowData, groupColumnHeaders);
+	    tblGroupEntries = new JTable(groupTableModel);
+	    tblGroupEntries.setRowSelectionAllowed(true);
+	    tblGroupEntries.setColumnSelectionAllowed(true);
+	    tblGroupEntries.setBorder(new LineBorder(Color.GRAY));
+	    
+	    pnlGroup.add(tblGroupEntries);
+		
+		pnlTabTwo.add(pnlGroup, BorderLayout.NORTH);
+		
 		
 		JPanel pnlTabTwoButtons = new JPanel();
-		pnlTabTwoButtons.setLayout(new BoxLayout(pnlTabTwoButtons, BoxLayout.X_AXIS));
+		pnlTabTwoButtons.setLayout(new FlowLayout());
 		
 		JButton btnCreateGroup = new JButton("Create Group");
 		btnCreateGroup.setPreferredSize(new Dimension(125, 20));
@@ -305,8 +321,8 @@ public class AdminView extends JFrame {
 		});
 		pnlTabTwoButtons.add(btnDeleteGroup);
 		
-		pnlTabTwo.add(pnlTabTwoButtons);
-		pnlTabTwo.add(Box.createVerticalGlue());
+		pnlTabTwo.add(pnlTabTwoButtons, BorderLayout.SOUTH);
+		pnlTabTwo.add(Box.createRigidArea(new Dimension(0, 10)));
 		
 		JPanel pnlTabThree = new JPanel();
 		pnlTabThree.setLayout(new BoxLayout(pnlTabThree, BoxLayout.Y_AXIS));
@@ -377,31 +393,6 @@ public class AdminView extends JFrame {
 			defaultHyperlinkList.add(hyperlinkEntry);
 		}
 		stmt.close();
-	}
-	
-	/**
-	 * Creates a JPanel that shows the groups that are currently
-	 * in the database. The panel is updated as groups are 
-	 * added and deleted. 
-	 * @param view The current JFrame for AdminView
-	 * @return The Panel that displays the groups
-	 */
-	JPanel createGroupDisplay (UserView view){
-		JPanel pnlGroup = new JPanel();
-		pnlGroup.setLayout(new BoxLayout(pnlGroup, BoxLayout.Y_AXIS));
-		//pnlGroup.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
-		
-		JLabel lblGroup = new JLabel("Current Groups");
-		lblGroup.setAlignmentX(CENTER_ALIGNMENT);
-		pnlGroup.add(lblGroup);
-		
-	    createGroupData(view);
-	    groupTableModel = new DefaultTableModel(groupRowData, groupColumnHeaders);
-	    tblGroupEntries = new JTable(groupTableModel);
-	    tblGroupEntries.setRowSelectionAllowed(true);
-	    tblGroupEntries.setColumnSelectionAllowed(true);
-	    pnlGroup.add(tblGroupEntries);
-	    return pnlGroup;
 	}
 	
 	/**
