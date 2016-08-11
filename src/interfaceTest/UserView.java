@@ -26,6 +26,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -514,6 +515,7 @@ public class UserView extends JFrame{
 		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		tabbedPane.setPreferredSize(new Dimension(600, 280));
 		
+		
 		JPanel pnlTop = new JPanel();
 		pnlTop.setMaximumSize(new Dimension(600, 280));
 		pnlMain.add(pnlTop, BorderLayout.CENTER);
@@ -676,7 +678,6 @@ public class UserView extends JFrame{
 		pnlGroupView.add(pnlGroupViewBottom);
 
 		
-		
 		tabbedPane.addTab("Tree View", pnlTreeView);
 		tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
 		tabbedPane.addTab("AND/OR/NOT View", pnlAndOrNot);
@@ -721,8 +722,6 @@ public class UserView extends JFrame{
         popupMenu.add(menuItemLines);
         
        
-        
-        
 		errorTable = new JTable(tableModel);
 		errorTable.setCellSelectionEnabled(true);
 		errorTable.setComponentPopupMenu(popupMenu);
@@ -730,7 +729,19 @@ public class UserView extends JFrame{
 		
 		errorScrollPane = new JScrollPane(errorTable, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		errorScrollPane.setPreferredSize(new Dimension(700, 280));
-		pnlTop.add(errorScrollPane);
+		errorScrollPane.setBorder(new CompoundBorder(new EmptyBorder(5,5,5,5), new LineBorder(Color.GRAY)));
+		
+		JPanel pnlRight = new JPanel();
+		pnlRight.setLayout(new BoxLayout(pnlRight, BoxLayout.Y_AXIS));
+		
+		JLabel lblTable = new JLabel("Error Table");
+		lblTable.setFont(lblTable.getFont().deriveFont(12.0f));
+		lblTable.setAlignmentX(CENTER_ALIGNMENT);
+		
+		pnlRight.add(lblTable);
+		pnlRight.add(errorScrollPane);
+		
+		pnlTop.add(pnlRight);
 		
 		setVisible(true);
 	}

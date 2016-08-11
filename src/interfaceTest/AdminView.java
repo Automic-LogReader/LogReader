@@ -277,10 +277,10 @@ public class AdminView extends JFrame {
 		pnlGroups.setBorder(new LineBorder(Color.BLACK));
 		
 		pnlTabTwo.add(pnlGroups);
-		pnlTabTwo.add(Box.createVerticalGlue());
+		pnlTabTwo.add(Box.createRigidArea(new Dimension(0,70)));
+		
 		JPanel pnlTabTwoButtons = new JPanel();
-		pnlTabTwoButtons.setLayout(new FlowLayout());
-		pnlTabTwo.add(pnlTabTwoButtons);
+		pnlTabTwoButtons.setLayout(new BoxLayout(pnlTabTwoButtons, BoxLayout.X_AXIS));
 		
 		JButton btnCreateGroup = new JButton("Create Group");
 		btnCreateGroup.setPreferredSize(new Dimension(125, 20));
@@ -304,6 +304,8 @@ public class AdminView extends JFrame {
 			}
 		});
 		pnlTabTwoButtons.add(btnDeleteGroup);
+		
+		pnlTabTwo.add(pnlTabTwoButtons);
 		pnlTabTwo.add(Box.createVerticalGlue());
 		
 		JPanel pnlTabThree = new JPanel();
@@ -386,10 +388,13 @@ public class AdminView extends JFrame {
 	 */
 	JPanel createGroupDisplay (UserView view){
 		JPanel pnlGroup = new JPanel();
-		pnlGroup.setLayout(new BoxLayout(pnlGroup, BoxLayout.PAGE_AXIS));
-		pnlGroup.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
-	    pnlGroup.add(Box.createHorizontalGlue());
-
+		pnlGroup.setLayout(new BoxLayout(pnlGroup, BoxLayout.Y_AXIS));
+		//pnlGroup.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
+		
+		JLabel lblGroup = new JLabel("Current Groups");
+		lblGroup.setAlignmentX(CENTER_ALIGNMENT);
+		pnlGroup.add(lblGroup);
+		
 	    createGroupData(view);
 	    groupTableModel = new DefaultTableModel(groupRowData, groupColumnHeaders);
 	    tblGroupEntries = new JTable(groupTableModel);

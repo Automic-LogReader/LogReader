@@ -46,7 +46,7 @@ public class LogicEvaluator {
 	/**True if the user has used the keyword arrow with the OR operand*/
 	private boolean OR_ARROW;
 	/**True if curSaveLines needed to be called (for DEADLOCK or arrow), false otherwise */
-	private boolean earlyAdd;
+	private boolean encapsulatingError;
 	
 	/**
 	 * Contains functions that implements the logic parsing
@@ -61,7 +61,7 @@ public class LogicEvaluator {
 		AND_NOT_DEADLOCK = false;
 		AND_DEADLOCK = false;
 		errorCount = 0;
-		earlyAdd = false;
+		encapsulatingError = false;
 	}
 	
 	/**
@@ -179,6 +179,7 @@ public class LogicEvaluator {
 				//The line returned is the line after the matching (or single) deadlock
 				String newLine = progressDeadlockBr(br, line);
 				addLines(newLine, br);
+				return;
 				}
 		}
 		//If they don't want arrow lines, then we skip over them
@@ -187,6 +188,7 @@ public class LogicEvaluator {
 				//The line returned is the line after the matching (or single) ===>
 				String newLine = progressArrowBr(br, line);
 				addLines(newLine, br);
+				return;
 			}
 		}
 		//If orWord = "", then no OR operand was set. Otherwise
@@ -223,7 +225,7 @@ public class LogicEvaluator {
 		}	
 		else {
 			ArrayList<String> tempLinesBefore = new ArrayList<String>();
-			earlyAdd = false;
+			encapsulatingError = false;
 			String parseLine;
 			//If we have an AND DEADLOCK or an AND ===>, we need to include
 			//the entire error message to parse against
@@ -232,17 +234,18 @@ public class LogicEvaluator {
 				String tempLine = makeDeadlockLine(br, line);
 				if(tempLine != null) {
 					parseLine = tempLine;
-					earlyAdd = true;
+					encapsulatingError = true;
 				}
-				else
+				else {
 					return;
+				}
 			}
 			else if(AND_ARROW && line.contains("===>")) {
 				tempLinesBefore = saveCurLines();
 				String tempLine = makeArrowLine(br, line);
 				if(tempLine != null) {
 					parseLine = tempLine;
-					earlyAdd = true;
+					encapsulatingError = true;
 				}
 				else 
 					return;
@@ -267,19 +270,18 @@ public class LogicEvaluator {
 			//If we make it here the line is added
 			//This is if we saved the beforelines into tempLinesBefore for
 			//encapsulating errors such as DEADLOCK or arrow
-			if(earlyAdd) {
+			if(encapsulatingError) {
+				;
 				tempLinesBefore.remove(tempLinesBefore.size() - 1);
 				logParse.view.linesBeforeArrayList.add(tempLinesBefore);
 			}
 			//Otherwise we have a normal error
 			else {
-				System.out.println("else");
 				logParse.addLinesBefore();
 			}
 			makeEntry(parseLine);
 			logParse.addLinesAfter(errorCount);
 		}
-	
 	}
 		
 	/**
@@ -451,6 +453,7 @@ public class LogicEvaluator {
         ArrayList <String> errorLines = new ArrayList<String>();
         boolean matchingDeadlock = false;
         boolean outsideTimeBounds = false;
+        boolean madeAnError = false;
         StringBuilder testLine = new StringBuilder();
         StringBuilder fullMsg = new StringBuilder();
         String timeStamp = "";
@@ -470,6 +473,9 @@ public class LogicEvaluator {
         	logParse.updateLinesAfter(logLine);
             logParse.linesBefore.push(logLine);
             logParse.updateProgress(logLine);
+            //If this deadlock block contains a valid OR
+            //arrow error, then we just return because we've
+            //already made an entry for this error
         	if(orWord.equals("===>") && logLine.contains("===>"))
         	{
         		logParse.addLinesBefore();
@@ -479,6 +485,7 @@ public class LogicEvaluator {
         		}
         		else
         			logParse.view.linesBeforeArrayList.remove(logParse.view.linesBeforeArrayList.size() - 1);
+        		madeAnError = true;
         	}
            boolean timeStampFound = false;
            boolean uCodeFound = false;              
@@ -513,7 +520,7 @@ public class LogicEvaluator {
         	 	}
                 if(testWord.equals("DEADLOCK")) {
                    matchingDeadlock = true;
-                   if(outsideTimeBounds) {
+                   if(outsideTimeBounds || madeAnError) {
                 	   return null;
                    }
                    for(int i = 0; i < errorLines.size(); i++) {
@@ -530,7 +537,6 @@ public class LogicEvaluator {
          errorLines.add(testLine.toString());
          logLine = logbr.readLine();
        }
-        
        return fullMsg.toString();
 	}
 	
@@ -627,5 +633,4 @@ public class LogicEvaluator {
 		return tempArrayList;
 	}
 	
-
 }
