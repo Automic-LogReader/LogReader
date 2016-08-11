@@ -155,17 +155,30 @@ public class LogParser {
 						if (view.keyWords.contains(testWord)) {
 							keywordFound = true;
 							errorCount++;
-							
+							addLinesBefore();
 							//If we have a deadlock error, this is a special case
 							if (testWord.equals("DEADLOCK")) {
 								entry = parseDeadlockError(logbr, timeStamp);
+								if(entry == null) {
+									view.linesBeforeArrayList.remove(view.linesBeforeArrayList.size() - 1);
+									errorCount--;
+								}
+								else
+									addLinesAfter(errorCount);
 								specialCase = true;
 								break;
 							}
 							//If we have an arrow error, this is a special case
 							else if (testWord.equals("===>") && logLine.contains("Time critical")) {
 								entry = parseArrowError(logbr, timeStamp, logWords);
-								specialCase = true;			
+								if(entry == null) {
+									view.linesBeforeArrayList.remove(view.linesBeforeArrayList.size() - 1);
+									errorCount--;
+								}
+								else {
+									addLinesAfter(errorCount);
+								}
+								specialCase = true;		
 								break;
 							}
 							//Otherwise we make an entry like normal
@@ -175,7 +188,6 @@ public class LogParser {
 								entry[0] = errorCount;
 								entry[1] = timeStamp;
 								entry[2] = testWord;
-					
 								//We get a suggested solution for the corresponding keyword
 								if (view.solutions.get(entry[2]) != null) {
 									entry[4] = view.solutions.get(entry[2]);
@@ -192,20 +204,17 @@ public class LogParser {
 				//Make sure an entry was actually created for the line
 				if(entry != null) {
 					if (!specialCase) {
-						addLinesBefore();
 						entry[3] = errorMessage.toString();
 					}
 					//If there was no error message, then set to blank
 					if (entry[3] == null) {
 						entry[3] = " ";
 					}
-					
 					errorData.add(entry);
 				}
 			}
 			logLine = logbr.readLine();
 		}
-		
 		System.out.println("Size of Arraylist:" + view.linesBeforeArrayList.size());
 		//We make entries out of the errors that we've found in logic eval
 		//logicEvaluator.makeEntries();
@@ -227,10 +236,10 @@ public class LogParser {
 		}
 		//Sets the menu items as visible after the parsing is done
 		view.menuItemLines.setEnabled(true);
-		
 		view.menuItemUrl.setEnabled(true);
 		view.menuItemCopy.setEnabled(true);
 		makeTable();
+		errorCheck();
 	}
 	
 	/**
@@ -243,7 +252,6 @@ public class LogParser {
 	 * @throws IOException
 	 */
 	Object[] parseArrowError(BufferedReader logbr, String timeStamp, String[] currArray) throws IOException {
-		addLinesBefore();
 		Object[] tempEntry = new Object[5];
 		String[] words;
 		tempEntry[0] = errorCount;
@@ -253,7 +261,6 @@ public class LogParser {
         boolean closingArrowTagFound = false;
         boolean outsideTimeStampBounds = false;
         StringBuilder errorMsg = new StringBuilder();
-        
         //If the time of this arrow error is outside the bounds
         //specified by the user, this is an invalid entry
         if (!compareTimeStamp(currArray)) {
@@ -285,7 +292,6 @@ public class LogParser {
 				//This is the case for a single arrow, and we
 				//do a recursive call
 				if (logLine.contains("Time critical")) {
-					errorCount++;
 					tempEntry[3] = firstLineOfError;
 					String[] tempArray = logLine.split(" ");
 					String tempTimeStamp = "";
@@ -295,8 +301,13 @@ public class LogParser {
 							break;
 						}
 					}
-					errorData.add(parseArrowError(logbr, tempTimeStamp, tempArray));
-					return tempEntry;
+					if(!outsideTimeStampBounds) {
+						addLinesBefore();
+						addLinesAfter(errorCount);
+						errorData.add(tempEntry);
+						errorCount++;
+					}
+					return parseArrowError(logbr, tempTimeStamp, tempArray); 
 				}
 				//This is where we append the error message of the current line
 				if (arrowindex < words.length) {
@@ -324,7 +335,6 @@ public class LogParser {
 		}
 		tempEntry[3] = errorMsg.toString();
 		if (outsideTimeStampBounds) {
-			errorCount--;
 			return null;
 		}
 		addLinesAfter(errorCount);
@@ -340,26 +350,26 @@ public class LogParser {
 	 * @throws IOException
 	 */
 	Object[] parseDeadlockError(BufferedReader logbr, String timeStamp) throws IOException {
-	   addLinesBefore();
-	   addLinesAfter(errorCount);
        Object[] entry = new Object[5];
        ArrayList <String> errorLines = new ArrayList<String>();
        boolean matchingDeadlock = false;
+       boolean outsideTimeBounds = false;
        StringBuilder testLine = new StringBuilder();
        StringBuilder errorMsg = new StringBuilder();
        String[] words;
        entry[0] = errorCount;
        entry[1] = timeStamp;
        entry[2] = "DEADLOCK";
-       String Line = logbr.readLine();
-       while(!matchingDeadlock && Line != null) {
-    	  linesBefore.push(Line);
-    	  //updateLinesAfter(Line);
+       String tempLine = logbr.readLine();
+       logbr.mark(2500);
+       while(!matchingDeadlock && tempLine != null) {
+    	  linesBefore.push(tempLine);
+    	  updateLinesAfter(tempLine);
           boolean timeStampFound = false;
           boolean uCodeFound = false;              
           testLine.setLength(0);
-          updateProgress(Line);
-          words = Line.split(" ");
+          updateProgress(tempLine);
+          words = tempLine.split(" ");
           for(String testWord : words) {
         	  if(!timeStampFound && testWord.length() == 19) {
         		  timeStampFound = true;
@@ -367,37 +377,49 @@ public class LogParser {
                   //don't have a matching deadlock
                   if(timeStampDifference(testWord, timeStamp)) {
                 	  entry[3] = " ";
+                      if (view.solutions.get(entry[2]) != null) {
+                    	  entry[4] = view.solutions.get(entry[2]);
+               	          logbr.reset();
+                      }
+                      return entry;
+                  }
+                      
+              }
+    	  	  //Now we need to find the U-code to know when to start the error message
+              else if(!uCodeFound && timeStampFound){
+            	  if(testWord.length() > 2) {
+            		  if(testWord.charAt(0) == 'U' && Character.isDigit(testWord.charAt(1))){
+            			  uCodeFound = true;
+                      }
+                  }
+              }
+    	  	  //If we've found both, start appending to the error message
+              else if(uCodeFound && timeStampFound) {  
+            	  if(testWord.equals("===>") && tempLine.contains("Time critical")) {
+            		  //If we're outside of the timebounds, then we don't make an entry
+            		  //and reverse adding things to linesBefore and linesAfter
+            		  if (!compareTimeStamp(words)) {
+          				outsideTimeBounds = true;
+            		  }
+          		  }
+            	  if(testWord.equals("DEADLOCK")) {
+            		  matchingDeadlock = true;
+            		  if(outsideTimeBounds)
+            			  return null;
+                      for(int i = 0; i < errorLines.size(); i++) {
+                    	  errorMsg.append(errorLines.get(i));
+                      }
+                      entry[3] = errorMsg.toString();
                       if (view.solutions.get(entry[2]) != null)
                     	  entry[4] = view.solutions.get(entry[2]);
-                          return entry;
+                      return entry;
                       }
-                  }
-        	  	  //Now we need to find the U-code to know when to start the error message
-                  else if(!uCodeFound && timeStampFound){
-                	  if(testWord.length() > 2) {
-                		  if(testWord.charAt(0) == 'U' && Character.isDigit(testWord.charAt(1))){
-                			  uCodeFound = true;
-                          }
-                      }
-                  }
-        	  	  //If we've found both, start appending to the error message
-                  else if(uCodeFound && timeStampFound) {
-                	  if(testWord.equals("DEADLOCK")) {
-                		  matchingDeadlock = true;
-                          for(int i = 0; i < errorLines.size(); i++) {
-                        	  errorMsg.append(errorLines.get(i));
-                          }
-                          entry[3] = errorMsg.toString();
-                          if (view.solutions.get(entry[2]) != null)
-                        	  entry[4] = view.solutions.get(entry[2]);
-                          return entry;
-                          }
-                       else
-                    	   testLine.append(testWord + " ");  
+                   else
+                	   testLine.append(testWord + " ");  
                  }      
            }
               errorLines.add(testLine.toString());
-              Line = logbr.readLine();
+              tempLine = logbr.readLine();
        }
        return entry;
     }
@@ -519,4 +541,19 @@ public class LogParser {
 			}
 		}
 	}
+	
+	
+		private void errorCheck(){
+				for (int i=0; i<view.errorTable.getRowCount(); i++){
+					Object obj = view.errorTable.getValueAt(i, 0);
+					int x = (int) obj;
+					Object ts = view.errorTable.getValueAt(i, 1);
+					String y = (String) ts;
+					if (x != (i+1)){
+						System.out.println("Indexing problem at row: " + i + " . Supposed to be " + (i+1) + " but was actually " + x + " at timestamp: " + y);
+						break;
+					}
+				}
+			} 
+
 }

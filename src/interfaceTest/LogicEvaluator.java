@@ -1,3 +1,16 @@
+/**
+ * @file LogicEvaluator.java
+ * @authors Leah Talkov, Jerry Tsui
+ * @date 8/5/2016
+ * Contains functions for the logical parsing of a file, determined by
+ * the given logical statement from the user. The process first checks
+ * to see if there is an "OR" operand, or any special cases that need
+ * to be looked for (such as AND NOT DEADLOCK). When the file is parsed,
+ * if a file line contains the ORword, then it is considered valid and
+ * an entry is made. Otherwise, if the line contains all of the AND words,
+ * it is also considered valid and an entry is made. 
+ */
+
 package interfaceTest;
 
 import java.io.BufferedReader;
@@ -12,8 +25,6 @@ public class LogicEvaluator {
 	private String firstKeyword;
 	/**Contains matching booleans for whether a keyword is NOT-ed*/
 	private ArrayList<Boolean> hasNot = new ArrayList<Boolean>();
-	/**Contains the final valid lines that entries will be made from*/
-	private ArrayList<String> validLines = new ArrayList<String>();
 	/**Contains the list of words that are used with the operand "And"*/
 	private ArrayList<String> andWords = new ArrayList<String>();
 	/**Contains the operands that the user has chosen*/
@@ -28,14 +39,15 @@ public class LogicEvaluator {
 	private boolean AND_NOT_DEADLOCK;
 	/**True if the user has used the keyword DEADLOCK with the AND operand*/
 	private boolean AND_DEADLOCK;
-	/**True if the user has used the keyword ARROW with the AND NOT operand*/
+	/**True if the user has used the keyword arrow with the AND NOT operand*/
 	private boolean AND_NOT_ARROW;
-	/**True if the user has used the keyword ARROW with the AND operand*/
+	/**True if the user has used the keyword arrow with the AND operand*/
 	private boolean AND_ARROW;
-	/**True if the user has used the keyword ARROW with the OR operand*/
+	/**True if the user has used the keyword arrow with the OR operand*/
 	private boolean OR_ARROW;
-	private int resetCount;
+	/**True if curSaveLines needed to be called (for DEADLOCK or arrow), false otherwise */
 	private boolean earlyAdd;
+	
 	/**
 	 * Contains functions that implements the logic parsing
 	 * of a file, depending on the logic statement
@@ -49,7 +61,6 @@ public class LogicEvaluator {
 		AND_NOT_DEADLOCK = false;
 		AND_DEADLOCK = false;
 		errorCount = 0;
-		resetCount = 0;
 		earlyAdd = false;
 	}
 	
@@ -182,13 +193,16 @@ public class LogicEvaluator {
 		//if the line contains the orWord, it is valid
 		if(line.contains(orWord) && (orWord != "")) {
 			if(OR_DEADLOCK) {
-				//This is the arraylist that has the deadlock lines (check duplicates on)
 				logParse.addLinesBefore();
-				makeEntry(makeDeadlockLine(br, line));
-				logParse.addLinesAfter(errorCount);
+				String tempLine = makeDeadlockLine(br, line);
+				if(tempLine != null) {
+					logParse.addLinesAfter(errorCount);
+					makeEntry(tempLine);
+				}
+				else
+					logParse.view.linesBeforeArrayList.remove(logParse.view.linesBeforeArrayList.size() - 1);
 			}
 			else if (OR_ARROW) {
-				//Wanna put addlines here
 				logParse.addLinesBefore();
 				String tempLine = makeArrowLine(br, line);
 				if(tempLine != null) {
@@ -215,8 +229,13 @@ public class LogicEvaluator {
 			//the entire error message to parse against
 			if(AND_DEADLOCK && line.contains("DEADLOCK")) {
 				tempLinesBefore = saveCurLines();
-				parseLine = makeDeadlockLine(br, line);
-				earlyAdd = true;
+				String tempLine = makeDeadlockLine(br, line);
+				if(tempLine != null) {
+					parseLine = tempLine;
+					earlyAdd = true;
+				}
+				else
+					return;
 			}
 			else if(AND_ARROW && line.contains("===>")) {
 				tempLinesBefore = saveCurLines();
@@ -246,10 +265,13 @@ public class LogicEvaluator {
 				}
 			}
 			//If we make it here the line is added
+			//This is if we saved the beforelines into tempLinesBefore for
+			//encapsulating errors such as DEADLOCK or arrow
 			if(earlyAdd) {
 				tempLinesBefore.remove(tempLinesBefore.size() - 1);
 				logParse.view.linesBeforeArrayList.add(tempLinesBefore);
 			}
+			//Otherwise we have a normal error
 			else {
 				System.out.println("else");
 				logParse.addLinesBefore();
@@ -343,12 +365,12 @@ public class LogicEvaluator {
                         }
                  }
                  else if(timeStampFound) {
-                	 	//If we've found an ===> and still have a matching
-                	 	//timestamp, then we have a matching arrow error
-                        if(testWord.equals("===>")) {
-                               matchingArrow = true;
-                               return logbr.readLine();
-                        } 
+            	 	//If we've found an ===> and still have a matching
+            	 	//timestamp, then we have a matching arrow error
+                    if(testWord.equals("===>")) {
+                           matchingArrow = true;
+                           return logbr.readLine();
+                    } 
                  }      
            }
            logLine = logbr.readLine();
@@ -428,6 +450,7 @@ public class LogicEvaluator {
 	String makeDeadlockLine(BufferedReader logbr, String line) throws IOException {
         ArrayList <String> errorLines = new ArrayList<String>();
         boolean matchingDeadlock = false;
+        boolean outsideTimeBounds = false;
         StringBuilder testLine = new StringBuilder();
         StringBuilder fullMsg = new StringBuilder();
         String timeStamp = "";
@@ -442,6 +465,7 @@ public class LogicEvaluator {
         }
         String[] words;
         String logLine = logbr.readLine();
+        logbr.mark(2500);
         while(!matchingDeadlock && logLine != null) {
         	logParse.updateLinesAfter(logLine);
             logParse.linesBefore.push(logLine);
@@ -455,7 +479,6 @@ public class LogicEvaluator {
         		}
         		else
         			logParse.view.linesBeforeArrayList.remove(logParse.view.linesBeforeArrayList.size() - 1);
-
         	}
            boolean timeStampFound = false;
            boolean uCodeFound = false;              
@@ -467,7 +490,8 @@ public class LogicEvaluator {
                     //If our timestamps are not equal, we 
                     //don't have a matching deadlock and just return first line
                     if(logParse.timeStampDifference(testWord, timeStamp)) {
-                           return errorLines.get(0);
+                    	logbr.reset();
+                        return errorLines.get(0);
                     }
              }
              
@@ -482,17 +506,25 @@ public class LogicEvaluator {
              }
              else if(uCodeFound && timeStampFound) {
             	 	//We've found a matching deadlock, and can now build the full error msg
-                    if(testWord.equals("DEADLOCK")) {
-                           matchingDeadlock = true;
-                           for(int i = 0; i < errorLines.size(); i++) {
-                        	   fullMsg.append(errorLines.get(i)); 
-                           }
-                           return fullMsg.toString();
-                    }
-                    //If we haven't found a deadlock, then we keep adding 
-                    //onto the error message
-                    else
-                           testLine.append(testWord + " ");  
+        	 	if(testWord.equals("===>") && logLine.contains("Time critical")) {
+        	 		if(!logParse.compareTimeStamp(words)) {
+        	 			outsideTimeBounds = true;
+        	 		}	
+        	 	}
+                if(testWord.equals("DEADLOCK")) {
+                   matchingDeadlock = true;
+                   if(outsideTimeBounds) {
+                	   return null;
+                   }
+                   for(int i = 0; i < errorLines.size(); i++) {
+                	   fullMsg.append(errorLines.get(i)); 
+                   }
+                   return fullMsg.toString();
+                }
+                //If we haven't found a deadlock, then we keep adding 
+                //onto the error message
+                else
+                   testLine.append(testWord + " ");  
              }      
          }
          errorLines.add(testLine.toString());
@@ -581,6 +613,11 @@ public class LogicEvaluator {
 		return errorMsg.toString();
 	}	
 	
+	/**
+	 * Puts the current contents of linesBefore in LogParser
+	 * into an arraylist
+	 * @return Returns an arraylist with the current contents linesBefore
+	 */
 	ArrayList<String> saveCurLines()
 	{
 		ArrayList<String> tempArrayList = new ArrayList<String>();
