@@ -174,7 +174,7 @@ public class EditGroup extends JDialog {
 
 		Statement stmt = conn.createStatement();
 		stmt.executeUpdate("update Groups set GroupKeywords = \'" + 
-				addSingleQuote(groupKeywords) + "\' where GroupName = \'" + addSingleQuote(groupName) + "\'");
+				Utility.addSingleQuote(groupKeywords) + "\' where GroupName = \'" + Utility.addSingleQuote(groupName) + "\'");
 		view.loadGroupInfo(stmt);
 		stmt.close();
 		view.createGroupView();
@@ -215,14 +215,4 @@ public class EditGroup extends JDialog {
 		}
 	}
 	
-	private String addSingleQuote(String oldWord) {
-		StringBuilder newWord = new StringBuilder();
-		for(int i = 0; i < oldWord.length(); i++) {
-			if(oldWord.charAt(i) == '\'')
-				newWord.append("\'\'");
-			else
-				newWord.append(oldWord.charAt(i));
-		}
-		return newWord.toString();
-	}
 }

@@ -70,6 +70,25 @@ public final class Utility {
 	}
 	
 	/**
+	 * Adds single quotes to the parameter old word, because SQL syntax uses
+	 * single quotes to encapsulate; i.e. if we had an error message that said
+	 * I want to make 'examples', This function adds single quotes to change 
+	 * the message to: I want to make ''examples'' and keeps the message intact. 
+	 * @param oldWord A string that will be modified 
+	 * @return Returns old word but with additional single quotes if need be
+	 */
+	public static String addSingleQuote(String oldWord) {
+		StringBuilder newWord = new StringBuilder();
+		for(int i = 0; i < oldWord.length(); i++) {
+			if(oldWord.charAt(i) == '\'')
+				newWord.append("\'\'");
+			else
+				newWord.append(oldWord.charAt(i));
+		}
+		return newWord.toString();
+	}
+	
+	/**
 	 * Utility function that adds an Escape Key listener to a JDialog
 	 * @param dialog JDialog to attach listener to
 	 */

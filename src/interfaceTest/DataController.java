@@ -168,16 +168,16 @@ public class DataController {
 		if(choice.equals("MODIFY")) {
 			if(folderChanged)
 				errorQueries.add("update logerrors set Folder = \'" + 
-						addSingleQuote(folder) + "\' where Keyword = \'" + addSingleQuote(curErrorlist.get(row)[1]) + "\'");
+						Utility.addSingleQuote(folder) + "\' where Keyword = \'" + Utility.addSingleQuote(curErrorlist.get(row)[1]) + "\'");
 			if(errorMessageChanged)
 				errorQueries.add("update logerrors set Log_Error_Description = \'" +
-						addSingleQuote(message) + "\' where Keyword = \'" + addSingleQuote(curErrorlist.get(row)[1]) + "\'");
+						Utility.addSingleQuote(message) + "\' where Keyword = \'" + Utility.addSingleQuote(curErrorlist.get(row)[1]) + "\'");
 			if(suggestedSolutionChanged)
 				errorQueries.add("update logerrors set Suggested_Solution = \'" +
-						addSingleQuote(solution) + "\' where Keyword = \'" + addSingleQuote(curErrorlist.get(row)[1]) + "\'");
+						Utility.addSingleQuote(solution) + "\' where Keyword = \'" + Utility.addSingleQuote(curErrorlist.get(row)[1]) + "\'");
 			if(keywordChanged)
 				errorQueries.add("update logerrors set Keyword = \'" +
-						addSingleQuote(keyWord) + "\' where Keyword = \'" + addSingleQuote(curErrorlist.get(row)[1]) + "\'");
+						Utility.addSingleQuote(keyWord) + "\' where Keyword = \'" + Utility.addSingleQuote(curErrorlist.get(row)[1]) + "\'");
 			admin.savedWords.remove(curErrorlist.get(row)[1]);
 			admin.savedWords.add(keyWord);
 			curErrorlist.set(row, tempArray);
@@ -186,9 +186,9 @@ public class DataController {
 		}
 		//Otherwise we are adding an entry and simply add to the list and queries
 		else {
-			errorQueries.add("insert into logerrors values (\'" + addSingleQuote(keyWord) + "\',\'"
-					+ addSingleQuote(message) + "\',\'" + addSingleQuote(solution) + "\',\'" +
-					addSingleQuote(folder) + "\',\'" + "http://google.com" + "\')");
+			errorQueries.add("insert into logerrors values (\'" + Utility.addSingleQuote(keyWord) + "\',\'"
+					+ Utility.addSingleQuote(message) + "\',\'" + Utility.addSingleQuote(solution) + "\',\'" +
+					Utility.addSingleQuote(folder) + "\',\'" + "http://google.com" + "\')");
 			curErrorlist.add(tempArray);
 			String[] someArray = new String[2];
 			someArray[0] = keyWord;
@@ -204,26 +204,7 @@ public class DataController {
 		admin.resetErrorData();	
 		admin.resetHyperlinkData();
 	}
-
-
-	/**
-	 * Adds single quotes to the parameter old word, because SQL syntax uses
-	 * single quotes to encapsulate; i.e. if we had an error message that said
-	 * I want to make 'examples', This function adds single quotes to change 
-	 * the message to: I want to make ''examples'' and keeps the message intact. 
-	 * @param oldWord A string that will be modified 
-	 * @return Returns old word but with additional single quotes if need be
-	 */
-	private String addSingleQuote(String oldWord) {
-		StringBuilder newWord = new StringBuilder();
-		for(int i = 0; i < oldWord.length(); i++) {
-			if(oldWord.charAt(i) == '\'')
-				newWord.append("\'\'");
-			else
-				newWord.append(oldWord.charAt(i));
-		}
-		return newWord.toString();
-	}
+	
 
 	/**
 	 * When the user highlights a piece of data and clicks the delete button, 
@@ -233,7 +214,7 @@ public class DataController {
 	 * @throws IOException 
 	 */
 	protected void deleteData(int row) throws IOException {
-		errorQueries.add("delete from logerrors where Keyword = \'" + addSingleQuote(curErrorlist.get(row)[1]) + "\'");
+		errorQueries.add("delete from logerrors where Keyword = \'" + Utility.addSingleQuote(curErrorlist.get(row)[1]) + "\'");
 		admin.savedWords.remove(curErrorlist.get(row)[1]);
 		curErrorlist.remove(row);
 		curHyperlinkList.remove(row);
@@ -331,8 +312,8 @@ public class DataController {
 		for(int i = 0; i < defaultHyperlinkList.size(); i++)
 		{
 			stmt.executeUpdate("update logerrors set Hyperlink = \'" + 
-					addSingleQuote(defaultHyperlinkList.get(i)[1]) + 
-					"\' where Keyword = \'" + addSingleQuote(defaultHyperlinkList.get(i)[0]) + "\'");
+					Utility.addSingleQuote(defaultHyperlinkList.get(i)[1]) + 
+					"\' where Keyword = \'" + Utility.addSingleQuote(defaultHyperlinkList.get(i)[0]) + "\'");
 		}
 		stmt.close();
 	}
