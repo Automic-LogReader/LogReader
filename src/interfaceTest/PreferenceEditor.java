@@ -245,7 +245,7 @@ public class PreferenceEditor extends JDialog {
 		else {
 			try{
 				high = Double.parseDouble(tfUpperBound.getText());
-				if (high < 0){
+				if (high <= 0){
 					JOptionPane.showMessageDialog(this,  "Invalid upper bound!");
 					return;
 				}

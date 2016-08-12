@@ -29,6 +29,7 @@ public class LogicEvaluator {
 	private ArrayList<String> andWords = new ArrayList<String>();
 	/**Contains the operands that the user has chosen*/
 	private ArrayList<String> operands = new ArrayList<String>();
+	private ArrayList<String> tempUCodes = new ArrayList<String>();
 	/**The total number of errors/entries from the given logic statement*/
 	private int errorCount;
 	/**The word that the user has chosen to use the operand OR with*/
@@ -150,16 +151,18 @@ public class LogicEvaluator {
 						hitArrow = true;
 						continue;
 					}
-					if(hitArrow)
+					if(hitArrow) {
 						errorMsg.append(testWord + " ");
+					}
 				}
 				else
 					errorMsg.append(testWord + " ");	
 			}
 		}
 		entry[3] = errorMsg.toString();
-		if(logParse.view.solutions.get(entry[2]) != null)
+		if(logParse.view.solutions.get(entry[2]) != null) {
 			entry[4] = logParse.view.solutions.get(entry[2]);
+		}
 		logParse.errorData.add(entry);
 	}
 
@@ -173,6 +176,7 @@ public class LogicEvaluator {
 	 * @throws IOException
 	 */
 	void addLines(String line, BufferedReader br) throws IOException {
+		tempUCodes.clear();
 		//If they don't want deadlock lines, then we skip over them
 		if(AND_NOT_DEADLOCK) {
 			if(line.contains("DEADLOCK")) {
@@ -201,8 +205,9 @@ public class LogicEvaluator {
 					logParse.addLinesAfter(errorCount);
 					makeEntry(tempLine);
 				}
-				else
+				else {
 					logParse.view.linesBeforeArrayList.remove(logParse.view.linesBeforeArrayList.size() - 1);
+				}
 			}
 			else if (OR_ARROW) {
 				logParse.addLinesBefore();
@@ -211,10 +216,9 @@ public class LogicEvaluator {
 					makeEntry(tempLine);
 					logParse.addLinesAfter(errorCount);
 				}
-				else
+				else {
 					logParse.view.linesBeforeArrayList.remove(logParse.view.linesBeforeArrayList.size() - 1);
-				//And if null, then remove the last one
-				
+				}	
 			}
 			//Otherwise it is a normal OR word and we add the line to validLines
 			else {
@@ -253,25 +257,13 @@ public class LogicEvaluator {
 			else {
 				parseLine = line;
 			}
-			for(int j = 0; j < andWords.size(); j++) {
-				//If the line contains a word we DON'T want, it is invalid
-				if(hasNot.get(j)) {
-					if(parseLine.contains(andWords.get(j)))  {
-						return;
-					}
-				}
-				else {
-					//If the line doesn't contain a word we do want, it is invalid
-					if(!parseLine.contains(andWords.get(j))) {
-						return;
-					}
-				}
+			//Call parseLine to see if the line fits all the AND criteria
+			if(!parseLine(parseLine)) {
+				return;
 			}
-			//If we make it here the line is added
 			//This is if we saved the beforelines into tempLinesBefore for
 			//encapsulating errors such as DEADLOCK or arrow
 			if(encapsulatingError) {
-				;
 				tempLinesBefore.remove(tempLinesBefore.size() - 1);
 				logParse.view.linesBeforeArrayList.add(tempLinesBefore);
 			}
@@ -284,6 +276,36 @@ public class LogicEvaluator {
 		}
 	}
 		
+	/**
+	 * Checks to see if the given line fits the AND criteria (has all 
+	 * of the AND keywords in it that the user has specified), and returns
+	 * true if it passes, false otherwise. If true, an entry will be made
+	 * from the given line.
+	 * @param parseLine Checked against the AND words the user has chosen
+	 * @return Returns true if parseLine is valid, false otherwise
+	 */
+	boolean parseLine(String parseLine)
+	{
+		for(int j = 0; j < andWords.size(); j++) {
+			//If the line contains a word we DON'T want, it is invalid
+			if(hasNot.get(j)) {
+				if(parseLine.contains(andWords.get(j)))  {
+					return false;
+				}
+			}
+			else {
+				//If the line doesn't contain a word we do want, it is invalid
+				if(!parseLine.contains(andWords.get(j)) && !tempUCodes.contains(andWords.get(j))) {
+					return false;
+				}
+			}
+		}
+		for(int i = 0; i < tempUCodes.size(); i++){
+			System.out.println(tempUCodes.get(i));
+		}
+		return true;
+	}
+	
 	/**
 	 * Looks at the logical statement that the user has given and checks
 	 * for special cases (such as AND NOT DEADLOCK, AND NOT arrow and sees if an OR 
@@ -450,6 +472,7 @@ public class LogicEvaluator {
 	 * @throws IOException
 	 */
 	String makeDeadlockLine(BufferedReader logbr, String line) throws IOException {
+		tempUCodes.clear();
         ArrayList <String> errorLines = new ArrayList<String>();
         boolean matchingDeadlock = false;
         boolean outsideTimeBounds = false;
@@ -505,11 +528,12 @@ public class LogicEvaluator {
              //We find the U-code so that the error message contains only the content,
              //not the timestamp and ucode as well
              else if(!uCodeFound && timeStampFound) {
-                    if(testWord.length() > 2) {
-                           if(testWord.charAt(0) == 'U' && Character.isDigit(testWord.charAt(1))) {
-                                  uCodeFound = true;
-                           }
-                    }
+                if(testWord.length() > 2) {
+                   if(testWord.charAt(0) == 'U' && Character.isDigit(testWord.charAt(1))) {
+                      uCodeFound = true;
+                      tempUCodes.add(testWord);
+                   }
+                }
              }
              else if(uCodeFound && timeStampFound) {
             	 	//We've found a matching deadlock, and can now build the full error msg
@@ -553,8 +577,10 @@ public class LogicEvaluator {
 	 * @throws IOException
 	 */
 	String makeArrowLine(BufferedReader logbr, String logLine) throws IOException {
+		tempUCodes.clear();
 		String[] words;
 		int arrowindex = 0; 
+		int uCodeIndex = 0;
         boolean closingArrowTagFound = false;
         boolean outsideTimeStampBounds = false;
         StringBuilder errorMsg = new StringBuilder();
@@ -570,6 +596,10 @@ public class LogicEvaluator {
 			if (currArray[i].equals("===>")) {
 				arrowindex = i-1;
 			}
+			else if(currArray[i].length() > 1 && currArray[i].charAt(0) == 'U' 
+					&& Character.isDigit(currArray[i].charAt(1))) {
+				uCodeIndex = i;
+			}
 		}
 		String firstLineOfError = errorMsg.toString();
 		errorMsg.append(logLine + " ");
@@ -580,12 +610,12 @@ public class LogicEvaluator {
 			logParse.linesBefore.push(logLine);
 			logParse.updateProgress(logLine);
 			words = logLine.split(" ");
-			
+			if(words.length > uCodeIndex) {
+				tempUCodes.add(words[uCodeIndex]);
+			}
 			if (logLine.contains("===>")) {
 				//A single arrow error, we make a recursive call
 				if (logLine.contains("Time critical")) {
-					errorMsg.setLength(0);
-					errorMsg.append(firstLineOfError);
 					return (makeArrowLine(logbr, logLine));
 				}
 				if (arrowindex < words.length){

@@ -285,10 +285,14 @@ public class AdminView extends JFrame {
 		pnlGroup.add(Box.createRigidArea(new Dimension(0, 15)));
 		
 	    createGroupData(view);
-	    groupTableModel = new DefaultTableModel(groupRowData, groupColumnHeaders);
+	    groupTableModel = new DefaultTableModel(groupRowData, groupColumnHeaders){
+	    	@Override
+	        public boolean isCellEditable(int row, int column) {
+	           //all cells false
+	           return false;
+	        }
+	    };
 	    tblGroupEntries = new JTable(groupTableModel);
-	    tblGroupEntries.setRowSelectionAllowed(true);
-	    tblGroupEntries.setColumnSelectionAllowed(true);
 	    
 	    JScrollPane groupScrollPane = new JScrollPane();
 	    groupScrollPane.setViewportView(tblGroupEntries);
@@ -309,6 +313,24 @@ public class AdminView extends JFrame {
 			CreateGroup groupView = new CreateGroup(this, view);
 		});
 		pnlTabTwoButtons.add(btnCreateGroup);
+		
+		JButton btnEditGroup = new JButton("Edit Group");
+		btnEditGroup.setAlignmentX(CENTER_ALIGNMENT);
+		btnEditGroup.addActionListener(e -> {
+			//Allows the admin to create groups of keywords and 
+			//creates a CreateGroup object
+			int row = tblGroupEntries.getSelectedRow();
+			if (row == -1) { 
+				JOptionPane.showMessageDialog(this, "No group selected");
+				return; //If no row is selected
+			}
+			Object x = tblGroupEntries.getValueAt(row, 0);
+			String groupName = (String) x;
+			Object y = tblGroupEntries.getValueAt(row, 1);
+			String groupKeywords = (String) y;
+			EditGroup editGroup = new EditGroup(this, view, groupName, groupKeywords);
+		});
+		pnlTabTwoButtons.add(btnEditGroup);
 		
 		JButton btnDeleteGroup = new JButton("Delete Group");
 		btnDeleteGroup.setAlignmentX(CENTER_ALIGNMENT);
@@ -347,13 +369,14 @@ public class AdminView extends JFrame {
 		
 		btnModifyHyperlink.setEnabled(true);
 		btnModifyHyperlink.setAlignmentX(CENTER_ALIGNMENT);
+		pnlTabThree.add(Box.createRigidArea(new Dimension(0,5)));
 		pnlTabThree.add(btnModifyHyperlink);
-		
+		pnlTabThree.add(Box.createRigidArea(new Dimension(0,5)));
 		pnlTabThree.add(Box.createVerticalGlue());
 		
 		tabbedPane.add("Edit Entries", pnlTabOne);
 		tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
-		tabbedPane.add("Create Groups", pnlTabTwo);
+		tabbedPane.add("Edit Groups", pnlTabTwo);
 		tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
 		tabbedPane.add("Edit Solution Hyperlinks", pnlTabThree);
 		tabbedPane.setMnemonicAt(2,  KeyEvent.VK_3);
