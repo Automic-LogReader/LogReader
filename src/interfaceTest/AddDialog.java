@@ -51,6 +51,8 @@ public class AddDialog extends JDialog {
 		  }
 		
 		setBounds(200, 200, 450, 250);
+		setMinimumSize(new Dimension(300, 250));
+		setMaximumSize(new Dimension(450, 250));
 		setLocationRelativeTo(null);
 		setTitle("Add Entry");
 		

@@ -64,6 +64,8 @@ public class ModifyDialog extends JDialog {
 		
 		selectedRow = row;
 		setBounds(200, 200, 450, 250);
+		setMinimumSize(new Dimension(300, 250));
+		setMaximumSize(new Dimension(450, 250));
 		setLocationRelativeTo(null);
 		setTitle("Modify Entry");
 

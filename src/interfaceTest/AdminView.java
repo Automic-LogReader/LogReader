@@ -142,8 +142,8 @@ public class AdminView extends JFrame {
 		
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setTitle("Admin Features");
-		setBounds(200, 200, 1000, 300);
-		setMinimumSize(new Dimension(750, 300));
+		setBounds(200, 200, 1025, 350);
+		setResizable(false);
 		setLocationRelativeTo(null);
 		
 		JButton btnModifyHyperlink = new JButton("Save Changes");

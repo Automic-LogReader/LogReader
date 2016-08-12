@@ -64,6 +64,7 @@ public class EditGroup extends JDialog {
 		getContentPane().add(pnlMain, BorderLayout.CENTER);
 		pnlMain.setBorder(new EmptyBorder(new Insets(10, 10, 10, 10)));
 		setBounds(200, 200, 500, 300);
+		setResizable(false);
 		setTitle("Edit Groups");
 		setLocationRelativeTo(null);
 	

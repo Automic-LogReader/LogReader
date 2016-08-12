@@ -81,6 +81,7 @@ public class CreateGroup extends JDialog{
 		getContentPane().add(pnlMain, BorderLayout.CENTER);
 		pnlMain.setBorder(new EmptyBorder(new Insets(10, 10, 10, 10)));
 		setBounds(200, 200, 300, 300);
+		setResizable(false);
 		setTitle("Create Groups");
 		setLocationRelativeTo(null);
 	

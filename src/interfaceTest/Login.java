@@ -55,7 +55,7 @@ public class Login extends JFrame {
 	 */
 	public Login(MainMenu menu) throws ClassNotFoundException, SQLException {
 		fillHashMap();
-		
+		setResizable(false);
 		try {
 		     ClassLoader cl = this.getClass().getClassLoader();
 		     ImageIcon programIcon = new ImageIcon(cl.getResource("res/logo.png"));
