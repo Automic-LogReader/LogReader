@@ -86,9 +86,9 @@ public class LineDialog extends JDialog {
 		else {
 			listOfLinesBefore = new ArrayList<String>();
 		}
-		listOfLinesBefore.add("----------------------------------------------------"
-				+ "----------------------------------------------------------------"
-				+ "----------------------------------------------------------------");
+		listOfLinesBefore.add("-------------------------------------------------------"
+				+ "-------------------------------------------------------------------"
+				+ "-------------------------------------------------------------------");
 		if (!view.linesAfterHashMap.isEmpty()) {
 			listOfLinesAfter = view.linesAfterHashMap.get(currentRow + 1);
 		}
