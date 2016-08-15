@@ -13,6 +13,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.Toolkit;
 import java.util.ArrayList;
 
 import javax.swing.Box;
@@ -30,12 +31,8 @@ public class LineDialog extends JDialog {
 	private final JPanel pnlMain = new JPanel();
 	/** JList holding the list of lines before a given error message */
 	private JList<Object> jListBefore;
-	/** JList holding the list of lines after a given error message */
-	private JList<Object> jListAfter;
 	/** Holds the contents of the lines to be displayed before */
 	private JScrollPane beforeScrollPane;
-	/** Holds the contents of the lines to be displayed after */
-	private JScrollPane afterScrollPane;
 	/** Holds the list of lines before a given error message */
 	private ArrayList<String> listOfLinesBefore;
 	/** Holds the list of lines after a given error message */
@@ -67,9 +64,9 @@ public class LineDialog extends JDialog {
 		  } catch (Exception e) {
 		     System.out.println("Could not load program icon.");
 		  }
-		
 		setPreferredSize(new Dimension(800, 300));
-		setLocationRelativeTo(null);
+		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+		this.setLocation(dim.width/2-this.getSize().width/2, dim.height/2-this.getSize().height/2);
 		getContentPane().add(pnlMain, BorderLayout.CENTER);
 		setTitle("Lines Before and After " + currentError);
 		
@@ -89,46 +86,35 @@ public class LineDialog extends JDialog {
 		else {
 			listOfLinesBefore = new ArrayList<String>();
 		}
-		
-		JLabel lblTitleBefore = new JLabel("Lines before error #" + (currentRow + 1));
-		lblTitleBefore.setAlignmentX(CENTER_ALIGNMENT);
-		pnlBefore.add(lblTitleBefore);
-		
-		pnlBefore.add(Box.createRigidArea(new Dimension(0,10)));
-		
-		jListBefore = new JList<Object>(listOfLinesBefore.toArray());
-		
-		beforeScrollPane = new JScrollPane(jListBefore);
-		beforeScrollPane.setBackground(Color.WHITE);
-		pnlBefore.add(beforeScrollPane);	
-		
-		pnlMain.add(pnlBefore);
-		
-		JPanel pnlAfter = new JPanel();
-		pnlAfter.setLayout(new BoxLayout(pnlAfter, BoxLayout.Y_AXIS));
-		pnlAfter.setBorder(new EmptyBorder(5,5,5,5));
-		
+		listOfLinesBefore.add("----------------------------------------------------"
+				+ "----------------------------------------------------------------"
+				+ "----------------------------------------------------------------");
 		if (!view.linesAfterHashMap.isEmpty()) {
 			listOfLinesAfter = view.linesAfterHashMap.get(currentRow + 1);
 		}
 		else {
 			listOfLinesAfter = new ArrayList<String>();
 		}
-		JLabel lblTitleAfter = new JLabel("Lines after error #" + (currentRow + 1));
-		lblTitleAfter.setAlignmentX(CENTER_ALIGNMENT);
-		pnlAfter.add(lblTitleAfter);
 		
-		pnlAfter.add(Box.createRigidArea(new Dimension(0,10)));
+		for(int i = 0; i < listOfLinesAfter.size(); i++) {
+			listOfLinesBefore.add(listOfLinesAfter.get(i));
+		}
 		
-		jListAfter = new JList<Object>(listOfLinesAfter.toArray());
+		JLabel lblTitleBefore = new JLabel("Lines Before and After Error #" + (currentRow + 1));
+		lblTitleBefore.setAlignmentX(CENTER_ALIGNMENT);
+		pnlBefore.add(lblTitleBefore);
 		
-		afterScrollPane = new JScrollPane(jListAfter);
-		afterScrollPane.setBackground(Color.WHITE);
-		pnlAfter.add(afterScrollPane);
+		pnlBefore.add(Box.createRigidArea(new Dimension(0,10)));
 		
-		pnlMain.add(pnlAfter);
-
+		jListBefore = new JList<Object>(listOfLinesBefore.toArray());
+	
+		beforeScrollPane = new JScrollPane(jListBefore);
+		beforeScrollPane.setBackground(Color.WHITE);
+		pnlBefore.add(beforeScrollPane);	
+		
+		pnlMain.add(pnlBefore);
 		pack();
+		setLocationRelativeTo(null);
 		setVisible(true);
 	}
 }
