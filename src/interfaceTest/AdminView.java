@@ -268,7 +268,6 @@ public class AdminView extends JFrame {
 			for(int j = 0; j < dc.getDefaultHyperlinkList().size(); j++) {
 				dc.getHyperlinkList().add(dc.getDefaultHyperlinkList().get(j));
 			}
-				
 			dc.transferData("DEFAULT");
 			resetErrorData();
 			resetHyperlinkData();

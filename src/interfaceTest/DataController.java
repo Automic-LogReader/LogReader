@@ -24,10 +24,13 @@ public class DataController {
 	private List <String[]> defaultErrorList = new ArrayList<String[]>();
 	/**List that contains contents that reflect user changes*/
 	private List <String[]> curErrorlist = new ArrayList<String[]>();
-	/**Serves as a helper when transferring contents between list and defaultList*/
+	/**Serves as a helper when transferring contents between the error lists*/
 	private List <String[]> tempErrorList = new ArrayList<String[]>();
+	/**List that contains the true current hyperlinks in the database*/
 	private List<String[]> defaultHyperlinkList = new ArrayList<String[]>();
+	/**List that contains contentes that reflect user changes*/
 	private List<String[]> curHyperlinkList = new ArrayList<String[]>();
+	/**Serves as a helper when transferring contents between the hyperlink lists*/
 	private List<String[]> tempHyperlinkList = new ArrayList<String[]>();
 	/**Queries to be made to the database*/
 	private List <String> errorQueries = new ArrayList<String>();
@@ -228,17 +231,18 @@ public class DataController {
 			admin.savedWords.remove(curErrorlist.get(row)[1]);
 			admin.savedWords.add(keyWord);
 			curErrorlist.set(row, tempArray);
-			curHyperlinkList.get(row)[0] = keyWord;
-
+			String[] newArray = {keyWord, curHyperlinkList.get(row)[1]};
+			curHyperlinkList.set(row, newArray);
 		}
 		//Otherwise we are adding an entry and simply add to the list and queries
 		else {
 			errorQueries.add("insert into logerrors values (\'" + Utility.addSingleQuote(keyWord) + "\',\'"
 					+ Utility.addSingleQuote(message) + "\',\'" + Utility.addSingleQuote(solution) + "\',\'" +
-					Utility.addSingleQuote(folder) + "\',\'" + "http://google.com" + "\')");
+					Utility.addSingleQuote(folder) + "\',\'" + "www.google.com" + "\')");
 			curErrorlist.add(tempArray);
 			String[] someArray = new String[2];
 			someArray[0] = keyWord;
+			someArray[1] = "www.google.com";
 			curHyperlinkList.add(someArray);
 			admin.savedWords.add(keyWord);
 		}
@@ -249,7 +253,7 @@ public class DataController {
 		errorMessageChanged = false;
 		suggestedSolutionChanged = false;
 		admin.resetErrorData();	
-		admin.resetHyperlinkData();
+		admin.resetHyperlinkData();	
 	}
 	
 
