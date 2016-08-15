@@ -136,7 +136,7 @@ public class AdminView extends JFrame {
 		
 		//We create the datatable with the database info, and set the lists within DataController
 		createDataTable();
-		dc = new DataController(this);
+		dc = new DataController(this, view);
 		dc.setHyperlinkList(hyperlinkList);
 		dc.setDefaultHyperlinkList(defaultHyperlinkList);
 		dc.setErrorList(list);

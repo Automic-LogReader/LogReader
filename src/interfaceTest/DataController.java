@@ -48,13 +48,14 @@ public class DataController {
 	private boolean folderChanged;
 	/**AdminView object that contains the table DataController is changing*/
 	private AdminView admin;
+	private UserView view;
 
 	/**
 	 * Created in AdminView, contains functions that connects to the database
 	 * and creates queries to modify the data
 	 * @param admin AdminView associated with this object
 	 */
-	DataController(AdminView admin){
+	DataController(AdminView admin, UserView view){
 		this.admin = admin;
 		keywordChanged = false;
 		errorMessageChanged = false;
@@ -354,6 +355,7 @@ public class DataController {
 			stmt.executeUpdate("update logerrors set Hyperlink = \'" + 
 					Utility.addSingleQuote(defaultHyperlinkList.get(i)[1]) + 
 					"\' where Keyword = \'" + Utility.addSingleQuote(defaultHyperlinkList.get(i)[0]) + "\'");
+			view.urlMap.put(defaultHyperlinkList.get(i)[0], defaultHyperlinkList.get(i)[1]);
 		}
 		stmt.close();
 	}
