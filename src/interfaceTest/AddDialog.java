@@ -1,7 +1,7 @@
 /**
  * @file AddDialog.java
  * @authors Leah Talkov, Jerry Tsui
- * @date 8/3/2016
+ * @date 8/15/2016
  * Brings up a Java Dialog when the user wants to add an entry
  * to the database. The dialog has four fields that allow the user to enter
  * in a keyword, the folder the keyword will belong to, an error message,
@@ -40,7 +40,10 @@ public class AddDialog extends JDialog {
 	or an existing folder*/
 	private JTextField tfFolder;
 
-
+	/**
+	 * Creates a dialog for the user to create an entry
+	 * @param dc Contains objects and variables used in this class
+	 */
 	public AddDialog(DataController dc) {
 		try {
 		     ClassLoader cl = this.getClass().getClassLoader();
