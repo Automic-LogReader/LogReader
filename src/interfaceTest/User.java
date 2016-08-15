@@ -1,7 +1,7 @@
 /**
  * @file User.java
  * @authors Leah Talkov, Jerry Tsui
- * @date 8/4/2016
+ * @date 8/15/2016
  * Creates a User Object. If the boolean isAdmin is true,
  * then in the user interface there will be an additional
  * button that allows the user to access admin features. 

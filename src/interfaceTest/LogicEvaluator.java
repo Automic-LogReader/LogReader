@@ -1,7 +1,7 @@
 /**
  * @file LogicEvaluator.java
  * @authors Leah Talkov, Jerry Tsui
- * @date 8/5/2016
+ * @date 8/15/2016
  * Contains functions for the logical parsing of a file, determined by
  * the given logical statement from the user. The process first checks
  * to see if there is an "OR" operand, or any special cases that need
@@ -29,6 +29,7 @@ public class LogicEvaluator {
 	private ArrayList<String> andWords = new ArrayList<String>();
 	/**Contains the operands that the user has chosen*/
 	private ArrayList<String> operands = new ArrayList<String>();
+	/**Contains the UCodes from a DEADLOCK or arrow error*/
 	private ArrayList<String> tempUCodes = new ArrayList<String>();
 	/**The total number of errors/entries from the given logic statement*/
 	private int errorCount;
@@ -53,7 +54,7 @@ public class LogicEvaluator {
 	 * Contains functions that implements the logic parsing
 	 * of a file, depending on the logic statement
 	 * inputed by the user.
-	 * @param logParse 
+	 * @param logParse Object that instantiates this class
 	 */
 	LogicEvaluator(LogParser logParse) {
 		this.logParse = logParse;
@@ -101,10 +102,10 @@ public class LogicEvaluator {
 		return errorCount;
 	}
 	
+
 	/**
-	 * Checks for duplicate errors against DEADLOCK and arrow errors, and 
-	 * then creates entries for the interface table based off of the entries in 
-	 * the arraylist validLines. 
+	 * Creates an entry for the table in UserView based on the given line
+	 * @param makeLine The line which an error entry will be made from
 	 */
 	void makeEntry(String makeLine) {
 		errorCount++;
@@ -173,7 +174,7 @@ public class LogicEvaluator {
 	 * lines will be ignored. 
 	 * @param line File line that is parsed against the logic statement
 	 * @param br Buffered Reader to read through the file
-	 * @throws IOException
+	 * @throws IOException If there is a problem reading the file
 	 */
 	void addLines(String line, BufferedReader br) throws IOException {
 		tempUCodes.clear();
@@ -284,8 +285,7 @@ public class LogicEvaluator {
 	 * @param parseLine Checked against the AND words the user has chosen
 	 * @return Returns true if parseLine is valid, false otherwise
 	 */
-	boolean parseLine(String parseLine)
-	{
+	boolean parseLine(String parseLine) {
 		for(int j = 0; j < andWords.size(); j++) {
 			//If the line contains a word we DON'T want, it is invalid
 			if(hasNot.get(j)) {
@@ -299,9 +299,6 @@ public class LogicEvaluator {
 					return false;
 				}
 			}
-		}
-		for(int i = 0; i < tempUCodes.size(); i++){
-			System.out.println(tempUCodes.get(i));
 		}
 		return true;
 	}
@@ -352,7 +349,7 @@ public class LogicEvaluator {
 	 * @param logbr A buffered reader to advance through the file, same br from LogParser
 	 * @param line The file line where an arrow was found
 	 * @return Returns a string that gives the program a new place to parse through
-	 * @throws IOException
+	 * @throws IOException If there is a problem accessing the file
 	 */
 	String progressArrowBr(BufferedReader logbr, String line) throws IOException {
         boolean matchingArrow = false;
@@ -411,7 +408,7 @@ public class LogicEvaluator {
 	 * @param logbr A buffered reader to advance through the file, same br from LogParser
 	 * @param line File line where a DEADLOCK was found
 	 * @return Returns a string that gives the program a new place to parse through
-	 * @throws IOException
+	 * @throws IOException If there is a problem accessing the file
 	 */
 	String progressDeadlockBr(BufferedReader logbr, String line) throws IOException {
         boolean matchingDeadlock = false;
@@ -469,7 +466,7 @@ public class LogicEvaluator {
 	 * @param logbr Buffered Reader to read through file, same br from LogParser
 	 * @param line File line where DEADLOCK first occurred
 	 * @return Returns a string with the full DEADLOCK error
-	 * @throws IOException
+	 * @throws IOException If there is a problem accessing the file
 	 */
 	String makeDeadlockLine(BufferedReader logbr, String line) throws IOException {
 		tempUCodes.clear();
@@ -531,6 +528,7 @@ public class LogicEvaluator {
                 if(testWord.length() > 2) {
                    if(testWord.charAt(0) == 'U' && Character.isDigit(testWord.charAt(1))) {
                       uCodeFound = true;
+                      //We add this UCode to test against
                       tempUCodes.add(testWord);
                    }
                 }
@@ -574,7 +572,7 @@ public class LogicEvaluator {
 	 * @param logLine File line where an arrow was first found
 	 * @return Returns a string with the full arrow error, null if outside
 	 * 		   time stamp bounds user chose in the interface
-	 * @throws IOException
+	 * @throws IOException If there is a problem accessing the file
 	 */
 	String makeArrowLine(BufferedReader logbr, String logLine) throws IOException {
 		tempUCodes.clear();
@@ -651,7 +649,8 @@ public class LogicEvaluator {
 	
 	/**
 	 * Puts the current contents of linesBefore in LogParser
-	 * into an arraylist
+	 * into an arraylist. Used in parseArrowError and parseDeadlockError
+	 * to save the lines that were before these errors. 
 	 * @return Returns an arraylist with the current contents linesBefore
 	 */
 	ArrayList<String> saveCurLines()

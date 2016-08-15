@@ -1,7 +1,7 @@
 /**
  * @file ProgressDialog.java
  * @authors Leah Talkov, Jerry Tsui
- * @date 8/4/2016
+ * @date 8/15/2016
  * Creates a JDialog that contains a progress bar, as well as text
  * to show the percentage the bar is currently at. The progress bar
  * serves to show the user how far along the parsing progress is.

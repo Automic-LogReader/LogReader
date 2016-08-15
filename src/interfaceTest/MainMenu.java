@@ -1,7 +1,7 @@
 /**
  * @file MainMenu.java
  * @authors Leah Talkov, Jerry Tsui
- * @date 8/4/2016
+ * @date 8/15/2016
  * Brings up a simple frame that allows the user to select if they
  * are either a "User" or an "Admin." If "User" is selected, then a new 
  * User object is created. If "Admin" is selected, a new Login object is created.

@@ -2,7 +2,7 @@
  /**
  * @file AdminView.java
  * @authors Leah Talkov, Jerry Tsui
- * @date 8/3/2016
+ * @date 8/15/2016
  * Shows the frame for an Admin User. Consists of a JTable that displays
  * the information from the database table, and users can delete, add, or modify
  * entries of the data. The modifications are controlled by the functions 
@@ -119,8 +119,12 @@ public class AdminView extends JFrame {
 	/**A 2-D Object array holding the information for the group*/
 	protected Object groupRowData[][];
 	
-	
-	
+	/**
+	 * Creates an interface for an admin user, allowing the modification of entries
+	 * @param view 
+	 * @throws ClassNotFoundException If getClass was unsuccessful
+	 * @throws SQLException If the connection to the server did not succeed
+	 */
 	public AdminView(UserView view) throws ClassNotFoundException, SQLException {
 			
 		try {
@@ -134,10 +138,10 @@ public class AdminView extends JFrame {
 		//We create the datatable with the database info, and set the lists within DataController
 		createDataTable();
 		dc = new DataController(this);
-		dc.curHyperlinkList = hyperlinkList;
-		dc.defaultHyperlinkList = defaultHyperlinkList;
-		dc.setList(list);
-		dc.setDefaultList(defaultList);
+		dc.setHyperlinkList(hyperlinkList);
+		dc.setDefaultHyperlinkList(defaultHyperlinkList);
+		dc.setErrorList(list);
+		dc.setDefaultErrorList(defaultList);
 		dc.transferData("CHANGE");
 		
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -255,14 +259,14 @@ public class AdminView extends JFrame {
 		btnRevertLocalChanges.addActionListener(e -> {
 			//The table will revert back to the contents of the database, erasing
 			//all changes the admin has done
-			dc.getList().clear();
+			dc.getErrorList().clear();
 			btnModifyHyperlink.setEnabled(true);
-			for(int i = 0; i < dc.getDefaultList().size(); i++) {
-				dc.getList().add(dc.getDefaultList().get(i));
+			for(int i = 0; i < dc.getDefaultErrorList().size(); i++) {
+				dc.getErrorList().add(dc.getDefaultErrorList().get(i));
 			}
-			dc.curHyperlinkList.clear();
-			for(int j = 0; j < dc.defaultHyperlinkList.size(); j++) {
-				dc.curHyperlinkList.add(dc.defaultHyperlinkList.get(j));
+			dc.getHyperlinkList().clear();
+			for(int j = 0; j < dc.getDefaultHyperlinkList().size(); j++) {
+				dc.getHyperlinkList().add(dc.getDefaultHyperlinkList().get(j));
 			}
 				
 			dc.transferData("DEFAULT");
@@ -357,8 +361,8 @@ public class AdminView extends JFrame {
 		pnlHyperlinkTable.setViewportView(tblHyperlinkEntries);
 		
 		btnModifyHyperlink.addActionListener(e -> {
-			for(int i = 0; i < dc.defaultHyperlinkList.size(); i++) {
-				dc.defaultHyperlinkList.get(i)[1] = (String)tblHyperlinkEntries.getValueAt(i, 1);
+			for(int i = 0; i < dc.getDefaultHyperlinkList().size(); i++) {
+				dc.getDefaultHyperlinkList().get(i)[1] = (String)tblHyperlinkEntries.getValueAt(i, 1);
 			}
 			try {
 				dc.writeURLsToDB();
@@ -386,8 +390,8 @@ public class AdminView extends JFrame {
 	 * Fills myData with arrays. Each array represents a entry 
 	 * from the database where each entry is loaded into an array index. 
 	 * The resulting array is used as a JTable parameter. 
-	 * @throws SQLException 
-	 * @throws ClassNotFoundException 
+	 * @throws SQLException If connection to SQL server failed
+	 * @throws ClassNotFoundException if getClass was unsuccessful
 	 */
 	void createDataTable() throws SQLException, ClassNotFoundException {		
 		String driver = "net.sourceforge.jtds.jdbc.Driver";
@@ -429,7 +433,6 @@ public class AdminView extends JFrame {
 	JPanel createGroupDisplay (UserView view){
 		JPanel pnlGroup = new JPanel();
 		pnlGroup.setLayout(new BoxLayout(pnlGroup, BoxLayout.Y_AXIS));
-		//pnlGroup.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
 		
 		JLabel lblGroup = new JLabel("Current Groups");
 		lblGroup.setAlignmentX(CENTER_ALIGNMENT);
@@ -475,8 +478,8 @@ public class AdminView extends JFrame {
 	 * up a JDialog if the admin presses the delete group button, but has
 	 * not selected a group to delete. 
 	 * @param view The current JFrame used for AdminView
-	 * @throws ClassNotFoundException
-	 * @throws SQLException
+	 * @throws ClassNotFoundException If getClass was unsuccessful
+	 * @throws SQLException If connection to SQL server failed
 	 */
 	private void removeGroup(UserView view) throws ClassNotFoundException, SQLException{
 		int row = tblGroupEntries.getSelectedRow();
@@ -510,14 +513,14 @@ public class AdminView extends JFrame {
 	 * or deleted, and the table properly reflects the changes made by the user.
 	 */
 	protected void resetErrorData(){
-		DefaultTableModel model = new DefaultTableModel(dc.getData(), errorTableColumnHeaders); 
+		DefaultTableModel model = new DefaultTableModel(dc.getErrorData(), errorTableColumnHeaders); 
 		tblErrorEntries.setModel(model);
 		resizeColumnWidth(tblErrorEntries);
 		model.fireTableDataChanged();
 	}
 	
 	protected void resetHyperlinkData() {
-		DefaultTableModel model = new DefaultTableModel(dc.hyperlinkData, hyperlinkColumnHeaders); 
+		DefaultTableModel model = new DefaultTableModel(dc.getHyperlinkData(), hyperlinkColumnHeaders); 
 		tblHyperlinkEntries.setModel(model);
 		resizeColumnWidth(tblHyperlinkEntries);
 		model.fireTableDataChanged();
@@ -528,7 +531,7 @@ public class AdminView extends JFrame {
 	 * that can be modified by the Administrator
 	 */
 	private void initErrorTable(){
-		errorTableModel = new DefaultTableModel(dc.getData(), errorTableColumnHeaders) {
+		errorTableModel = new DefaultTableModel(dc.getErrorData(), errorTableColumnHeaders) {
 		    @Override
 		    public boolean isCellEditable(int row, int column) {
 		       //all cells false
@@ -553,10 +556,10 @@ public class AdminView extends JFrame {
 	}
 	
 	private void initHyperlinkTable() {
-		hyperlinkTableModel = new DefaultTableModel(dc.hyperlinkData, hyperlinkColumnHeaders) {
+		hyperlinkTableModel = new DefaultTableModel(dc.getHyperlinkData(), hyperlinkColumnHeaders) {
 		    
 		    public boolean isCellEditable(int row, int column) {
-		    	//Make only the hyperlink table editable
+		    	//Make only the hyperlink column editable
 		    	if(column == 1)
 		    		return true;
 		    	else 
@@ -580,6 +583,7 @@ public class AdminView extends JFrame {
 	
 	/**
 	 * Resizes the columns of a Jtable to fit the contents of the entries given.
+	 * The column will be the size of that max value within that column.
 	 * @param table The JTable that is being displayed to the admin
 	 */
 	public void resizeColumnWidth(JTable table) {

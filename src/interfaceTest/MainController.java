@@ -1,7 +1,7 @@
 /**
  * @file MainController.java
  * @authors Leah Talkov, Jerry Tsui
- * @date 8/4/2016
+ * @date 8/15/2016
  * Contains the main function for the program, and brings up the main menu. 
  * This program allows users to input log files, and finds errors within
  * the files for the user. The timestamp, Ucode, the error message, and 

@@ -1,7 +1,7 @@
 /**
  * @file ModifyDialog.java
  * @authors Leah Talkov, Jerry Tsui
- * @data 8/3/2016
+ * @data 8/15/2016
  * Brings up a JDialog when the user wants to modify an 
  * entry. There are four textboxes that are initially filled with
  * the entry's original values. The user can change any of these four

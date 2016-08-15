@@ -1,7 +1,7 @@
 /**
  * @file LogParser.java
  * @authors Leah Talkov, Jerry Tsui
- * @date 8/3/2016
+ * @date 8/15/2016
  * Parses through the given logfile and generates error entries based
  * on the errors it finds, and the keywords that the user has specified. 
  * Different errors will be created depending on the method the user
@@ -15,12 +15,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.JTable;
@@ -55,26 +51,31 @@ public class LogParser {
 	private Object[] entry;
 	/**LogicEvaluator used if the user wants to refine their search*/
 	private LogicEvaluator logicEvaluator;
+	/**Constantly fills with lines before the current buffer position, results are
+	 * added to the linesBeforeArrayList in UserView when an error is found*/
+	protected FixedStack<String> linesBefore;
+	/**Fills with lines after an error has occurred, pushes lines after
+	 * the parameter FixedStack is full*/
+	protected ConcurrentHashMap<Integer, FixedStack<String>> linesAfter;
+	/**True if the user wants to search for lines before, false otherwise*/
+	private boolean considerLinesBefore;
+	/**True if the user wants to search for lines after, false otherwise*/
+	private boolean considerLinesAfter;
 	/**UserView object that contains Swing objects that
 	   will be changed by functions in this class*/
-	protected FixedStack<String> linesBefore;
-	protected ConcurrentHashMap<Integer, FixedStack<String>> linesAfter;
-	
-	private boolean considerLinesBefore;
-	private boolean considerLinesAfter;
-	
 	protected static UserView view;
 	
+	/**
+	 * Parses through the logfile three different ways, depending on the tab the user is on
+	 * @param view Contains swing elements that affect the useage of this class
+	 * @param tab Tab that the user is on, 0 = Checkbox, 1 = Logic, 2 = Groups
+	 */
 	public LogParser(UserView view, int tab) {
 		selectedTab = tab;
 		LogParser.view = view;
 		logicEvaluator = new LogicEvaluator(this);
-	
-		
 		linesBefore = new FixedStack<String>(view.numLinesBefore + 1);
 		linesAfter = new ConcurrentHashMap<Integer, FixedStack<String>>();
-		
-		
 		//If not null, we set the arrayLists in logicEval
 		if(view.keyWordArrayList != null)
 			logicEvaluator.setkeyWords(view.keyWordArrayList);
@@ -93,7 +94,7 @@ public class LogParser {
 	 * searching, either through checkbox or through a refined logic search. 
 	 * @param file The logfile that the user wants to parse through
 	 * @param pd A create progress dialog object that keeps track of the parsing progress
-	 * @throws IOException
+	 * @throws IOException If there is a problem accessing the file
 	 */
 	void parseErrors(File file, ProgressDialog pd) throws IOException {
 		view.updateKeyWords(selectedTab);
@@ -239,7 +240,6 @@ public class LogParser {
 		view.menuItemUrl.setEnabled(true);
 		view.menuItemCopy.setEnabled(true);
 		makeTable();
-		errorCheck();
 	}
 	
 	/**
@@ -249,7 +249,7 @@ public class LogParser {
 	 * @param timeStamp The timestamp of the line where the first arrow was encountered
 	 * @param currArray An array containing the elements of the above line, split by " "
 	 * @return Returns an entry that can be added to errorData
-	 * @throws IOException
+	 * @throws IOException If there is a problem accessing the file
 	 */
 	Object[] parseArrowError(BufferedReader logbr, String timeStamp, String[] currArray) throws IOException {
 		Object[] tempEntry = new Object[5];
@@ -347,7 +347,7 @@ public class LogParser {
 	 * @param logbr The Buffered Reader reading through the logfile
 	 * @param timeStamp Timestamp of the line where DEADLOCK first occurred
 	 * @return Return an entry that can be added to errorData
-	 * @throws IOException
+	 * @throws IOException If there is a problem accessing the file
 	 */
 	Object[] parseDeadlockError(BufferedReader logbr, String timeStamp) throws IOException {
        Object[] entry = new Object[5];
@@ -361,6 +361,7 @@ public class LogParser {
        entry[1] = timeStamp;
        entry[2] = "DEADLOCK";
        String tempLine = logbr.readLine();
+       //We mark in case the DEADLOCK error is a single DEADLOCK
        logbr.mark(2500);
        while(!matchingDeadlock && tempLine != null) {
     	  linesBefore.push(tempLine);
@@ -383,7 +384,6 @@ public class LogParser {
                       }
                       return entry;
                   }
-                      
               }
     	  	  //Now we need to find the U-code to know when to start the error message
               else if(!uCodeFound && timeStampFound){
@@ -486,6 +486,7 @@ public class LogParser {
 	 * progress (the lines read so far) by the total file size. The progress
 	 * bar is only updated if the generated percent (integer of the division)
 	 * is greater than oldPercent.
+	 * @param addLine A line from the logfile whose length is added to the progress
 	 */
 	void updateProgress(String addLine){
 		progress += addLine.length();
@@ -510,9 +511,12 @@ public class LogParser {
 		return ((t >= view.lowerBound) && (t <= view.upperBound));
 	}
 	
+	/**
+	 * Called when an error is encountered, adds the contents of the fixed
+	 * stack to the linesBeforeArrayList in UserView
+	 */
 	void addLinesBefore(){
 		if (!considerLinesBefore) return;
-		//System.out.println("continue");
 		ArrayList<String> arrayList = new ArrayList<String>();
 		for (String str : linesBefore){
 			arrayList.add(str);
@@ -521,15 +525,26 @@ public class LogParser {
 		view.linesBeforeArrayList.add(arrayList);
 	}
 	
+	/**
+	 * Adds a new entry to linesAfter when an error is encountered
+	 * @param errorNum The current error count
+	 */
 	void addLinesAfter(int errorNum){
 		if (!considerLinesAfter) return;
 		linesAfter.put(errorNum, new FixedStack<String>(view.numLinesAfter + 1));
 	}
 	
+	/**
+	 * Updates the entries in linesAfter everytime a line is read. If the fixed 
+	 * stack for the entry is full, then the entry is removed and added to 
+	 * linesAfterHashMap in UserView. 
+	 * @param line Line from the logfile that is added to the FixedStack in the entries
+	 */
 	void updateLinesAfter(String line){
 		if (!considerLinesAfter) return;
 		for (Map.Entry<Integer, FixedStack<String>> entry : linesAfter.entrySet()){
 			entry.getValue().push(line);
+			//Our associated FixedStack is full, so we add it to linesAfterHashMap
 			if (entry.getValue().isFull()){
 				ArrayList<String> arrayList = new ArrayList<String>();
 				for (String str : entry.getValue()){
@@ -541,19 +556,4 @@ public class LogParser {
 			}
 		}
 	}
-	
-	
-		private void errorCheck(){
-				for (int i=0; i<view.errorTable.getRowCount(); i++){
-					Object obj = view.errorTable.getValueAt(i, 0);
-					int x = (int) obj;
-					Object ts = view.errorTable.getValueAt(i, 1);
-					String y = (String) ts;
-					if (x != (i+1)){
-						System.out.println("Indexing problem at row: " + i + " . Supposed to be " + (i+1) + " but was actually " + x + " at timestamp: " + y);
-						break;
-					}
-				}
-			} 
-
 }

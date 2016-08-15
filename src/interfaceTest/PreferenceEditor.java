@@ -1,7 +1,7 @@
 /**
  * @file PreferenceEditor.java
  * @authors Leah Talkov, Jerry Tsui
- * @date 8/3/2016
+ * @date 8/15/2016
  * Allows the user to make more specifications on their searches by inputing
  * timebounds for Time Critical errors, and how many lines (0-10) the user would
  * like to see before and after an error. The default values for the time bounds 
@@ -11,7 +11,6 @@
 package interfaceTest;
 
 import java.awt.BorderLayout;
-import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Insets;
@@ -183,6 +182,13 @@ public class PreferenceEditor extends JDialog {
 		setVisible(true);
 	}
 	
+	/**
+	 * Saves the preferences that the user has chosen
+	 * @param view UserView associated with this object
+	 * @param index Checks to see which tab the User is on 
+	 * 				(0 = time bounds, 1 = lines before/after)
+	 * 
+	 */
 	private void save(UserView view, int index){
 		switch (index){
 		case 0:

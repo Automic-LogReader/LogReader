@@ -1,7 +1,7 @@
 /**
  * @file DataController.java
  * @authors Leah Talkov, Jerry Tsui
- * @date 8/3/2016
+ * @date 8/15/2016
  * Contains functions that modify the table in AdminView
  * depending on whether the user adds, modifies, or deletes entries. The
  * class also has variables that keep track of default values of the database.
@@ -11,7 +11,6 @@
 
 package interfaceTest;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -23,16 +22,19 @@ public class DataController {
 
 	/**List that contains the true current entries in the database*/
 	private List <String[]> defaultErrorList = new ArrayList<String[]>();
-	/**List that starts out with the same contents as defaultList, and
-	then changes its contents to reflect the user changes*/
+	/**List that contains contents that reflect user changes*/
 	private List <String[]> curErrorlist = new ArrayList<String[]>();
 	/**Serves as a helper when transferring contents between list and defaultList*/
 	private List <String[]> tempErrorList = new ArrayList<String[]>();
+	private List<String[]> defaultHyperlinkList = new ArrayList<String[]>();
+	private List<String[]> curHyperlinkList = new ArrayList<String[]>();
+	private List<String[]> tempHyperlinkList = new ArrayList<String[]>();
 	/**Queries to be made to the database*/
 	private List <String> errorQueries = new ArrayList<String>();
-	/**Entries to be into the JTable in AdminView*/
+	/**Entries used for JTable parameter in AdminView*/
 	private Object [][] errorData;
-	protected Object [][] hyperlinkData;
+	/**Entries used for JTable parameter in AdminView*/
+	private Object [][] hyperlinkData;
 	/**Set in modify dialog, true if keyword was changed*/
 	private boolean keywordChanged;
 	/**Set in modify dialog, true if error message was changed*/
@@ -43,9 +45,6 @@ public class DataController {
 	private boolean folderChanged;
 	/**AdminView object that contains the table DataController is changing*/
 	private AdminView admin;
-	protected List<String[]> defaultHyperlinkList = new ArrayList<String[]>();
-	protected List<String[]> curHyperlinkList = new ArrayList<String[]>();
-	protected List<String[]> tempHyperlinkList = new ArrayList<String[]>();
 
 	/**
 	 * Created in AdminView, contains functions that connects to the database
@@ -114,24 +113,23 @@ public class DataController {
 	 * Called in AdminView to initialize the contents of the list
 	 * @param list A list of the entries of the table from AdminView
 	 */
-	void setList(List <String[]> list){
-		this.curErrorlist = list;
+	void setErrorList(List <String[]> list){
+		curErrorlist = list;
 	}
 
 	/**
-	 * TCalled in AdminView to initialize the contents of the defaultList
+	 * Called in AdminView to initialize the contents of the defaultList
 	 * @param defaultList A list of the entries of the table from AdminView
 	 */
-	void setDefaultList(List <String[]> defaultList){
-		this.defaultErrorList = defaultList;
+	void setDefaultErrorList(List <String[]> defaultList){
+		defaultErrorList = defaultList;
 	}
 
 	/**
-	 * Called in AdminView to either retrieve the contents to change the 
-	 * JTable, or to clear the list if the user wants to revert their changes
+	 * Called in AdminView to get the changes necessary for JTable content
 	 * @return Returns the list which reflects the user changes
 	 */
-	List<String[]> getList(){
+	List<String[]> getErrorList(){
 		return curErrorlist;
 	}
 
@@ -140,10 +138,60 @@ public class DataController {
 	 * wants to revert their changes back to the default 
 	 * @return Returns the list which reflects the current contents of the DB
 	 */
-	List<String[]> getDefaultList(){
+	List<String[]> getDefaultErrorList(){
 		return defaultErrorList;
 	}
+	
+	/**
+	 * Called in AdminView to initialize the contents of the curHyperlinkList
+	 * @param list A list of the current hyperlinks and their keywords from the database
+	 */
+	void setHyperlinkList(List<String[]> list) {
+		curHyperlinkList = list;
+	}
+	
+	/**
+	 * Called in AdminView to initialize the contents of the defaultHyperlinkList
+	 * @param defaultList A list of the current hyperlinks and their keywords from the database
+	 */
+	void setDefaultHyperlinkList(List<String[]> defaultList) {
+		defaultHyperlinkList = defaultList;
+	}
+	
+	/**
+	 * Called in AdminView to get the changes necessary for JTable content
+	 * @return Returns the hyperlink list that reflect user changes
+	 */
+	List<String[]> getHyperlinkList() {
+		return curHyperlinkList;
+	}
+	
+	/**
+	 * Called in AdminView when the user wants to revert their changes
+	 * @return Returns the hyperlink list that reflects the database contents
+	 */
+	List<String[]> getDefaultHyperlinkList() {
+		return defaultHyperlinkList;
+	}
 
+	/**
+	 * Called in AdminView after the data has been changed, and the contents
+	 * of errorData are used to generate table entries in AdminView.
+	 * @return Returns errorData which contains entries reflecting user changes
+	 */
+	Object[][] getErrorData() {
+		return errorData;
+	}
+	
+	/**
+	 * Called in AdminView after the data has been changed, and the contents
+	 * of hyperlinkData are user to generate table entries in AdminView
+	 * @return Returns hyperlinkData which contains entries reflecting user changes
+	 */
+	Object[][] getHyperlinkData() {
+		return hyperlinkData;
+	}
+	
 	/**
 	 * Modfies the data by depending on the value of "choice". If the value
 	 * is "MODIFY" then the function modifies an entry by modifying list, and by adding a query
@@ -155,9 +203,8 @@ public class DataController {
 	 * @param solution The solution message given by the user
 	 * @param choice Determines whether the user is modifying or adding entries
 	 * @param row If the choice is MODIFY, the row index that is being modified
-	 * @throws IOException
 	 */
-	protected void modifyData(String folder, String keyWord, String message, String solution, String choice, int row) throws IOException {
+	protected void modifyData(String folder, String keyWord, String message, String solution, String choice, int row) {
 		String [] tempArray = new String[4];
 		tempArray[0] = folder;
 		tempArray[1] = keyWord;
@@ -211,9 +258,8 @@ public class DataController {
 	 * this function will add a query to the data structure queries which 
 	 * will delete the row, and also deletes the corresponding row within list. 
 	 * @param row - the row in which the data will be deleted
-	 * @throws IOException 
 	 */
-	protected void deleteData(int row) throws IOException {
+	protected void deleteData(int row) {
 		errorQueries.add("delete from logerrors where Keyword = \'" + Utility.addSingleQuote(curErrorlist.get(row)[1]) + "\'");
 		admin.savedWords.remove(curErrorlist.get(row)[1]);
 		curErrorlist.remove(row);
@@ -261,24 +307,14 @@ public class DataController {
 	}
 
 	/**
-	 * Called in AdminView after the data has been changed, and the contents
-	 * of data are used to generate the table entries in AdminView.
-	 * @return Returns the data object which contains entries reflecting user actions
-	 */
-	protected Object[][] getData(){
-		return errorData;
-	}
-
-	/**
 	 * Goes through all the strings in queries and sends them to the database
 	 * to save the changes that the user has made, so that the database now reflects what is
 	 * seen in the interface table. The contents of defaultList are set to be the same
 	 * as the contents in list. 
-	 * @throws IOException
-	 * @throws ClassNotFoundException
-	 * @throws SQLException
+	 * @throws ClassNotFoundException If getClass fails
+	 * @throws SQLException If connection to SQL server fails
 	 */
-	protected void saveDefault() throws IOException, ClassNotFoundException, SQLException{
+	protected void saveDefault() throws ClassNotFoundException, SQLException {
 		defaultErrorList.clear();
 		admin.keyWords.clear();
 		for(int x = 0; x < admin.savedWords.size(); x++) {
@@ -287,10 +323,6 @@ public class DataController {
 		for(int i = 0; i < curErrorlist.size(); i++){
 			defaultErrorList.add(curErrorlist.get(i));
 		}
-		for (int j = 0; j < errorQueries.size(); j++) {
-			System.out.println(errorQueries.get(j));
-		}
-
 		String driver = "net.sourceforge.jtds.jdbc.Driver";
 		Class.forName(driver);
 		Connection conn = DriverManager.getConnection("jdbc:jtds:sqlserver://vwaswp02:1433/coeus", "coeus", "C0eus");
@@ -303,14 +335,18 @@ public class DataController {
 		errorQueries.clear();
 	}
 
-	void writeURLsToDB() throws ClassNotFoundException, SQLException
-	{
+	/**
+	 * Takes in the contents of the defaultHyperlinkList and queries the matching
+	 * hyperlinks to the keywords to the database
+	 * @throws ClassNotFoundException If getClass fails
+	 * @throws SQLException If connection to SQL server fails
+	 */
+	void writeURLsToDB() throws ClassNotFoundException, SQLException {
 		String driver = "net.sourceforge.jtds.jdbc.Driver";
 		Class.forName(driver);
 		Connection conn = DriverManager.getConnection("jdbc:jtds:sqlserver://vwaswp02:1433/coeus", "coeus", "C0eus");
 		Statement stmt = conn.createStatement();
-		for(int i = 0; i < defaultHyperlinkList.size(); i++)
-		{
+		for(int i = 0; i < curHyperlinkList.size(); i++) {
 			stmt.executeUpdate("update logerrors set Hyperlink = \'" + 
 					Utility.addSingleQuote(defaultHyperlinkList.get(i)[1]) + 
 					"\' where Keyword = \'" + Utility.addSingleQuote(defaultHyperlinkList.get(i)[0]) + "\'");

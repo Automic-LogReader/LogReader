@@ -1,7 +1,7 @@
 /**
  * @file CreateGroup.java
  * @authors Leah Talkov, Jerry Tsui
- * @date 8/3/2016
+ * @date 8/15/2016
  * Frame that allows the administrator to create, name, and save groups
  * of keywords to the database. These groups can be used to make
  * searching easier for the user. Admins cannot create duplicate
@@ -14,11 +14,8 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.Connection;
@@ -29,14 +26,12 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
-import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
 
@@ -120,7 +115,6 @@ public class CreateGroup extends JDialog{
 				try {
 					saveGroups(admin, view);
 				} catch (Exception e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 				this.setVisible(false);
@@ -171,7 +165,7 @@ public class CreateGroup extends JDialog{
 	 * @param admin AdminView object passed in so preference values can be saved
 	 * @param view UserView object passed in so GUI can be updated
 	 * as the administrator creates groups
-	 * @throws ClassNotFoundException if classpath is broken
+	 * @throws ClassNotFoundException if getClass is unsuccessful
 	 * @throws SQLException if there is an error connecting to and querying the SQL server
 	 */
 	private void saveGroups(AdminView admin, UserView view) throws ClassNotFoundException, SQLException{
@@ -197,7 +191,6 @@ public class CreateGroup extends JDialog{
 			view.loadGroupInfo(stmt);
 			stmt.close();
 			view.createGroupView();
-			//admin.createGroupData(view);
 			admin.updateGroupData(view);
 		}
 	}

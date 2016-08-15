@@ -1,7 +1,7 @@
 /**
  * @file Login.java
  * @authors Leah Talkov, Jerry Tsui
- * @date 8/4/2016
+ * @date 8/15/2016
  * This class brings up a frame that allows the user to enter in a 
  * username and password. If the info given matches the info
  * in the database, then a new Admin is created. Otherwise,
@@ -156,7 +156,6 @@ public class Login extends JFrame {
 		tfPassWord.setEchoChar('*');
 		pnlLoginText.add(tfPassWord, BorderLayout.SOUTH);
 		tfPassWord.setColumns(10);
-		
 	}
 	
 	/**

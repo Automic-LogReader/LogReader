@@ -1,7 +1,7 @@
 /**
  * @file TableMouseListener.java
  * @authors Leah Talkov, Jerry Tsui
- * @date 8/3/2016
+ * @date 8/15/2016
  * TableMoustListner extends from MouseAdapter and is intended to help
  * the JTable in UserView interact with the popup menu in UserView.
  */

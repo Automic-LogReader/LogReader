@@ -1,7 +1,7 @@
 /**
  * @file LineDialog.java
  * @authors Leah Talkov, Jerry Tsui
- * @date 8/3/2016
+ * @date 8/15/2016
  * Brings up a Java Dialog when the user wants view the lines before or after the 
  * specified error selected in the JTable.  The Dialog displays anywhere between 
  * 0-10 lines before and after.  This view is disabled until the log file has been
@@ -44,6 +44,8 @@ public class LineDialog extends JDialog {
 	 * Constructor
 	 * @param currentRow The current selected row within the JTable
 	 * @param view The UserView that instantiated the LineDialog 
+	 * @param currentError Checks which error the user has selected and 
+	 * 					   retrieves the corresponding before/after lines
 	 */
 	public LineDialog(int currentRow, UserView view, String currentError) {
 		prepareGUI(currentRow, view, currentError);
@@ -54,8 +56,10 @@ public class LineDialog extends JDialog {
 	 * This function prepares and displays the LineDialog GUI.
 	 * @param currentRow The current selected row within the JTable
 	 * @param view the UserView that instantiated the LineDialog
+	 * @param currentError Checks which error the user has selected and 
+	 * 					   retrieves the corresponding before/after lines
 	 */
-	private void prepareGUI(int currentRow, UserView view, String currentError){
+	private void prepareGUI(int currentRow, UserView view, String currentError) {
 		try {
 		     ClassLoader cl = this.getClass().getClassLoader();
 		     ImageIcon programIcon = new ImageIcon(cl.getResource("res/logo.png"));
@@ -79,7 +83,7 @@ public class LineDialog extends JDialog {
 		pnlBefore.setLayout(new BoxLayout(pnlBefore, BoxLayout.Y_AXIS));
 		pnlBefore.setBorder(new EmptyBorder(5,5,5,5));
 		
-		if (!view.linesBeforeArrayList.isEmpty()){
+		if (!view.linesBeforeArrayList.isEmpty()) {
 			listOfLinesBefore = view.linesBeforeArrayList.get(currentRow);
 		}
 		else {
@@ -100,12 +104,11 @@ public class LineDialog extends JDialog {
 		
 		pnlMain.add(pnlBefore);
 		
-
 		JPanel pnlAfter = new JPanel();
 		pnlAfter.setLayout(new BoxLayout(pnlAfter, BoxLayout.Y_AXIS));
 		pnlAfter.setBorder(new EmptyBorder(5,5,5,5));
 		
-		if (!view.linesAfterHashMap.isEmpty()){
+		if (!view.linesAfterHashMap.isEmpty()) {
 			listOfLinesAfter = view.linesAfterHashMap.get(currentRow + 1);
 		}
 		else {
@@ -124,11 +127,8 @@ public class LineDialog extends JDialog {
 		pnlAfter.add(afterScrollPane);
 		
 		pnlMain.add(pnlAfter);
-		
-		
+
 		pack();
 		setVisible(true);
 	}
-	
-
 }

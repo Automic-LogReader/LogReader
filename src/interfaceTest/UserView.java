@@ -1,7 +1,7 @@
 /**
  * @file UserView.java
  * @authors Leah Talkov, Jerry Tsui
- * @date 8/4/2016
+ * @date 8/15/2016
  * Creates the main user interface. The user can input a log file and
  * parse through it to find specified errors. The interface contains a
  * table which displays the results of the parse by showing the timestamp
@@ -26,8 +26,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.GridLayout;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -39,10 +37,8 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 import java.util.Vector;
 
 import javax.swing.AbstractAction;
@@ -51,7 +47,6 @@ import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -65,7 +60,6 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
-import javax.swing.MutableComboBoxModel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
@@ -182,12 +176,10 @@ public class UserView extends JFrame{
 	protected JPopupMenu popupMenu;
 	/** JPanel holding the JScrollPane for the checkbox view */
 	private JPanel pnlTreeView;
-	
 	/** Contains a list of lists holding the lines before an error message */
 	protected ArrayList<ArrayList<String>> linesBeforeArrayList = new ArrayList<ArrayList<String>>();
 	/** Maps an error number to the list of lines after an error message */
 	protected HashMap<Integer, ArrayList<String>> linesAfterHashMap = new HashMap<Integer, ArrayList<String>>();
-	
 	/** JMenuItem displaying a dialog showing the lines before and after an error */
 	protected JMenuItem menuItemLines;
 	/** JMenuItem opening a hyperlink to the solution online */
@@ -345,24 +337,21 @@ public class UserView extends JFrame{
 					TreeNodeCheckBox cb = (TreeNodeCheckBox) obj;
 					if (cb.isSelected()){
 						keyWords.add(cb.getText());
-						System.out.println("Added: " + cb.getText());
 					}
 					
 				}
 			}
 		}
 		else if (selectedTab == 2){
-			System.out.println("Group search");
 			if (groupKeywordsListModel.isEmpty()) return;
 			for (int i=0; i<groupKeywordsListModel.size(); i++){
 				keyWords.add(groupKeywordsListModel.getElementAt(i));
-				System.out.println(groupKeywordsListModel.getElementAt(i));
 			}
 		}
 	}
 		
 	/**
-	 * Maps the keyywords to the solution messages in a HashMap
+	 * Maps the keywords to the solution messages in a HashMap
 	 * @param stmt	SQL Statement
 	 * @throws SQLException	SQL error
 	 */
@@ -392,7 +381,6 @@ public class UserView extends JFrame{
 		     ImageIcon programIcon = new ImageIcon(cl.getResource("res/logo.png"));
 		     setIconImage(programIcon.getImage());
 		  } catch (Exception e) {
-		     System.out.println("Could not load program icon.");
 		  }
 	
 		JPanel pnlMain = new JPanel();
@@ -763,7 +751,6 @@ public class UserView extends JFrame{
 		                DefaultMutableTreeNode node = (DefaultMutableTreeNode)path.getLastPathComponent();
 	                    Object obj = node.getUserObject();
 	                    if (obj instanceof String){
-	                    	//System.out.println(obj);
 	                    	Rectangle pathBounds = cbTree.getUI ().getPathBounds (cbTree, path);
 	                    	if ( pathBounds != null && pathBounds.contains (e.getX (), e.getY())){
 	    	                    JPopupMenu menu = new JPopupMenu();

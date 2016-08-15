@@ -1,11 +1,17 @@
+/**
+ * @file EditGroup.java
+ * @authors Leah Talkov, Jerry Tsui
+ * @date 8/15/2016
+ * Brings up a JDialog where users can edit the contents
+ * or name of the group they've selected.
+ */
+
 package interfaceTest;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Insets;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.Connection;
@@ -50,6 +56,8 @@ public class EditGroup extends JDialog {
 	 * Creates and displays GUI
 	 * @param admin AdminView object passed in so preference values can be saved
 	 * @param view UserView object passed in so GUI can be updated
+	 * @param groupName The name of the current group being edited
+	 * @param keyWords The keywords that are currently within this group
 	 * as the administrator creates groups
 	 */
 	private void prepareGUI(AdminView admin, UserView view, String groupName, String keyWords){
@@ -71,7 +79,6 @@ public class EditGroup extends JDialog {
 		pnlMain.setLayout(new BoxLayout(pnlMain, BoxLayout.Y_AXIS));
 		
 		lblGroupName = new JLabel("Group Name: " + groupName);
-		//lblGroupName.setHorizontalAlignment(JLabel.CENTER);
 		lblGroupName.setAlignmentX(CENTER_ALIGNMENT);
 		
 		pnlMain.add(lblGroupName);
@@ -105,7 +112,6 @@ public class EditGroup extends JDialog {
 				try {
 					editGroups(admin, view);
 				} catch (Exception e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 				this.setVisible(false);
@@ -119,6 +125,11 @@ public class EditGroup extends JDialog {
 		setVisible(true);
 	}
 	
+	/**
+	 * Creates a checkbox display of the current groups
+	 * @param view UserView associated with this object
+	 * @return Returns a scrollpane with the new contents 
+	 */
 	private JScrollPane createListDisplay(UserView view){
 		cbListKeyWords = new CheckBoxListItem[view.keyWords.size()];
 		int index = 0;
@@ -156,6 +167,13 @@ public class EditGroup extends JDialog {
 		return new JScrollPane(list);
 	}
 	
+	/**
+	 * Creates queries to the database that updates the groups in the table
+	 * @param admin AdminView associated with this object
+	 * @param view UserView associated with this object
+	 * @throws ClassNotFoundException If getClass was unsuccessful
+	 * @throws SQLException If connection or querying to SQL server failed
+	 */
 	private void editGroups(AdminView admin, UserView view) throws ClassNotFoundException, SQLException{
 		StringBuilder query = new StringBuilder();
 		for (int i=0; i<cbListKeyWords.length; i++){
@@ -179,10 +197,15 @@ public class EditGroup extends JDialog {
 		view.loadGroupInfo(stmt);
 		stmt.close();
 		view.createGroupView();
-		//admin.createGroupData(view);
 		admin.updateGroupData(view);
 	}
 	
+	/**
+	 * Checks to see if there are groups with the same content.
+	 * @param keyword The String containing the list of keywords
+	 * @param view UserView associated with this object
+	 * @return True if there are duplicate groups, false otherwise
+	 */
 	private boolean isDuplicate(String keyword, UserView view){
 		String[] keywordArray = keyword.split(" ");
 		HashSet<String> keywordSet = new HashSet<String>(Arrays.asList(keywordArray));
@@ -203,14 +226,16 @@ public class EditGroup extends JDialog {
 		return false;
 	}
 	
+	/**
+	 * Initializes a checkbox object for the given String
+	 * @param keyword String that holds the list of keywords for a group
+	 */
 	private void initCheckBox(String keyword){
-		System.out.println(keyword);
 		String[] keywordArray = keyword.split(" ");
-		for (int i=0; i<cbListKeyWords.length; i++){
+		for (int i = 0; i < cbListKeyWords.length; i++){
 			for (String s : keywordArray){
 				if (cbListKeyWords[i].toString().equals(s)){
 					cbListKeyWords[i].setSelected(true);
-					System.out.println(cbListKeyWords[i].toString());
 				}
 			}
 		}

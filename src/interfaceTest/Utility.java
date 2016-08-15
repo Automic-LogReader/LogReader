@@ -1,8 +1,8 @@
 /**
  * @file Utility.java
  * @authors Leah Talkov, Jerry Tsui
- * @date 8/3/2016
- * Contains helper functions for CBTree and CheckBoxList.
+ * @date 8/15/2016
+ * Contains helper functions for the other classes within this package
  */
 
 package interfaceTest;

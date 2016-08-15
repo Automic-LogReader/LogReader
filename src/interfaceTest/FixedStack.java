@@ -1,7 +1,7 @@
 /**
  * @file FixedStack.java
  * @authors Leah Talkov, Jerry Tsui
- * @date 8/3/2016
+ * @date 8/15/2016
  * FixedStack is an implementation of a stack that has a fixed size. 
  * The user will specify the maximum size of the stack. If something is 
  * pushed to the stack when it is over capacity, it will remove the item 
