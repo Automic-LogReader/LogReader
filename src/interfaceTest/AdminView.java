@@ -81,10 +81,9 @@ public class AdminView extends JFrame {
 	List <String> savedWords = new ArrayList<String>();
 	/**A list that contains the default values used to load up the JTable*/
 	List <String[]> defaultList = new ArrayList<String[]>();
-	/**A list that contains the original values, and is serves as a temp list
+	/**A list that contains the original values, and serves as a temp list
 	for modifications done to the table. */
 	List <String[]> list = new ArrayList<String[]>();
-	/**Headers for the error JTable */
 	List <String[]> hyperlinkList = new ArrayList<String[]>();
 	List <String[]> defaultHyperlinkList = new ArrayList<String[]>();
 	/**Headers for the error JTable*/
@@ -303,7 +302,6 @@ public class AdminView extends JFrame {
 	    pnlGroup.add(groupScrollPane);
 		
 		pnlTabTwo.add(pnlGroup);
-		
 		
 		JPanel pnlTabTwoButtons = new JPanel();
 		pnlTabTwoButtons.setLayout(new FlowLayout());
@@ -551,7 +549,6 @@ public class AdminView extends JFrame {
 		resizeColumnWidth(tblErrorEntries);	
 		tblErrorEntries.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		tblErrorEntries.setRowSelectionAllowed(true);
-		tblErrorEntries.setColumnSelectionAllowed(true);
 	}
 	
 	private void initHyperlinkTable() {
