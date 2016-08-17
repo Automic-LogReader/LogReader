@@ -117,6 +117,7 @@ public class AdminView extends JFrame {
 	DataController dc;
 	/**A 2-D Object array holding the information for the group*/
 	protected Object groupRowData[][];
+	private JTextField tfHyperlink;
 	
 	/**
 	 * Creates an interface for an admin user, allowing the modification of entries
@@ -358,6 +359,7 @@ public class AdminView extends JFrame {
 		pnlHyperlinkTable.setViewportView(tblHyperlinkEntries);
 		
 		btnModifyHyperlink.addActionListener(e -> {
+			tblHyperlinkEntries.setValueAt(tfHyperlink.getText(), tblHyperlinkEntries.getSelectedRow(), 1);
 			for(int i = 0; i < dc.getDefaultHyperlinkList().size(); i++) {
 				dc.getDefaultHyperlinkList().get(i)[1] = (String)tblHyperlinkEntries.getValueAt(i, 1);
 				dc.getHyperlinkList().get(i)[1] = (String)tblHyperlinkEntries.getValueAt(i, 1);
@@ -369,10 +371,37 @@ public class AdminView extends JFrame {
 			}
 		});
 		
-		btnModifyHyperlink.setEnabled(true);
-		btnModifyHyperlink.setAlignmentX(CENTER_ALIGNMENT);
+		JPanel pnlHyperlink = new JPanel();
+		pnlHyperlink.setLayout(new BoxLayout(pnlHyperlink, BoxLayout.X_AXIS));
+		Component rigidArea_1 = Box.createRigidArea(new Dimension (20, 20));
+		Component rigidArea_2 = Box.createRigidArea(new Dimension (20, 20));
+		Component rigidArea_3 = Box.createRigidArea(new Dimension (20, 20));
+		Component rigidArea_4 = Box.createRigidArea(new Dimension (20, 20));
+		Component rigidArea_5 = Box.createRigidArea(new Dimension (20, 20));
+		Component rigidArea_6 = Box.createRigidArea(new Dimension (20, 20));
+		Component rigidArea_7 = Box.createRigidArea(new Dimension (20, 20));
+		Component rigidArea_8 = Box.createRigidArea(new Dimension (20, 20));
+		Component rigidArea_9 = Box.createRigidArea(new Dimension (20, 20));
+		Component rigidArea_10 = Box.createRigidArea(new Dimension (20, 20));
+		Component rigidArea_11 = Box.createRigidArea(new Dimension (20, 20));
+		tfHyperlink = new JTextField();
+		pnlHyperlink.add(rigidArea_1);
+		pnlHyperlink.add(rigidArea_2);
+		pnlHyperlink.add(rigidArea_3);
+		pnlHyperlink.add(rigidArea_4);
+		pnlHyperlink.add(rigidArea_5);
+		pnlHyperlink.add(tfHyperlink);
+		pnlHyperlink.add(rigidArea_6);
+		pnlHyperlink.add(btnModifyHyperlink);
+		pnlHyperlink.add(rigidArea_7);
+		pnlHyperlink.add(rigidArea_8);
+		pnlHyperlink.add(rigidArea_9);
+		pnlHyperlink.add(rigidArea_10);
+		pnlHyperlink.add(rigidArea_11);
+		//btnModifyHyperlink.setAlignmentX(CENTER_ALIGNMENT);
 		pnlTabThree.add(Box.createRigidArea(new Dimension(0,5)));
-		pnlTabThree.add(btnModifyHyperlink);
+		//pnlTabThree.add(btnModifyHyperlink);
+		pnlTabThree.add(pnlHyperlink);
 		pnlTabThree.add(Box.createRigidArea(new Dimension(0,5)));
 		pnlTabThree.add(Box.createVerticalGlue());
 		
@@ -535,6 +564,7 @@ public class AdminView extends JFrame {
 		       //all cells false
 		       return false;
 		    }     
+		    
 		};
 		tblErrorEntries = new JTable(errorTableModel){
 			//Renders each columnn to fit the data
@@ -556,10 +586,6 @@ public class AdminView extends JFrame {
 		hyperlinkTableModel = new DefaultTableModel(dc.getHyperlinkData(), hyperlinkColumnHeaders) {
 		    
 		    public boolean isCellEditable(int row, int column) {
-		    	//Make only the hyperlink column editable
-		    	if(column == 1)
-		    		return true;
-		    	else 
 		    		return false;
 		    }     
 		};
@@ -572,7 +598,15 @@ public class AdminView extends JFrame {
 	            return component;
 			}
 		};
-		tblHyperlinkEntries.setColumnSelectionAllowed(true);
+		tblHyperlinkEntries.addMouseListener(new MouseAdapter(){
+			@Override
+			//Fills the hyperlink textbox with the current 
+		    public void mouseClicked(MouseEvent evnt) {
+		        if (evnt.getClickCount() == 1) 
+		            tfHyperlink.setText((String)tblHyperlinkEntries.getValueAt
+		            		(tblHyperlinkEntries.getSelectedRow(), 1));
+		    }
+		});
 		tblHyperlinkEntries.setRowSelectionAllowed(true);
 		resizeColumnWidth(tblHyperlinkEntries);	
 	}
