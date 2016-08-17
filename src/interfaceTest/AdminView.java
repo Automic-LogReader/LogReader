@@ -360,6 +360,7 @@ public class AdminView extends JFrame {
 		btnModifyHyperlink.addActionListener(e -> {
 			for(int i = 0; i < dc.getDefaultHyperlinkList().size(); i++) {
 				dc.getDefaultHyperlinkList().get(i)[1] = (String)tblHyperlinkEntries.getValueAt(i, 1);
+				dc.getHyperlinkList().get(i)[1] = (String)tblHyperlinkEntries.getValueAt(i, 1);
 			}
 			try {
 				dc.writeURLsToDB();

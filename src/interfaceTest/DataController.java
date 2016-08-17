@@ -353,9 +353,9 @@ public class DataController {
 		Statement stmt = conn.createStatement();
 		for(int i = 0; i < curHyperlinkList.size(); i++) {
 			stmt.executeUpdate("update logerrors set Hyperlink = \'" + 
-					Utility.addSingleQuote(defaultHyperlinkList.get(i)[1]) + 
-					"\' where Keyword = \'" + Utility.addSingleQuote(defaultHyperlinkList.get(i)[0]) + "\'");
-			view.urlMap.put(defaultHyperlinkList.get(i)[0], defaultHyperlinkList.get(i)[1]);
+					Utility.addSingleQuote(curHyperlinkList.get(i)[1]) + 
+					"\' where Keyword = \'" + Utility.addSingleQuote(curHyperlinkList.get(i)[0]) + "\'");
+			view.urlMap.put(curHyperlinkList.get(i)[0], curHyperlinkList.get(i)[1]);
 		}
 		stmt.close();
 	}
