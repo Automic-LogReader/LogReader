@@ -26,6 +26,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -189,8 +190,8 @@ public class UserView extends JFrame{
 	
 	/**
 	 * Creates the UserView frame
-	 * @param menu 		MainMenu window that instantiated the UserView
-	 * @param isAdmin 		Administrator status
+	 * @param menu MainMenu window that instantiated the UserView
+	 * @param isAdmin Administrator status
 	 * @throws ClassNotFoundException	Class not found
 	 * @throws SQLException	SQL Exception
 	 */
@@ -581,11 +582,23 @@ public class UserView extends JFrame{
 		cbKey3 = new LogicalComboBox(2, this);
 		cbKey3.setEnabled(false);
 		
+		JLabel lblLeftParen_1 = new JLabel("(");
+		lblLeftParen_1.setFont(new Font("Serif", Font.PLAIN, 20));
+		JLabel lblLeftParen_2 = new JLabel("(");
+		lblLeftParen_2.setFont(new Font("Serif", Font.PLAIN, 20));
+		JLabel lblRightParen_1 = new JLabel(")");
+		lblRightParen_1.setFont(new Font("Serif", Font.PLAIN, 20));
+		JLabel lblRightParen_2 = new JLabel(")");
+		lblRightParen_2.setFont(new Font("Serif", Font.PLAIN, 20));
+		pnlComboBox.add(lblLeftParen_1);
+		pnlComboBox.add(lblLeftParen_2);
 		pnlComboBox.add(cbKey1);
 		pnlComboBox.add(cbLogic1);
 		pnlComboBox.add(cbKey2);
+		pnlComboBox.add(lblRightParen_1);
 		pnlComboBox.add(cbLogic2);
 		pnlComboBox.add(cbKey3);
+		pnlComboBox.add(lblRightParen_2);
 		pnlComboBox.add(Box.createHorizontalGlue());
 		
 		JButton btnClear = new JButton("Clear");
