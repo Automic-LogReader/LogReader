@@ -35,9 +35,9 @@ public class PreferenceEditor extends JDialog {
 	private JTextField tfLowerBound;
 	/**For upper bound input, value cannot be less than 0*/
 	private JTextField tfUpperBound;
-	/**For lines before input, value cannot be less than 0 or greater than 10*/
+	/**For lines before input, value cannot be less than 1 or greater than 10*/
 	private JTextField tfNumLinesBefore;
-	/**For lines after input, value cannot be less than 0 or greater than 10*/
+	/**For lines after input, value cannot be less than 1 or greater than 10*/
 	private JTextField tfNumLinesAfter;
 	
 	public PreferenceEditor(UserView view, boolean admin) {
@@ -147,7 +147,7 @@ public class PreferenceEditor extends JDialog {
 		
 		JPanel pnlTabTwoUpper = new JPanel();
 		pnlTabTwoUpper.setLayout(new FlowLayout());
-		JLabel lblNumLines = new JLabel("How many lines to display before and after the error message (0-10)", SwingConstants.CENTER);
+		JLabel lblNumLines = new JLabel("How many lines to display before and after the error message (1-10)", SwingConstants.CENTER);
 		pnlTabTwoUpper.add(lblNumLines);
 		
 		pnlTabTwo.add(pnlTabTwoUpper);
@@ -208,13 +208,13 @@ public class PreferenceEditor extends JDialog {
 	 * @param view The UserView associated with this PreferenceEditor
 	 */
 	private void saveNumLines(UserView view){
-		int before = 0;
-		int after = 0;
+		int before = 1;
+		int after = 1;
 		try {
 			before = Integer.parseInt(tfNumLinesBefore.getText());
 			after = Integer.parseInt(tfNumLinesAfter.getText());
-			if (before < 0 || after < 0){
-				JOptionPane.showMessageDialog(this, "Value must not be negative");
+			if (before < 1 || after < 1){
+				JOptionPane.showMessageDialog(this, "Value must not be less than 1");
 				return;
 			}
 			else if (before > 10 || after > 10){

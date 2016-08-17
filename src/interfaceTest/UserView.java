@@ -181,6 +181,7 @@ public class UserView extends JFrame{
 	protected ArrayList<ArrayList<String>> linesBeforeArrayList = new ArrayList<ArrayList<String>>();
 	/** Maps an error number to the list of lines after an error message */
 	protected HashMap<Integer, ArrayList<String>> linesAfterHashMap = new HashMap<Integer, ArrayList<String>>();
+	protected ArrayList<String> errorLinesArrayList = new ArrayList<String>();
 	/** JMenuItem displaying a dialog showing the lines before and after an error */
 	protected JMenuItem menuItemLines;
 	/** JMenuItem opening a hyperlink to the solution online */
@@ -217,9 +218,6 @@ public class UserView extends JFrame{
 		fillKeywords(stmt);
 		createErrorDictionary(stmt);
 		
-		//*****************************************************************
-		//I called it here just because there is already a connection to the db
-		//*****************************************************************
 		loadGroupInfo(stmt);
 		stmt.close();
 		prepareGUI(menu, isAdmin);

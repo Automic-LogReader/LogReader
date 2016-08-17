@@ -99,6 +99,7 @@ public class LogParser {
 	void parseErrors(File file, ProgressDialog pd) throws IOException {
 		view.updateKeyWords(selectedTab);
 		view.linesBeforeArrayList.clear();
+		view.errorLinesArrayList.clear();
 		view.linesAfterHashMap.clear();
 		considerLinesAfter = true;
 		considerLinesBefore = true;
@@ -162,6 +163,7 @@ public class LogParser {
 								entry = parseDeadlockError(logbr, timeStamp);
 								if(entry == null) {
 									view.linesBeforeArrayList.remove(view.linesBeforeArrayList.size() - 1);
+									view.errorLinesArrayList.remove(view.errorLinesArrayList.size() - 1);
 									errorCount--;
 								}
 								else
@@ -174,6 +176,7 @@ public class LogParser {
 								entry = parseArrowError(logbr, timeStamp, logWords);
 								if(entry == null) {
 									view.linesBeforeArrayList.remove(view.linesBeforeArrayList.size() - 1);
+									view.errorLinesArrayList.remove(view.errorLinesArrayList.size() - 1);
 									errorCount--;
 								}
 								else {
@@ -521,7 +524,8 @@ public class LogParser {
 		for (String str : linesBefore){
 			arrayList.add(str);
 		}
-		arrayList.remove(arrayList.size()-1);
+		view.errorLinesArrayList.add(arrayList.get(arrayList.size() - 1));
+		arrayList.remove(arrayList.size() - 1);
 		view.linesBeforeArrayList.add(arrayList);
 	}
 	

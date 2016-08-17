@@ -208,6 +208,7 @@ public class LogicEvaluator {
 				}
 				else {
 					logParse.view.linesBeforeArrayList.remove(logParse.view.linesBeforeArrayList.size() - 1);
+					logParse.view.errorLinesArrayList.remove(logParse.view.errorLinesArrayList.size() - 1);
 				}
 			}
 			else if (OR_ARROW) {
@@ -219,6 +220,7 @@ public class LogicEvaluator {
 				}
 				else {
 					logParse.view.linesBeforeArrayList.remove(logParse.view.linesBeforeArrayList.size() - 1);
+					logParse.view.errorLinesArrayList.remove(logParse.view.errorLinesArrayList.size() - 1);
 				}	
 			}
 			//Otherwise it is a normal OR word and we add the line to validLines
@@ -265,6 +267,7 @@ public class LogicEvaluator {
 			//This is if we saved the beforelines into tempLinesBefore for
 			//encapsulating errors such as DEADLOCK or arrow
 			if(encapsulatingError) {
+				logParse.view.errorLinesArrayList.add(tempLinesBefore.get(tempLinesBefore.size() - 1));
 				tempLinesBefore.remove(tempLinesBefore.size() - 1);
 				logParse.view.linesBeforeArrayList.add(tempLinesBefore);
 			}
@@ -503,8 +506,10 @@ public class LogicEvaluator {
         		if(tempLine != null) {
         			makeEntry(tempLine);
         		}
-        		else
+        		else {
         			logParse.view.linesBeforeArrayList.remove(logParse.view.linesBeforeArrayList.size() - 1);
+        			logParse.view.errorLinesArrayList.remove(logParse.view.errorLinesArrayList.size() - 1);
+        		}
         		madeAnError = true;
         	}
            boolean timeStampFound = false;
