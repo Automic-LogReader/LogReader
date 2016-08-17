@@ -22,7 +22,6 @@ import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -30,7 +29,6 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.DefaultHighlighter.DefaultHighlightPainter;
-import javax.swing.text.Highlighter;
 
 public class LineDialog extends JDialog {
 	/** Main content panel */
@@ -141,6 +139,7 @@ public class LineDialog extends JDialog {
 		}
 		
 		textLines.append(tempText);
+		textLines.setCaretPosition(startHighlightIndex);
 		DefaultHighlightPainter painter = new DefaultHighlighter.DefaultHighlightPainter(Color.YELLOW);
 		try {
 			textLines.getHighlighter().addHighlight(startHighlightIndex, endHighlightIndex, painter);
