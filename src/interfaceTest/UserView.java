@@ -734,7 +734,7 @@ public class UserView extends JFrame{
 		pnlRight.setLayout(new BoxLayout(pnlRight, BoxLayout.Y_AXIS));
 		
 		JLabel lblTable = new JLabel("Error Table");
-		lblTable.setFont(lblTable.getFont().deriveFont(12.0f));
+		lblTable.setFont(lblTable.getFont().deriveFont(15.0f));
 		lblTable.setAlignmentX(CENTER_ALIGNMENT);
 		
 		pnlRight.add(lblTable);
