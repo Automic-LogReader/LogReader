@@ -584,7 +584,7 @@ public class AdminView extends JFrame {
 	
 	private void initHyperlinkTable() {
 		hyperlinkTableModel = new DefaultTableModel(dc.getHyperlinkData(), hyperlinkColumnHeaders) {
-		    
+		    @Override
 		    public boolean isCellEditable(int row, int column) {
 		    		return false;
 		    }     
