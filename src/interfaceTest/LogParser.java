@@ -10,6 +10,7 @@
 package interfaceTest;
 
 import java.awt.Component;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -20,6 +21,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -331,6 +333,7 @@ public class LogParser {
 			} 
 			else {
 				errorMsg.append(logLine + " ");
+				errorMsg.append("\n");
 			}
 			if (!closingArrowTagFound) {
 				logLine = logbr.readLine();
@@ -353,6 +356,8 @@ public class LogParser {
 	 * @throws IOException If there is a problem accessing the file
 	 */
 	Object[] parseDeadlockError(BufferedReader logbr, String timeStamp) throws IOException {
+	   int limit = 2500;
+	   int curRead = 0;
        Object[] entry = new Object[5];
        ArrayList <String> errorLines = new ArrayList<String>();
        boolean matchingDeadlock = false;
@@ -365,8 +370,9 @@ public class LogParser {
        entry[2] = "DEADLOCK";
        String tempLine = logbr.readLine();
        //We mark in case the DEADLOCK error is a single DEADLOCK
-       logbr.mark(2500);
+       logbr.mark(limit);
        while(!matchingDeadlock && tempLine != null) {
+    	  curRead = curRead + tempLine.length();
     	  linesBefore.push(tempLine);
     	  updateLinesAfter(tempLine);
           boolean timeStampFound = false;
@@ -383,7 +389,9 @@ public class LogParser {
                 	  entry[3] = " ";
                       if (view.solutions.get(entry[2]) != null) {
                     	  entry[4] = view.solutions.get(entry[2]);
-               	          logbr.reset();
+                    	  if(curRead < limit) {
+                    		  logbr.reset();
+                    	  }
                       }
                       return entry;
                   }
@@ -422,6 +430,7 @@ public class LogParser {
                  }      
            }
               errorLines.add(testLine.toString());
+              errorLines.add("\n");
               tempLine = logbr.readLine();
        }
        return entry;
@@ -451,6 +460,7 @@ public class LogParser {
 	           return component;
 			}
 		};
+
 		view.errorTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		view.errorScrollPane.setViewportView(view.errorTable);
 		view.errorTable.setCellSelectionEnabled(true);

@@ -414,7 +414,11 @@ public class LogicEvaluator {
 	 * @throws IOException If there is a problem accessing the file
 	 */
 	String progressDeadlockBr(BufferedReader logbr, String line) throws IOException {
-        boolean matchingDeadlock = false;
+		boolean matchingDeadlock = false;
+        //Bytes to read until mark is invalid
+        int limit = 2500;
+        //Current number of bytes we've read
+        int curRead = 0;
         String timeStamp = "";
         String[] temp = line.split(" ");
         for(String word : temp) {
@@ -428,8 +432,9 @@ public class LogicEvaluator {
         //Save the lines at the beginning of the process
         //in case we need to reset our buffer
         saveCurLines();
-        logbr.mark(2500);
+        logbr.mark(limit);
         while(!matchingDeadlock && logLine != null) {
+           curRead = curRead + logLine.length();
            logParse.updateLinesAfter(logLine);
            logParse.linesBefore.push(logLine);
            logParse.updateProgress(logLine);
@@ -441,8 +446,10 @@ public class LogicEvaluator {
                     //If our timestamps are not equal, we 
                     //don't have a matching deadlock
                     if(logParse.timeStampDifference(testWord, timeStamp)) {
-                    	logbr.reset();
-                    	//revertLines();
+                    	//Avoids throwing invalid mark error
+                    	if(curRead < limit) {
+                    		logbr.reset();
+                    	}
                         return logbr.readLine();
                     }
                  }
@@ -473,6 +480,10 @@ public class LogicEvaluator {
 	 */
 	String makeDeadlockLine(BufferedReader logbr, String line) throws IOException {
 		tempUCodes.clear();
+		//Bytes to read until mark is invalid
+		int limit = 2500;
+		//Current number of bytes we've read
+		int curRead = 0;
         ArrayList <String> errorLines = new ArrayList<String>();
         boolean matchingDeadlock = false;
         boolean outsideTimeBounds = false;
@@ -491,8 +502,9 @@ public class LogicEvaluator {
         }
         String[] words;
         String logLine = logbr.readLine();
-        logbr.mark(2500);
+        logbr.mark(limit);
         while(!matchingDeadlock && logLine != null) {
+        	curRead = curRead + logLine.length();
         	logParse.updateLinesAfter(logLine);
             logParse.linesBefore.push(logLine);
             logParse.updateProgress(logLine);
@@ -522,7 +534,9 @@ public class LogicEvaluator {
                     //If our timestamps are not equal, we 
                     //don't have a matching deadlock and just return first line
                     if(logParse.timeStampDifference(testWord, timeStamp)) {
-                    	logbr.reset();
+                    	if(curRead < limit) {
+                    		logbr.reset();
+                    	}
                         return errorLines.get(0);
                     }
              }
@@ -562,6 +576,7 @@ public class LogicEvaluator {
              }      
          }
          errorLines.add(testLine.toString());
+         errorLines.add("\n");
          logLine = logbr.readLine();
        }
        return fullMsg.toString();
@@ -640,6 +655,7 @@ public class LogicEvaluator {
 			} 
 			else {
 				errorMsg.append(logLine + " ");
+				errorMsg.append("\n");
 			}
 			if (!closingArrowTagFound){
 				logLine = logbr.readLine();
