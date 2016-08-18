@@ -35,6 +35,7 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -84,7 +85,7 @@ public class UserView extends JFrame{
 	protected HashMap<String, String> GroupInfo = new HashMap<String, String>();
 	/**Headers for the JTable in the interface*/
 	protected final String [] headers = {"Error #", "Timestamp",
-								"Keywords", "Error Message", "Suggested Solution"};
+								"Keyword", "Error Message", "Suggested Solution"};
 	/**Used to fill the contents of the JTable, will contains headers and errorData*/
 	private Object [][] data;
 	/**ProgressDialog with progress bar showing the progress of parsing process*/
@@ -253,6 +254,7 @@ public class UserView extends JFrame{
 					tempList.add(entry.getKey());
 				}
 			}	
+			Collections.sort(tempList);
 			treeMap.put(folderName, tempList);
 		}
 		
@@ -260,7 +262,7 @@ public class UserView extends JFrame{
 		for (String s : keyWords){
 			comboBoxKeyWords.addElement(s);
 		}
-		
+		Collections.sort(comboBoxKeyWords);
 		if (!hasCopiedOriginalKeyWords){
 			originalKeyWords = new HashSet<String>(keyWords);
 			hasCopiedOriginalKeyWords = true;
@@ -692,6 +694,7 @@ public class UserView extends JFrame{
 		       //all cells false
 		       return false;
 		    }
+		    
 		}; 
 		popupMenu = new JPopupMenu();
         menuItemCopy = new JMenuItem("Copy");
@@ -720,7 +723,6 @@ public class UserView extends JFrame{
         menuItemLines.setEnabled(false);
         popupMenu.add(menuItemLines);
         
-       
 		errorTable = new JTable(tableModel);
 		errorTable.setCellSelectionEnabled(true);
 		errorTable.setComponentPopupMenu(popupMenu);
